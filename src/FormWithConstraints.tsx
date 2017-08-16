@@ -98,6 +98,12 @@ export interface FieldFeedbackInternalProps extends FieldFeedbackProps {
 }
 
 export class FieldFeedback extends React.Component<FieldFeedbackProps> {
+  static contextTypes = {
+    form: PropTypes.object.isRequired
+  };
+
+  context: FormWithConstraintsContext;
+
   render() {
     const { index, when, error, warning, info, field, children, ...divProps } = this.props as FieldFeedbackInternalProps;
 
@@ -105,15 +111,15 @@ export class FieldFeedback extends React.Component<FieldFeedbackProps> {
     let className = '';
     if (field.errors.includes(index)) {
       show = true;
-      className = 'error';
+      className = this.context.form.props.fieldFeedbackClassNames!.error;
     }
     else if (field.warnings.includes(index)) {
       show = true;
-      className = 'warning';
+      className = this.context.form.props.fieldFeedbackClassNames!.warning;
     }
     else if (field.infos.includes(index)) {
       show = true;
-      className = 'info';
+      className = this.context.form.props.fieldFeedbackClassNames!.info;
     }
 
     let feedback = null;
@@ -135,7 +141,7 @@ export interface ValidityState_fix extends ValidityState {
   readonly tooShort: boolean;
 }
 
-export interface FieldFeedbacksProps extends React.HTMLProps<HTMLDivElement> {
+export interface FieldFeedbacksProps {
   for: string;
   show?: 'first' | 'all';
 }
@@ -264,7 +270,7 @@ export class FieldFeedbacks extends React.Component<FieldFeedbacksProps, Field> 
 
   render() {
     // See http://stackoverflow.com/a/40699547/990356
-    let { ['for']: _, show, children, ...divProps } = this.props;
+    let { children } = this.props;
 
     const field = this.state;
 
@@ -277,7 +283,8 @@ export class FieldFeedbacks extends React.Component<FieldFeedbacksProps, Field> 
       })
     );
 
-    return <div {...divProps}>{feedbacks}</div>;
+    // FIXME Remove <div> when React 16 is released
+    return <div>{feedbacks}</div>;
   }
 }
 
@@ -287,12 +294,28 @@ export interface Fields {
 }
 
 export interface FormWithConstraintsContext {
-  form: FormWithConstraints;
+  form: FormWithConstraints<FormWithConstraintsProps>;
+}
+
+export interface FormWithConstraintsProps {
+  fieldFeedbackClassNames?: {
+    error: string;
+    warning: string;
+    info: string;
+  };
 }
 
 // See How to safely use React context https://medium.com/@mweststrate/how-to-safely-use-react-context-b7e343eff076
 // See TypeScript 2.2 Support for Mix-in classes https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-2.html
-export class FormWithConstraints<P = {}, S = {}> extends React.Component<P, S> {
+export class FormWithConstraints<P extends FormWithConstraintsProps = {}, S = {}> extends React.Component<P, S> {
+  static defaultProps: FormWithConstraintsProps = {
+    fieldFeedbackClassNames: {
+      error: 'error',
+      warning: 'warning',
+      info: 'info'
+    }
+  };
+
   static childContextTypes = {
     form: PropTypes.object.isRequired
   };

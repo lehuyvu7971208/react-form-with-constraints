@@ -3,14 +3,14 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 
-import { FormWithConstraints, FieldFeedbacks, FieldFeedback } from '../../index';
+import { FormWithConstraints, FormWithConstraintsProps, FieldFeedbacks, FieldFeedback } from '../../index';
 
 import 'file-loader?name=[path][name].[ext]!./style.css';
 import 'file-loader?name=[path][name].[ext]!./index.html';
 import 'file-loader?name=[path][name].[ext]!./original.html';
 
-class Form extends FormWithConstraints {
-  constructor(props: {}) {
+class Form extends FormWithConstraints<FormWithConstraintsProps> {
+  constructor(props: FormWithConstraintsProps) {
     super(props);
 
     this.handleChange = this.handleChange.bind(this);

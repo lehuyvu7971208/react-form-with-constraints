@@ -2,7 +2,7 @@ import * as React from 'react';
 import { shallow } from 'enzyme';
 
 import {
-  FormWithConstraints, FormFields, Input, ValidityState_fix,
+  FormWithConstraints, FormWithConstraintsProps, FormFields, Input, ValidityState_fix,
   FieldFeedbacks, FieldFeedbacksProps,
   FieldFeedback, FieldFeedbackInternalProps,
   Fields, Field
@@ -249,17 +249,25 @@ describe('FormWithConstraints', () => {
 });
 
 describe('FieldFeedback', () => {
+  let form: FakeFormWithConstraints;
+
+  beforeEach(() => {
+    form = new FakeFormWithConstraints();
+  });
+
   function createFieldFeedback(message: string, props: FieldFeedbackInternalProps) {
+    const context = {form};
     return shallow<FieldFeedbackInternalProps>(
       <FieldFeedback {...props as /*FieldFeedbackProps*/any}>{message}</FieldFeedback>,
-      {lifecycleExperimental: true}
+      {context, lifecycleExperimental: true}
     );
   }
 
   function createFieldFeedbackNoMessage(props: FieldFeedbackInternalProps) {
+    const context = {form};
     return shallow<FieldFeedbackInternalProps>(
       <FieldFeedback {...props as /*FieldFeedbackProps*/any} />,
-      {lifecycleExperimental: true}
+      {context, lifecycleExperimental: true}
     );
   }
 
@@ -456,6 +464,14 @@ describe('FieldFeedback', () => {
 
 
 class FakeFormWithConstraints {
+  props: FormWithConstraintsProps = {
+    fieldFeedbackClassNames: {
+      error: 'error',
+      warning: 'warning',
+      info: 'info'
+    }
+  };
+
   inputChangeOrFormSubmitEventListeners: ((input: Input) => void)[] = [];
 
   emitInputChangeOrFormSubmitEvent(input: Input) {

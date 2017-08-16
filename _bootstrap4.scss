@@ -1,0 +1,87 @@
+// See v4-beta form-validation-state() mixin does not work https://github.com/twbs/bootstrap/issues/23371
+
+// See https://github.com/twbs/bootstrap/blob/v4.0.0-beta/scss/_variables.scss#L484
+$form-feedback-warning-color: theme-color("warning") !default;
+$form-feedback-info-color: theme-color("info") !default;
+
+// See https://github.com/twbs/bootstrap/blob/96e4efb49a26129e8cb0c32a60b96f094ce37011/scss/_forms.scss#L259
+@mixin form-validation-feedback($state, $color) {
+  .#{$state}-feedback {
+    // FIXME Remove hack when React 16 is released and no root element is needed
+    //display: none;
+    display: block;
+    margin-top: .25rem;
+    font-size: .875rem;
+    color: $color;
+  }
+}
+
+@include form-validation-feedback("warning", $form-feedback-warning-color);
+@include form-validation-feedback("info", $form-feedback-info-color);
+
+// FIXME Remove hack when React 16 is released and no root element is needed
+@include form-validation-feedback("valid", $form-feedback-valid-color);
+@include form-validation-feedback("invalid", $form-feedback-invalid-color);
+
+// Taken and adapted from https://github.com/twbs/bootstrap/blob/96e4efb49a26129e8cb0c32a60b96f094ce37011/scss/mixins/_forms.scss#L24
+@mixin form-validation-state2($state, $color) {
+  .form-control,
+  .custom-select {
+    //.was-validated &:#{$state},
+    &.is-#{$state} {
+      border-color: $color;
+
+      &:focus {
+        box-shadow: 0 0 0 .2rem rgba($color,.25);
+      }
+
+      ~ .#{$state}-feedback,
+      ~ .#{$state}-tooltip {
+        display: block;
+      }
+    }
+  }
+
+
+  // TODO: redo check markup lol crap
+  .form-check-input {
+    //.was-validated &:#{$state},
+    &.is-#{$state} {
+      + .form-check-label {
+        color: $color;
+      }
+    }
+  }
+
+  // custom radios and checks
+  .custom-control-input {
+    //.was-validated &:#{$state},
+    &.is-#{$state} {
+      ~ .custom-control-indicator {
+        background-color: rgba($color, .25);
+      }
+      ~ .custom-control-description {
+        color: $color;
+      }
+    }
+  }
+
+  // custom file
+  .custom-file-input {
+    //.was-validated &:#{$state},
+    &.is-#{$state} {
+      ~ .custom-file-control {
+        border-color: $color;
+
+        &::before { border-color: inherit; }
+      }
+      &:focus {
+        box-shadow: 0 0 0 .2rem rgba($color,.25);
+      }
+    }
+  }
+}
+
+// See https://github.com/twbs/bootstrap/blob/v4.0.0-beta/scss/_forms.scss#L288
+@include form-validation-state2("warning", $form-feedback-warning-color);
+@include form-validation-state2("info", $form-feedback-info-color);

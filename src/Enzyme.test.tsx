@@ -3,18 +3,40 @@ import { shallow } from 'enzyme';
 
 import { FormWithConstraints, FieldFeedbacks, FieldFeedback } from './FormWithConstraints';
 import { getFieldFeedbacksMessages } from './Enzyme';
-import { FieldFeedbacks as FieldFeedbacksBootstrap4, FormGroup, FormControlInput } from './Bootstrap4';
+import { FormWithConstraints as FormWithConstraintsBootstrap4, FormControlInput } from './Bootstrap4';
 
-test('with Bootstrap4', () => {
-  class FormBootstrap4 extends FormWithConstraints {
+test('FormWithConstraints', () => {
+  class Form extends FormWithConstraints {
     render() {
       return (
-        <FormGroup for="username">
-          <FormControlInput type="email" name="username" value="" required />
-          <FieldFeedbacksBootstrap4 for="username">
+        <div>
+          <input type="email" name="username" value="" required />
+          <FieldFeedbacks for="username">
             <FieldFeedback when="*" />
-          </FieldFeedbacksBootstrap4>
-        </FormGroup>
+          </FieldFeedbacks>
+        </div>
+      );
+    }
+  }
+
+  const form = shallow(<Form />);
+
+  const inputs = form.find('input');
+  expect(inputs).toHaveLength(1);
+  expect(inputs.props().value).toEqual('');
+  expect(getFieldFeedbacksMessages(inputs)).toEqual(['Please fill out this field.']);
+});
+
+test('FormWithConstraints with Bootstrap4', () => {
+  class FormBootstrap4 extends FormWithConstraintsBootstrap4 {
+    render() {
+      return (
+        <div className="form-group">
+          <FormControlInput type="email" name="username" value="" required />
+          <FieldFeedbacks for="username">
+            <FieldFeedback when="*" />
+          </FieldFeedbacks>
+        </div>
       );
     }
   }

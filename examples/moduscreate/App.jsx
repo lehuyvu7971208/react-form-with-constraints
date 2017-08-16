@@ -6,10 +6,11 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 
-import { FormWithConstraints, FieldFeedback, Bootstrap4 } from '../../index';
-const { FieldFeedbacks, FormGroup, FormControlLabel, FormControlInput } = Bootstrap4;
+import { FieldFeedbacks, FieldFeedback, Bootstrap4 } from '../../index';
+const { FormWithConstraints, FormControlInput } = Bootstrap4;
 
 import 'file-loader?name=[path][name].[ext]!./index.html';
+import './App.scss';
 
 class Form extends FormWithConstraints {
   constructor(props) {
@@ -59,18 +60,20 @@ class Form extends FormWithConstraints {
   render() {
     return (
       <form onSubmit={this.handleSubmit} noValidate>
-        <FormGroup for="username">
-          <FormControlLabel htmlFor="username">Username</FormControlLabel>
+        <div className="form-group">
+          <label htmlFor="username">Username</label>
           <FormControlInput type="email" id="username" name="username"
                             value={this.state.username} onChange={this.handleChange}
                             required />
           <FieldFeedbacks for="username">
             <FieldFeedback when="*" />
+            <FieldFeedback when={value => /hotnail/.test(value)} info>Did you mean hotmail.com?</FieldFeedback>
+            <FieldFeedback when={value => /gmil/.test(value)} info>Did you mean gmail.com?</FieldFeedback>
           </FieldFeedbacks>
-        </FormGroup>
+        </div>
 
-        <FormGroup for="password">
-          <FormControlLabel htmlFor="password">Password</FormControlLabel>
+        <div className="form-group">
+          <label htmlFor="password">Password</label>
           <FormControlInput type="password" id="password" name="password"
                             value={this.state.password} onChange={this.handleChange}
                             pattern=".{5,}" required />
@@ -82,10 +85,10 @@ class Form extends FormWithConstraints {
             <FieldFeedback when={value => !/[A-Z]/.test(value)} warning>Should contain capital letters</FieldFeedback>
             <FieldFeedback when={value => !/\W/.test(value)} warning>Should contain special characters</FieldFeedback>
           </FieldFeedbacks>
-        </FormGroup>
+        </div>
 
-        <FormGroup for="passwordConfirm">
-          <FormControlLabel htmlFor="password-confirm">Confirm Password</FormControlLabel>
+        <div className="form-group">
+          <label htmlFor="password-confirm">Confirm Password</label>
           <FormControlInput type="password" id="password-confirm" name="passwordConfirm"
                             value={this.state.passwordConfirm} onChange={this.handleChange}
                             required />
@@ -93,7 +96,7 @@ class Form extends FormWithConstraints {
             <FieldFeedback when="*" />
             <FieldFeedback when={value => value !== this.state.password}>Not the same password</FieldFeedback>
           </FieldFeedbacks>
-        </FormGroup>
+        </div>
 
         <button disabled={this.state.submitButtonDisabled} className="btn btn-primary">Submit</button>
       </form>

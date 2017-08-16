@@ -2,14 +2,13 @@ import * as React from 'react';
 import { ShallowWrapper } from 'enzyme';
 
 import { FieldFeedbackProps, FieldFeedbacks } from './FormWithConstraints';
-import { FieldFeedbacks as FieldFeedbacksBootstrap4 } from './Bootstrap4';
 
 // Return the list of FieldFeedback associated with an input name
 // Algorithm: find the FieldFeedbacks that matches the input name (for prop) and then return its children
 function findFieldFeedbackList(wrapper: ShallowWrapper<{}, {}>, inputName: string) {
   const fieldFeedbacks = wrapper.findWhere(node => {
     let found = false;
-    if (node.type() === FieldFeedbacks || node.type() === FieldFeedbacksBootstrap4) {
+    if (node.type() === FieldFeedbacks) {
       if (node.prop('for') === inputName) {
         found = true;
       }

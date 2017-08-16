@@ -1,5 +1,6 @@
 import * as path from 'path';
 import { Configuration, optimize } from 'webpack';
+import * as ExtractTextPlugin from 'extract-text-webpack-plugin';
 
 const config: Configuration = {
   entry: {
@@ -19,7 +20,8 @@ const config: Configuration = {
   },
 
   plugins: [
-    new optimize.CommonsChunkPlugin({names: ['react-form-with-constraints', 'react', 'manifest']})
+    new optimize.CommonsChunkPlugin({names: ['react-form-with-constraints', 'react', 'manifest']}),
+    new ExtractTextPlugin({filename: '[name].css'})
   ],
 
   resolve: {
@@ -29,7 +31,17 @@ const config: Configuration = {
   module: {
     rules: [
       { test: /\.tsx?$/, loader: 'ts-loader', options: {compilerOptions: {declaration: false}} },
-      { test: /\.jsx?$/, loader: 'babel-loader', options: {presets: ['react']} }
+      { test: /\.jsx?$/, loader: 'babel-loader', options: {presets: ['react']} },
+      {
+        test: /\.scss$/,
+        use: ExtractTextPlugin.extract({
+          fallback: 'style-loader',
+          use: [
+            { loader: 'css-loader', options: { sourceMap: true } },
+            { loader: 'sass-loader', options: { sourceMap: true } }
+          ]
+        })
+      }
     ]
   }
 };

@@ -1,12 +1,10 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 
-import { FormWithConstraints, FieldFeedbacks, FieldFeedback } from '../../index';
+import { FormWithConstraints, FormWithConstraintsProps, FieldFeedbacks, FieldFeedback } from '../../index';
 
 import 'file-loader?name=[path][name].[ext]!./index.html';
 import 'file-loader?name=[path][name].[ext]!./style.css';
-
-interface Props {}
 
 interface State {
   [name: string]: string;
@@ -15,8 +13,8 @@ interface State {
 }
 
 // Inspired by http://codepen.io/nukos/pen/RPwxBp
-class Form extends FormWithConstraints<Props, State> {
-  constructor(props: Props) {
+class Form extends FormWithConstraints<FormWithConstraintsProps, State> {
+  constructor(props: FormWithConstraintsProps) {
     super(props);
 
     this.state = {

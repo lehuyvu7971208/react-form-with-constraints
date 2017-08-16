@@ -2,86 +2,9 @@ import * as React from 'react';
 import * as PropTypes from 'prop-types';
 
 import {
-  FormWithConstraintsContext, FormFields, Input,
-  FieldFeedbacks as FieldFeedbacks_, FieldFeedbacksProps
+  FormWithConstraints as FormWithConstraints_, FormWithConstraintsProps,
+  FormWithConstraintsContext, FormFields, Input
 } from './FormWithConstraints';
-
-export interface FormGroupProps extends React.HTMLProps<HTMLDivElement> {
-  for?: string;
-}
-
-export class FormGroup extends React.Component<FormGroupProps> {
-  static contextTypes = {
-    form: PropTypes.object.isRequired
-  };
-
-  context: FormWithConstraintsContext;
-
-  constructor(props: FormGroupProps) {
-    super(props);
-
-    this.reRender = this.reRender.bind(this);
-  }
-
-  componentDidMount() {
-    this.context.form.addInputChangeOrFormSubmitEventListener(this.reRender);
-  }
-
-  componentWillUnmount() {
-    this.context.form.removeInputChangeOrFormSubmitEventListener(this.reRender);
-  }
-
-  reRender(input: Input) {
-    const fieldName = this.props.for;
-    if (input.name === fieldName) { // Ignore the event if it's not for us
-      this.forceUpdate();
-    }
-  }
-
-  className(fieldName: string | undefined) {
-    let className = 'form-group';
-    if (fieldName !== undefined) {
-      const form = this.context.form;
-      if (FormFields.containErrors(form, fieldName)) {
-        className += ' has-danger';
-      }
-      else if (FormFields.containWarnings(form, fieldName)) {
-        className += ' has-warning';
-      }
-      else if (FormFields.areValidDirtyWithoutWarnings(form, fieldName)) {
-        className += ' has-success';
-      }
-    }
-    return className;
-  }
-
-  render() {
-    // See http://stackoverflow.com/a/40699547/990356
-    let { ['for']: fieldName, children, ...divProps } = this.props;
-
-    return (
-      <div {...divProps} className={this.className(fieldName)}>
-        {this.props.children}
-      </div>
-    );
-  }
-}
-
-
-export interface FormControlLabelProps extends React.HTMLProps<HTMLLabelElement> {
-}
-
-const FormControlLabel: React.SFC<FormControlLabelProps> = props => {
-  let { children, ...labelProps } = props;
-
-  return (
-    <label {...labelProps} className="form-control-label">
-      {props.children}
-    </label>
-  );
-};
-export { FormControlLabel };
-
 
 export interface FormControlInputProps extends React.HTMLProps<HTMLInputElement> {
 }
@@ -119,13 +42,26 @@ export class FormControlInput extends React.Component<FormControlInputProps> {
     if (name !== undefined) {
       const form = this.context.form;
       if (FormFields.containErrors(form, name)) {
-        className += ' form-control-danger';
+        className += ' is-invalid';
       }
       else if (FormFields.containWarnings(form, name)) {
-        className += ' form-control-warning';
+        // form-control-warning did exist in Bootstrap v4.0.0-alpha.6:
+        // see https://v4-alpha.getbootstrap.com/components/forms/#validation
+        // see https://github.com/twbs/bootstrap/blob/v4.0.0-alpha.6/scss/_forms.scss#L255
+        // In Bootstrap 3 it was done on form-group not an the input directly:
+        // see https://getbootstrap.com/docs/3.3/css/#forms-control-validation
+        // see https://github.com/twbs/bootstrap/blob/v3.3.7/less/forms.less#L431
+        className += ' is-warning';
+      }
+      else if (FormFields.containInfos(form, name)) {
+        // Info type does not exist in Bootstrap 3 and 4
+        // In Bootstrap 2 it was done on control-group not an the input directly:
+        // see https://getbootstrap.com/2.3.2/base-css.html#forms
+        // see https://github.com/twbs/bootstrap/blob/v2.3.2/less/forms.less#L363
+        className += ' is-info';
       }
       else if (FormFields.areValidDirtyWithoutWarnings(form, name)) {
-        className += ' form-control-success';
+        className += ' is-valid';
       }
     }
     return className;
@@ -140,71 +76,12 @@ export class FormControlInput extends React.Component<FormControlInputProps> {
   }
 }
 
-
-const FieldFeedbacks: React.SFC<FieldFeedbacksProps> = props => {
-  return <FieldFeedbacks_ {...props as any} className="form-control-feedback">{props.children}</FieldFeedbacks_>;
-};
-export { FieldFeedbacks };
-
-
-export interface LabelWithFormControlStyleProps extends React.HTMLProps<HTMLLabelElement> {
-  for: string[];
-}
-
-export class LabelWithFormControlStyle extends React.Component<LabelWithFormControlStyleProps> {
-  static contextTypes = {
-    form: PropTypes.object.isRequired
+export class FormWithConstraints<P extends FormWithConstraintsProps = {}, S = {}> extends FormWithConstraints_<P, S> {
+  static defaultProps: FormWithConstraintsProps = {
+    fieldFeedbackClassNames: {
+      error: 'invalid-feedback',
+      warning: 'warning-feedback',
+      info: 'info-feedback'
+    }
   };
-
-  context: FormWithConstraintsContext;
-
-  constructor(props: LabelWithFormControlStyleProps) {
-    super(props);
-
-    this.reRender = this.reRender.bind(this);
-  }
-
-  componentDidMount() {
-    this.context.form.addInputChangeOrFormSubmitEventListener(this.reRender);
-  }
-
-  componentWillUnmount() {
-    this.context.form.removeInputChangeOrFormSubmitEventListener(this.reRender);
-  }
-
-  reRender(input: Input) {
-    const fieldNames = this.props.for;
-    if (fieldNames.includes(input.name)) { // Ignore the event if it's not for us
-      this.forceUpdate();
-    }
-  }
-
-  render() {
-    // See http://stackoverflow.com/a/40699547/990356
-    const { ['for']: fieldNames, style, children, ...labelProps } = this.props;
-
-    const form = this.context.form;
-
-    // See https://github.com/twbs/bootstrap/blob/v4.0.0-alpha.6/scss/_variables.scss#L118
-    const brandDanger = '#d9534f';
-    const brandWarning = '#f0ad4e';
-    const brandSuccess = '#5cb85c';
-
-    let color: string | undefined = undefined;
-    if (FormFields.containErrors(form, ...fieldNames)) {
-      color = brandDanger;
-    }
-    else if (FormFields.containWarnings(form, ...fieldNames)) {
-      color = brandWarning;
-    }
-    else if (FormFields.areValidDirtyWithoutWarnings(form, ...fieldNames)) {
-      color = brandSuccess;
-    }
-
-    return (
-      <label style={{color}} {...labelProps}>
-        {this.props.children}
-      </label>
-    );
-  }
 }

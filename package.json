@@ -65,6 +65,18 @@
 
     "enzyme": "latest",
     "@types/enzyme": "latest",
-    "react-test-renderer": "latest"
+    "react-test-renderer": "latest",
+
+
+    "node-sass": "latest",
+    "style-loader": "latest",
+    "css-loader": "latest",
+    "sass-loader": "latest",
+    "extract-text-webpack-plugin": "latest",
+    "@types/extract-text-webpack-plugin": "latest",
+    "jquery": "latest",
+    "popper.js": "latest",
+    "ajv": "latest",
+    "bootstrap": "4.0.0-beta"
   }
 }
