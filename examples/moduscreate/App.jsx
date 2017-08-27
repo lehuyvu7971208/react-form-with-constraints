@@ -6,7 +6,7 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 
-import { FieldFeedbacks, FieldFeedback, Bootstrap4 } from '../../index';
+import { FieldFeedbacks, FieldFeedback, Bootstrap4 } from '../../src/index';
 const { FormWithConstraints, FormControlInput } = Bootstrap4;
 
 import 'file-loader?name=[path][name].[ext]!./index.html';
