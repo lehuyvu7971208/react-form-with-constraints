@@ -1,9 +1,11 @@
-import * as React from 'react';
+import React from 'react';
 import { shallow as _shallow, mount as _mount } from 'enzyme';
 
-import { FormWithConstraints, fieldWithoutFeedback, FieldFeedbacks, FieldFeedback, FieldFeedbackContext, FieldFeedbackProps, ValidateEvent } from './index';
+import { FormWithConstraints, fieldWithoutFeedback, FieldFeedback, FieldFeedbackContext, FieldFeedbackProps, ValidateFieldEvent } from './index';
 import createFieldFeedbacks from './createFieldFeedbacks';
 import InputMock from './InputMock';
+import new_FormWithConstraints from './FormWithConstraintsEnzymeFix';
+import FieldFeedbacks from './FieldFeedbacksEnzymeFix';
 
 function shallow(node: React.ReactElement<FieldFeedbackProps>, options: {context: FieldFeedbackContext}) {
   return _shallow<FieldFeedbackProps>(node, options);
@@ -13,40 +15,83 @@ function mount(node: React.ReactElement<FieldFeedbackProps>, options: {context: 
   return _mount<FieldFeedbackProps>(node, options);
 }
 
-const fieldFeedbacksKey1 = 1;
-const fieldFeedbackKey11 = 1.1;
+const initialFieldFeedbackKeyCounter = 1;
 
 let form_username_empty: FormWithConstraints;
 let fieldFeedbacks_username: FieldFeedbacks;
 
 beforeEach(() => {
-  form_username_empty = new FormWithConstraints({});
+  form_username_empty = new_FormWithConstraints({});
   form_username_empty.fieldsStore.fields = {
     username: fieldWithoutFeedback
   };
-  fieldFeedbacks_username = createFieldFeedbacks({for: 'username', stop: 'no'}, form_username_empty, fieldFeedbacksKey1, fieldFeedbackKey11);
+  fieldFeedbacks_username = createFieldFeedbacks({for: 'username', stop: 'no'}, form_username_empty, initialFieldFeedbackKeyCounter);
+});
+
+describe('constructor()', () => {
+  test('key', () => {
+    expect(fieldFeedbacks_username.key).toEqual(0);
+    expect(fieldFeedbacks_username.fieldFeedbackKeyCounter).toEqual(initialFieldFeedbackKeyCounter);
+    const wrapper = shallow(
+      <FieldFeedback when="*">message</FieldFeedback>,
+      {context: {form: form_username_empty, fieldFeedbacks: fieldFeedbacks_username}}
+    );
+    const fieldFeedback = wrapper.instance() as FieldFeedback;
+    expect(fieldFeedback.key).toEqual(0.1);
+    expect(fieldFeedbacks_username.key).toEqual(0);
+    expect(fieldFeedbacks_username.fieldFeedbackKeyCounter).toEqual(initialFieldFeedbackKeyCounter + 1);
+  });
+
+  test('when="valid"', () => {
+    shallow(
+      <FieldFeedback when="*">message</FieldFeedback>,
+      {context: {form: form_username_empty, fieldFeedbacks: fieldFeedbacks_username}}
+    );
+    // OK, not throwing
+
+    expect(() =>
+      shallow(
+        <FieldFeedback when="valid" error>message</FieldFeedback>,
+        {context: {form: form_username_empty, fieldFeedbacks: fieldFeedbacks_username}}
+      )
+    ).toThrow('Cannot have an attribute (error, warning...) with FieldFeedback when="valid"');
+
+    expect(() =>
+      shallow(
+        <FieldFeedback when="valid" warning>message</FieldFeedback>,
+        {context: {form: form_username_empty, fieldFeedbacks: fieldFeedbacks_username}}
+      )
+    ).toThrow('Cannot have an attribute (error, warning...) with FieldFeedback when="valid"');
+
+    expect(() =>
+      shallow(
+        <FieldFeedback when="valid" info>message</FieldFeedback>,
+        {context: {form: form_username_empty, fieldFeedbacks: fieldFeedbacks_username}}
+      )
+    ).toThrow('Cannot have an attribute (error, warning...) with FieldFeedback when="valid"');
+  });
 });
 
 test('componentWillMount() componentWillUnmount()', () => {
-  const addValidateEventListenerSpy = jest.spyOn(fieldFeedbacks_username, 'addValidateEventListener');
+  const addValidateFieldEventListenerSpy = jest.spyOn(fieldFeedbacks_username, 'addValidateFieldEventListener');
   const fieldsStoreAddListenerSpy = jest.spyOn(form_username_empty.fieldsStore, 'addListener');
-  const removeValidateEventListenerSpy = jest.spyOn(fieldFeedbacks_username, 'removeValidateEventListener');
+  const removeValidateFieldEventListenerSpy = jest.spyOn(fieldFeedbacks_username, 'removeValidateFieldEventListener');
   const fieldsStoreRemoveListenerSpy = jest.spyOn(form_username_empty.fieldsStore, 'removeListener');
 
   const wrapper = shallow(
     <FieldFeedback when="*">message</FieldFeedback>,
     {context: {form: form_username_empty, fieldFeedbacks: fieldFeedbacks_username}}
   );
-  expect(addValidateEventListenerSpy).toHaveBeenCalledTimes(1);
-  expect(removeValidateEventListenerSpy).toHaveBeenCalledTimes(0);
-  expect(fieldFeedbacks_username.validateEventEmitter.listeners.get(ValidateEvent)).toHaveLength(1);
+  expect(addValidateFieldEventListenerSpy).toHaveBeenCalledTimes(1);
+  expect(removeValidateFieldEventListenerSpy).toHaveBeenCalledTimes(0);
+  expect(fieldFeedbacks_username.validateFieldEventEmitter.listeners.get(ValidateFieldEvent)).toHaveLength(1);
   expect(fieldsStoreAddListenerSpy).toHaveBeenCalledTimes(1);
   expect(fieldsStoreRemoveListenerSpy).toHaveBeenCalledTimes(0);
 
   wrapper.unmount();
-  expect(addValidateEventListenerSpy).toHaveBeenCalledTimes(1);
-  expect(removeValidateEventListenerSpy).toHaveBeenCalledTimes(1);
-  expect(fieldFeedbacks_username.validateEventEmitter.listeners.get(ValidateEvent)).toEqual(undefined);
+  expect(addValidateFieldEventListenerSpy).toHaveBeenCalledTimes(1);
+  expect(removeValidateFieldEventListenerSpy).toHaveBeenCalledTimes(1);
+  expect(fieldFeedbacks_username.validateFieldEventEmitter.listeners.get(ValidateFieldEvent)).toEqual(undefined);
   expect(fieldsStoreAddListenerSpy).toHaveBeenCalledTimes(1);
   expect(fieldsStoreRemoveListenerSpy).toHaveBeenCalledTimes(1);
 });
@@ -54,24 +99,13 @@ test('componentWillMount() componentWillUnmount()', () => {
 describe('validate()', () => {
   describe('when prop', () => {
     describe('string', () => {
-      test('valid', () => {
-        shallow(
-          <FieldFeedback when="*" />,
-          {context: {form: form_username_empty, fieldFeedbacks: fieldFeedbacks_username}}
-        );
-        const input = new InputMock('username', '', {valid: true}, '');
-        fieldFeedbacks_username.emitValidateEvent(input);
-
-        expect(form_username_empty.fieldsStore.fields.username!.errors).toEqual(new Set());
-      });
-
       test('unknown', () => {
         shallow(
           <FieldFeedback when={'unknown' as any} />,
           {context: {form: form_username_empty, fieldFeedbacks: fieldFeedbacks_username}}
         );
         const input = new InputMock('username', '', {valid: false, valueMissing: true}, 'Suffering from being missing');
-        fieldFeedbacks_username.emitValidateEvent(input);
+        fieldFeedbacks_username.emitValidateFieldEvent(input);
 
         expect(form_username_empty.fieldsStore.fields.username!.errors).toEqual(new Set());
       });
@@ -82,7 +116,7 @@ describe('validate()', () => {
           {context: {form: form_username_empty, fieldFeedbacks: fieldFeedbacks_username}}
         );
         const input = new InputMock('username', '', {valid: false, valueMissing: true}, 'Suffering from being missing');
-        fieldFeedbacks_username.emitValidateEvent(input);
+        fieldFeedbacks_username.emitValidateFieldEvent(input);
 
         expect(form_username_empty.fieldsStore.fields.username!.errors).toEqual(new Set());
       });
@@ -93,9 +127,9 @@ describe('validate()', () => {
           {context: {form: form_username_empty, fieldFeedbacks: fieldFeedbacks_username}}
         );
         const input = new InputMock('username', '', {valid: false, valueMissing: true}, 'Suffering from being missing');
-        fieldFeedbacks_username.emitValidateEvent(input);
+        fieldFeedbacks_username.emitValidateFieldEvent(input);
 
-        expect(form_username_empty.fieldsStore.fields.username!.errors).toEqual(new Set([fieldFeedbackKey11]));
+        expect(form_username_empty.fieldsStore.fields.username!.errors).toEqual(new Set([0.1]));
       });
 
       test('badInput', () => {
@@ -104,9 +138,9 @@ describe('validate()', () => {
           {context: {form: form_username_empty, fieldFeedbacks: fieldFeedbacks_username}}
         );
         const input = new InputMock('username', '', {valid: false, badInput: true}, 'Suffering from bad input');
-        fieldFeedbacks_username.emitValidateEvent(input);
+        fieldFeedbacks_username.emitValidateFieldEvent(input);
 
-        expect(form_username_empty.fieldsStore.fields.username!.errors).toEqual(new Set([fieldFeedbackKey11]));
+        expect(form_username_empty.fieldsStore.fields.username!.errors).toEqual(new Set([0.1]));
       });
 
       test('patternMismatch', () => {
@@ -115,9 +149,9 @@ describe('validate()', () => {
           {context: {form: form_username_empty, fieldFeedbacks: fieldFeedbacks_username}}
         );
         const input = new InputMock('username', '', {valid: false, patternMismatch: true}, 'Suffering from a pattern mismatch');
-        fieldFeedbacks_username.emitValidateEvent(input);
+        fieldFeedbacks_username.emitValidateFieldEvent(input);
 
-        expect(form_username_empty.fieldsStore.fields.username!.errors).toEqual(new Set([fieldFeedbackKey11]));
+        expect(form_username_empty.fieldsStore.fields.username!.errors).toEqual(new Set([0.1]));
       });
 
       test('rangeOverflow', () => {
@@ -126,9 +160,9 @@ describe('validate()', () => {
           {context: {form: form_username_empty, fieldFeedbacks: fieldFeedbacks_username}}
         );
         const input = new InputMock('username', '', {valid: false, rangeOverflow: true}, 'Suffering from an overflow');
-        fieldFeedbacks_username.emitValidateEvent(input);
+        fieldFeedbacks_username.emitValidateFieldEvent(input);
 
-        expect(form_username_empty.fieldsStore.fields.username!.errors).toEqual(new Set([fieldFeedbackKey11]));
+        expect(form_username_empty.fieldsStore.fields.username!.errors).toEqual(new Set([0.1]));
       });
 
       test('rangeUnderflow', () => {
@@ -137,9 +171,9 @@ describe('validate()', () => {
           {context: {form: form_username_empty, fieldFeedbacks: fieldFeedbacks_username}}
         );
         const input = new InputMock('username', '', {valid: false, rangeUnderflow: true}, 'Suffering from an underflow');
-        fieldFeedbacks_username.emitValidateEvent(input);
+        fieldFeedbacks_username.emitValidateFieldEvent(input);
 
-        expect(form_username_empty.fieldsStore.fields.username!.errors).toEqual(new Set([fieldFeedbackKey11]));
+        expect(form_username_empty.fieldsStore.fields.username!.errors).toEqual(new Set([0.1]));
       });
 
       test('stepMismatch', () => {
@@ -148,9 +182,9 @@ describe('validate()', () => {
           {context: {form: form_username_empty, fieldFeedbacks: fieldFeedbacks_username}}
         );
         const input = new InputMock('username', '', {valid: false, stepMismatch: true}, 'Suffering from a step mismatch');
-        fieldFeedbacks_username.emitValidateEvent(input);
+        fieldFeedbacks_username.emitValidateFieldEvent(input);
 
-        expect(form_username_empty.fieldsStore.fields.username!.errors).toEqual(new Set([fieldFeedbackKey11]));
+        expect(form_username_empty.fieldsStore.fields.username!.errors).toEqual(new Set([0.1]));
       });
 
       test('tooLong', () => {
@@ -159,9 +193,9 @@ describe('validate()', () => {
           {context: {form: form_username_empty, fieldFeedbacks: fieldFeedbacks_username}}
         );
         const input = new InputMock('username', '', {valid: false, tooLong: true}, 'Suffering from being too long');
-        fieldFeedbacks_username.emitValidateEvent(input);
+        fieldFeedbacks_username.emitValidateFieldEvent(input);
 
-        expect(form_username_empty.fieldsStore.fields.username!.errors).toEqual(new Set([fieldFeedbackKey11]));
+        expect(form_username_empty.fieldsStore.fields.username!.errors).toEqual(new Set([0.1]));
       });
 
       test('tooShort', () => {
@@ -170,9 +204,9 @@ describe('validate()', () => {
           {context: {form: form_username_empty, fieldFeedbacks: fieldFeedbacks_username}}
         );
         const input = new InputMock('username', '', {valid: false, tooShort: true}, 'Suffering from being too short');
-        fieldFeedbacks_username.emitValidateEvent(input);
+        fieldFeedbacks_username.emitValidateFieldEvent(input);
 
-        expect(form_username_empty.fieldsStore.fields.username!.errors).toEqual(new Set([fieldFeedbackKey11]));
+        expect(form_username_empty.fieldsStore.fields.username!.errors).toEqual(new Set([0.1]));
       });
 
       test('typeMismatch', () => {
@@ -181,9 +215,9 @@ describe('validate()', () => {
           {context: {form: form_username_empty, fieldFeedbacks: fieldFeedbacks_username}}
         );
         const input = new InputMock('username', '', {valid: false, typeMismatch: true}, 'Suffering from bad input');
-        fieldFeedbacks_username.emitValidateEvent(input);
+        fieldFeedbacks_username.emitValidateFieldEvent(input);
 
-        expect(form_username_empty.fieldsStore.fields.username!.errors).toEqual(new Set([fieldFeedbackKey11]));
+        expect(form_username_empty.fieldsStore.fields.username!.errors).toEqual(new Set([0.1]));
       });
 
       test('valueMissing', () => {
@@ -192,9 +226,40 @@ describe('validate()', () => {
           {context: {form: form_username_empty, fieldFeedbacks: fieldFeedbacks_username}}
         );
         const input = new InputMock('username', '', {valid: false, valueMissing: true}, 'Suffering from being missing');
-        fieldFeedbacks_username.emitValidateEvent(input);
+        fieldFeedbacks_username.emitValidateFieldEvent(input);
 
-        expect(form_username_empty.fieldsStore.fields.username!.errors).toEqual(new Set([fieldFeedbackKey11]));
+        expect(form_username_empty.fieldsStore.fields.username!.errors).toEqual(new Set([0.1]));
+      });
+
+      test('valid', () => {
+        shallow(
+          <FieldFeedback when="valid">Looks good!</FieldFeedback>,
+          {context: {form: form_username_empty, fieldFeedbacks: fieldFeedbacks_username}}
+        );
+
+        let input = new InputMock('username', 'jimmy', {valid: true}, '');
+        fieldFeedbacks_username.emitValidateFieldEvent(input);
+        expect(form_username_empty.fieldsStore.fields).toEqual({
+          username: {
+            dirty: true,
+            errors: new Set(),
+            warnings: new Set(),
+            infos: new Set(),
+            validationMessage: ''
+          }
+        });
+
+        input = new InputMock('username', '', {valid: false, valueMissing: true}, 'Suffering from being missing');
+        fieldFeedbacks_username.emitValidateFieldEvent(input);
+        expect(form_username_empty.fieldsStore.fields).toEqual({
+          username: {
+            dirty: true,
+            errors: new Set(),
+            warnings: new Set(),
+            infos: new Set(),
+            validationMessage: 'Suffering from being missing'
+          }
+        });
       });
     });
 
@@ -205,7 +270,7 @@ describe('validate()', () => {
           {context: {form: form_username_empty, fieldFeedbacks: fieldFeedbacks_username}}
         );
         const input = new InputMock('username', 'length > 0', {}, '');
-        fieldFeedbacks_username.emitValidateEvent(input);
+        fieldFeedbacks_username.emitValidateFieldEvent(input);
 
         expect(form_username_empty.fieldsStore.fields.username!.errors).toEqual(new Set());
       });
@@ -216,9 +281,9 @@ describe('validate()', () => {
           {context: {form: form_username_empty, fieldFeedbacks: fieldFeedbacks_username}}
         );
         const input = new InputMock('username', '', {}, '');
-        fieldFeedbacks_username.emitValidateEvent(input);
+        fieldFeedbacks_username.emitValidateFieldEvent(input);
 
-        expect(form_username_empty.fieldsStore.fields.username!.errors).toEqual(new Set([fieldFeedbackKey11]));
+        expect(form_username_empty.fieldsStore.fields.username!.errors).toEqual(new Set([0.1]));
       });
     });
 
@@ -228,8 +293,8 @@ describe('validate()', () => {
         {context: {form: form_username_empty, fieldFeedbacks: fieldFeedbacks_username}}
       );
       const input = new InputMock('username', '', {}, '');
-      expect(() => fieldFeedbacks_username.emitValidateEvent(input)).toThrow(TypeError);
-      expect(() => fieldFeedbacks_username.emitValidateEvent(input)).toThrow("Invalid FieldFeedback 'when' type: number");
+      expect(() => fieldFeedbacks_username.emitValidateFieldEvent(input)).toThrow(TypeError);
+      expect(() => fieldFeedbacks_username.emitValidateFieldEvent(input)).toThrow("Invalid FieldFeedback 'when' type: number");
 
       expect(form_username_empty.fieldsStore.fields.username!.errors).toEqual(new Set());
     });
@@ -241,12 +306,12 @@ describe('validate()', () => {
       <FieldFeedback when="*" />,
       {context: {form: form_username_empty, fieldFeedbacks: fieldFeedbacks_username}}
     );
-    fieldFeedbacks_username.emitValidateEvent(input);
+    fieldFeedbacks_username.emitValidateFieldEvent(input);
 
     expect(form_username_empty.fieldsStore.fields).toEqual({
       username: {
         dirty: true,
-        errors: new Set([fieldFeedbackKey11]),
+        errors: new Set([0.1]),
         warnings: new Set(),
         infos: new Set(),
         validationMessage: 'Suffering from being missing'
@@ -260,12 +325,12 @@ describe('validate()', () => {
       <FieldFeedback when="*" error />,
       {context: {form: form_username_empty, fieldFeedbacks: fieldFeedbacks_username}}
     );
-    fieldFeedbacks_username.emitValidateEvent(input);
+    fieldFeedbacks_username.emitValidateFieldEvent(input);
 
     expect(form_username_empty.fieldsStore.fields).toEqual({
       username: {
         dirty: true,
-        errors: new Set([fieldFeedbackKey11]),
+        errors: new Set([0.1]),
         warnings: new Set(),
         infos: new Set(),
         validationMessage: 'Suffering from being missing'
@@ -279,13 +344,13 @@ describe('validate()', () => {
       {context: {form: form_username_empty, fieldFeedbacks: fieldFeedbacks_username}}
     );
     const input = new InputMock('username', '', {valid: false, valueMissing: true}, 'Suffering from being missing');
-    fieldFeedbacks_username.emitValidateEvent(input);
+    fieldFeedbacks_username.emitValidateFieldEvent(input);
 
     expect(form_username_empty.fieldsStore.fields).toEqual({
       username: {
         dirty: true,
         errors: new Set(),
-        warnings: new Set([fieldFeedbackKey11]),
+        warnings: new Set([0.1]),
         infos: new Set(),
         validationMessage: 'Suffering from being missing'
       }
@@ -298,14 +363,14 @@ describe('validate()', () => {
       {context: {form: form_username_empty, fieldFeedbacks: fieldFeedbacks_username}}
     );
     const input = new InputMock('username', '', {valid: false, valueMissing: true}, 'Suffering from being missing');
-    fieldFeedbacks_username.emitValidateEvent(input);
+    fieldFeedbacks_username.emitValidateFieldEvent(input);
 
     expect(form_username_empty.fieldsStore.fields).toEqual({
       username: {
         dirty: true,
         errors: new Set(),
         warnings: new Set(),
-        infos: new Set([fieldFeedbackKey11]),
+        infos: new Set([0.1]),
         validationMessage: 'Suffering from being missing'
       }
     });
@@ -314,17 +379,17 @@ describe('validate()', () => {
 
 describe('className()', () => {
   test('error matching', () => {
-    const form = new FormWithConstraints({});
+    const form = new_FormWithConstraints({});
     form.fieldsStore.fields = {
       username: {
         dirty: true,
-        errors: new Set([fieldFeedbackKey11]),
+        errors: new Set([0.1]),
         warnings: new Set(),
         infos: new Set(),
         validationMessage: ''
       }
     };
-    const fieldFeedbacks = createFieldFeedbacks({for: 'username', stop: 'no'}, form, fieldFeedbacksKey1, fieldFeedbackKey11);
+    const fieldFeedbacks = createFieldFeedbacks({for: 'username', stop: 'no'}, form, initialFieldFeedbackKeyCounter);
 
     const wrapper = shallow(
       <FieldFeedback when="*" />,
@@ -336,17 +401,17 @@ describe('className()', () => {
   });
 
   test('warning matching', () => {
-    const form = new FormWithConstraints({});
+    const form = new_FormWithConstraints({});
     form.fieldsStore.fields = {
       username: {
         dirty: true,
         errors: new Set(),
-        warnings: new Set([fieldFeedbackKey11]),
+        warnings: new Set([0.1]),
         infos: new Set(),
         validationMessage: ''
       }
     };
-    const fieldFeedbacks = createFieldFeedbacks({for: 'username', stop: 'no'}, form, fieldFeedbacksKey1, fieldFeedbackKey11);
+    const fieldFeedbacks = createFieldFeedbacks({for: 'username', stop: 'no'}, form, initialFieldFeedbackKeyCounter);
 
     const wrapper = shallow(
       <FieldFeedback when="*" />,
@@ -358,17 +423,17 @@ describe('className()', () => {
   });
 
   test('info matching', () => {
-    const form = new FormWithConstraints({});
+    const form = new_FormWithConstraints({});
     form.fieldsStore.fields = {
       username: {
         dirty: true,
         errors: new Set(),
         warnings: new Set(),
-        infos: new Set([fieldFeedbackKey11]),
+        infos: new Set([0.1]),
         validationMessage: ''
       }
     };
-    const fieldFeedbacks = createFieldFeedbacks({for: 'username', stop: 'no'}, form, fieldFeedbacksKey1, fieldFeedbackKey11);
+    const fieldFeedbacks = createFieldFeedbacks({for: 'username', stop: 'no'}, form, initialFieldFeedbackKeyCounter);
 
     const wrapper = shallow(
       <FieldFeedback when="*" />,
@@ -380,7 +445,7 @@ describe('className()', () => {
   });
 
   test('not matching', () => {
-    const form = new FormWithConstraints({});
+    const form = new_FormWithConstraints({});
     form.fieldsStore.fields = {
       username: {
         dirty: false,
@@ -390,7 +455,7 @@ describe('className()', () => {
         validationMessage: ''
       }
     };
-    const fieldFeedbacks = createFieldFeedbacks({for: 'username', stop: 'no'}, form, fieldFeedbacksKey1, fieldFeedbackKey11);
+    const fieldFeedbacks = createFieldFeedbacks({for: 'username', stop: 'no'}, form, initialFieldFeedbackKeyCounter);
 
     const wrapper = shallow(
       <FieldFeedback when="*" />,
@@ -404,70 +469,70 @@ describe('className()', () => {
 
 describe('render()', () => {
   test('with children', () => {
-    const form = new FormWithConstraints({});
+    const form = new_FormWithConstraints({});
     form.fieldsStore.fields = {
       username: {
         dirty: true,
-        errors: new Set([fieldFeedbackKey11]),
+        errors: new Set([0.1]),
         warnings: new Set(),
         infos: new Set(),
         validationMessage: 'Suffering from being missing'
       }
     };
-    const fieldFeedbacks = createFieldFeedbacks({for: 'username', stop: 'no'}, form, fieldFeedbacksKey1, fieldFeedbackKey11);
+    const fieldFeedbacks = createFieldFeedbacks({for: 'username', stop: 'no'}, form, initialFieldFeedbackKeyCounter);
 
     const fieldFeedback = shallow(
       <FieldFeedback when="*">message</FieldFeedback>,
       {context: {form, fieldFeedbacks}}
     );
 
-    expect(fieldFeedback.html()).toEqual('<div class="error">message</div>');
+    expect(fieldFeedback.html()).toEqual('<div data-field-feedback-key="0.1" class="error">message</div>');
   });
 
   test('without children', () => {
-    const form = new FormWithConstraints({});
+    const form = new_FormWithConstraints({});
     form.fieldsStore.fields = {
       username: {
         dirty: true,
-        errors: new Set([fieldFeedbackKey11]),
+        errors: new Set([0.1]),
         warnings: new Set(),
         infos: new Set(),
         validationMessage: 'Suffering from being missing'
       }
     };
-    const fieldFeedbacks = createFieldFeedbacks({for: 'username', stop: 'no'}, form, fieldFeedbacksKey1, fieldFeedbackKey11);
+    const fieldFeedbacks = createFieldFeedbacks({for: 'username', stop: 'no'}, form, initialFieldFeedbackKeyCounter);
 
     const fieldFeedback = shallow(
       <FieldFeedback when="*" />,
       {context: {form, fieldFeedbacks}}
     );
 
-    expect(fieldFeedback.html()).toEqual('<div class="error">Suffering from being missing</div>');
+    expect(fieldFeedback.html()).toEqual('<div data-field-feedback-key="0.1" class="error">Suffering from being missing</div>');
   });
 
   test('with already existing class', () => {
-    const form = new FormWithConstraints({});
+    const form = new_FormWithConstraints({});
     form.fieldsStore.fields = {
       username: {
         dirty: true,
-        errors: new Set([fieldFeedbackKey11]),
+        errors: new Set([0.1]),
         warnings: new Set(),
         infos: new Set(),
         validationMessage: ''
       }
     };
-    const fieldFeedbacks = createFieldFeedbacks({for: 'username', stop: 'no'}, form, fieldFeedbacksKey1, fieldFeedbackKey11);
+    const fieldFeedbacks = createFieldFeedbacks({for: 'username', stop: 'no'}, form, initialFieldFeedbackKeyCounter);
 
     const fieldFeedback = shallow(
       <FieldFeedback when="*" className="alreadyExistingClassName" />,
       {context: {form, fieldFeedbacks}}
     );
 
-    expect(fieldFeedback.html()).toEqual('<div class="alreadyExistingClassName error"></div>');
+    expect(fieldFeedback.html()).toEqual('<div data-field-feedback-key="0.1" class="alreadyExistingClassName error"></div>');
   });
 
   test('with already existing class - no error', () => {
-    const form = new FormWithConstraints({});
+    const form = new_FormWithConstraints({});
     form.fieldsStore.fields = {
       username: {
         dirty: true,
@@ -477,7 +542,7 @@ describe('render()', () => {
         validationMessage: ''
       }
     };
-    const fieldFeedbacks = createFieldFeedbacks({for: 'username', stop: 'no'}, form, fieldFeedbacksKey1, fieldFeedbackKey11);
+    const fieldFeedbacks = createFieldFeedbacks({for: 'username', stop: 'no'}, form, initialFieldFeedbackKeyCounter);
 
     const fieldFeedback = shallow(
       <FieldFeedback when="*" className="alreadyExistingClassName" />,
@@ -488,24 +553,36 @@ describe('render()', () => {
   });
 
   test('with divProps', () => {
-    const form = new FormWithConstraints({});
+    const form = new_FormWithConstraints({});
     form.fieldsStore.fields = {
       username: {
         dirty: true,
-        errors: new Set([fieldFeedbackKey11]),
+        errors: new Set([0.1]),
         warnings: new Set(),
         infos: new Set(),
         validationMessage: ''
       }
     };
-    const fieldFeedbacks = createFieldFeedbacks({for: 'username', stop: 'no'}, form, fieldFeedbacksKey1, fieldFeedbackKey11);
+    const fieldFeedbacks = createFieldFeedbacks({for: 'username', stop: 'no'}, form, initialFieldFeedbackKeyCounter);
 
     const fieldFeedback = shallow(
       <FieldFeedback when="*" style={{color: 'yellow'}} />,
       {context: {form, fieldFeedbacks}}
     );
 
-    expect(fieldFeedback.html()).toEqual('<div style="color:yellow" class="error"></div>');
+    expect(fieldFeedback.html()).toEqual('<div data-field-feedback-key="0.1" style="color:yellow" class="error"></div>');
+  });
+
+  test('when="valid"', async () => {
+    const wrapper = mount(
+      <FieldFeedback when="valid">Looks good!</FieldFeedback>,
+      {context: {form: form_username_empty, fieldFeedbacks: fieldFeedbacks_username}}
+    );
+
+    const fieldValidationsPromise: any = Promise.resolve({isValid: () => true});
+    form_username_empty.emitFieldValidatedEvent({name: 'username'} as any, fieldValidationsPromise);
+    await fieldValidationsPromise;
+    expect(wrapper.html()).toEqual('<div class="valid">Looks good!</div>');
   });
 });
 
@@ -516,19 +593,19 @@ describe('reRender()', () => {
       {context: {form: form_username_empty, fieldFeedbacks: fieldFeedbacks_username}}
     );
     const input = new InputMock('username', '', {valid: false, valueMissing: true}, 'Suffering from being missing');
-    fieldFeedbacks_username.emitValidateEvent(input);
+    fieldFeedbacks_username.emitValidateFieldEvent(input);
 
     expect(form_username_empty.fieldsStore.fields).toEqual({
       username: {
         dirty: true,
-        errors: new Set([fieldFeedbackKey11]),
+        errors: new Set([0.1]),
         warnings: new Set(),
         infos: new Set(),
         validationMessage: 'Suffering from being missing'
       }
     });
     expect(wrapper.html()).toEqual(
-      '<div class="error">Suffering from being missing</div>'
+      '<div data-field-feedback-key="0.1" class="error">Suffering from being missing</div>'
     );
 
     form_username_empty.fieldsStore.updateField('username', fieldWithoutFeedback);
@@ -541,19 +618,19 @@ describe('reRender()', () => {
       {context: {form: form_username_empty, fieldFeedbacks: fieldFeedbacks_username}}
     );
     const input = new InputMock('username', '', {valid: false, valueMissing: true}, 'Suffering from being missing');
-    fieldFeedbacks_username.emitValidateEvent(input);
+    fieldFeedbacks_username.emitValidateFieldEvent(input);
 
     expect(form_username_empty.fieldsStore.fields).toEqual({
       username: {
         dirty: true,
-        errors: new Set([fieldFeedbackKey11]),
+        errors: new Set([0.1]),
         warnings: new Set(),
         infos: new Set(),
         validationMessage: 'Suffering from being missing'
       }
     });
     expect(wrapper.html()).toEqual(
-      '<div class="error">Suffering from being missing</div>'
+      '<div data-field-feedback-key="0.1" class="error">Suffering from being missing</div>'
     );
 
     const assert = console.assert;
@@ -567,7 +644,7 @@ describe('reRender()', () => {
     console.assert = assert;
 
     expect(wrapper.html()).toEqual(
-      '<div class="error">Suffering from being missing</div>'
+      '<div data-field-feedback-key="0.1" class="error">Suffering from being missing</div>'
     );
   });
 });

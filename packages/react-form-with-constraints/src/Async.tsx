@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 import { FormWithConstraintsChildContext } from './FormWithConstraints';
 import { FieldFeedbacksChildContext, ListenerReturnType } from './FieldFeedbacks';
-import { withValidateEventEmitter } from './withValidateEventEmitter';
+import withValidateFieldEventEmitter from './withValidateFieldEventEmitter';
 // @ts-ignore
 // TS6133: 'FieldFeedbackValidation' is declared but its value is never read.
 // FIXME See https://github.com/Microsoft/TypeScript/issues/9944#issuecomment-309903027
@@ -47,7 +47,7 @@ export type AsyncComponentType = AsyncComponent<any>;
 // See How to render promises in React https://gist.github.com/hex13/6d46f8b54631871ea8bf87576b635c49
 // Cannot be inside a separated npm package since FieldFeedback needs to attach itself to Async
 export class AsyncComponent<T = any> extends React.Component<AsyncProps<T>, AsyncState<T>> {}
-export class Async<T> extends withValidateEventEmitter<ListenerReturnType, typeof AsyncComponent>(AsyncComponent)
+export class Async<T> extends withValidateFieldEventEmitter<ListenerReturnType, typeof AsyncComponent>(AsyncComponent)
                       implements React.ChildContextProvider<AsyncChildContext> {
   static contextTypes: React.ValidationMap<AsyncContext> = {
     form: PropTypes.object.isRequired,
@@ -75,11 +75,11 @@ export class Async<T> extends withValidateEventEmitter<ListenerReturnType, typeo
   }
 
   componentWillMount() {
-    this.context.form.addValidateEventListener(this.validate);
+    this.context.form.addValidateFieldEventListener(this.validate);
   }
 
   componentWillUnmount() {
-    this.context.form.removeValidateEventListener(this.validate);
+    this.context.form.removeValidateFieldEventListener(this.validate);
   }
 
   validate(input: Input) {
@@ -114,7 +114,7 @@ export class Async<T> extends withValidateEventEmitter<ListenerReturnType, typeo
           // See Promises: Execute something regardless of resolve/reject? https://stackoverflow.com/q/38830314
           // Instead of componentDidUpdate()
           // The Promise returned is Promise<FieldFeedbackValidation[]> (Promise<{key: number, isValid: boolean}[]>)
-          .then(() => this.emitValidateEvent(input));
+          .then(() => this.emitValidateFieldEvent(input));
       }
     }
 

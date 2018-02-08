@@ -7,8 +7,10 @@ import { AsyncChildContext } from './Async';
 import Input from './Input';
 import FieldFeedbackValidation from './FieldFeedbackValidation';
 import { FieldEvent } from './FieldsStore';
+import { FieldFeedbackWhenValid } from './FieldFeedbackWhenValid';
 
 export type WhenString =
+  | 'valid'
   | '*'
   | 'badInput'        // input type="number"
   | 'patternMismatch' // pattern attribute
@@ -51,13 +53,19 @@ export class FieldFeedback extends React.Component<FieldFeedbackProps> {
 
     this.key = context.fieldFeedbacks.addFieldFeedback();
 
+    // Special case for when="valid"
+    const { error, warning, info, when } = props;
+    if (when === 'valid' && (error || warning || info)) {
+      throw new Error('Cannot have an attribute (error, warning...) with FieldFeedback when="valid"');
+    }
+
     this.validate = this.validate.bind(this);
     this.reRender = this.reRender.bind(this);
   }
 
   componentWillMount() {
-    if (this.context.async) this.context.async.addValidateEventListener(this.validate);
-    else this.context.fieldFeedbacks.addValidateEventListener(this.validate);
+    if (this.context.async) this.context.async.addValidateFieldEventListener(this.validate);
+    else this.context.fieldFeedbacks.addValidateFieldEventListener(this.validate);
 
     this.context.form.fieldsStore.addListener(FieldEvent.Updated, this.reRender);
   }
@@ -66,8 +74,8 @@ export class FieldFeedback extends React.Component<FieldFeedbackProps> {
     // FieldFeedbacks.componentWillUnmount() is called before (instead of after) its children FieldFeedback.componentWillUnmount()
     this.context.fieldFeedbacks.removeFieldFeedback(this.key);
 
-    if (this.context.async) this.context.async.removeValidateEventListener(this.validate);
-    else this.context.fieldFeedbacks.removeValidateEventListener(this.validate);
+    if (this.context.async) this.context.async.removeValidateFieldEventListener(this.validate);
+    else this.context.fieldFeedbacks.removeValidateFieldEventListener(this.validate);
 
     this.context.form.fieldsStore.removeListener(FieldEvent.Updated, this.reRender);
   }
@@ -89,31 +97,32 @@ export class FieldFeedback extends React.Component<FieldFeedbackProps> {
       let show = false;
 
       if (typeof when === 'function') {
-        const constraintViolation = when(input.value);
-        if (constraintViolation) {
-          show = true;
-        }
+        show = when(input.value);
       }
 
       else if (typeof when === 'string') {
-        const validity = input.validity;
+        if (when === 'valid') {
+          show = true;
+        } else {
+          const validity = input.validity;
 
-        if (!validity.valid) {
-          if (when === '*') {
-            show = true;
-          }
-          else if (
-            validity.badInput && when === 'badInput' ||
-            validity.patternMismatch && when === 'patternMismatch' ||
-            validity.rangeOverflow && when === 'rangeOverflow' ||
-            validity.rangeUnderflow && when === 'rangeUnderflow' ||
-            validity.stepMismatch && when === 'stepMismatch' ||
-            validity.tooLong && when === 'tooLong' ||
-            validity.tooShort && when === 'tooShort' ||
-            validity.typeMismatch && when === 'typeMismatch' ||
-            validity.valueMissing && when === 'valueMissing') {
+          if (!validity.valid) {
+            if (when === '*') {
+              show = true;
+            }
+            else if (
+              validity.badInput && when === 'badInput' ||
+              validity.patternMismatch && when === 'patternMismatch' ||
+              validity.rangeOverflow && when === 'rangeOverflow' ||
+              validity.rangeUnderflow && when === 'rangeUnderflow' ||
+              validity.stepMismatch && when === 'stepMismatch' ||
+              validity.tooLong && when === 'tooLong' ||
+              validity.tooShort && when === 'tooShort' ||
+              validity.typeMismatch && when === 'typeMismatch' ||
+              validity.valueMissing && when === 'valueMissing') {
 
-            show = true;
+              show = true;
+            }
           }
         }
       }
@@ -122,9 +131,9 @@ export class FieldFeedback extends React.Component<FieldFeedbackProps> {
         throw new TypeError(`Invalid FieldFeedback 'when' type: ${typeof when}`);
       }
 
-      this.updateFieldsStore(input, show);
+      const invalidatesField = this.updateFieldsStore(input, show);
 
-      fieldFeedbackValidation.isValid = this.isValid();
+      fieldFeedbackValidation.isValid = !invalidatesField;
     }
 
     return fieldFeedbackValidation;
@@ -132,8 +141,10 @@ export class FieldFeedback extends React.Component<FieldFeedbackProps> {
 
   // Update the Fields structure
   updateFieldsStore(input: Input, show: boolean) {
-    const { warning, info } = this.props;
+    const { warning, info, when } = this.props;
     const fieldName = this.context.fieldFeedbacks.props.for;
+
+    let invalidatesField = false;
 
     const field = this.context.form.fieldsStore.cloneField(fieldName);
     field.dirty = true;
@@ -142,21 +153,19 @@ export class FieldFeedback extends React.Component<FieldFeedbackProps> {
       // No need to "append if not already there": Set ignores duplicates
       if (warning) field.warnings.add(this.key);
       else if (info) field.infos.add(this.key);
-      else field.errors.add(this.key); // Feedback type is error if nothing is specified
+      else if (when === 'valid') { /* Do nothing */ }
+      else {
+        field.errors.add(this.key); // Feedback type is error if nothing is specified
+        invalidatesField = true;
+      }
     }
     this.context.form.fieldsStore.updateField(fieldName, field);
-  }
 
-  isValid() {
-    const { fieldFeedbacks } = this.context;
-    const { for: fieldName } = fieldFeedbacks.props;
-
-    const field = this.context.form.fieldsStore.getFieldFor(fieldName, fieldFeedbacks.key);
-    return !field.errors.has(this.key);
+    return invalidatesField;
   }
 
   className() {
-    const { fieldFeedbacks } = this.context;
+    const { form, fieldFeedbacks } = this.context;
     const { for: fieldName } = fieldFeedbacks.props;
 
     // Retrieve errors/warnings/infos only related to the parent FieldFeedbacks
@@ -164,9 +173,9 @@ export class FieldFeedback extends React.Component<FieldFeedbackProps> {
 
     let className: string | undefined;
 
-    if (errors.has(this.key)) className = 'error';
-    else if (warnings.has(this.key)) className = 'warning';
-    else if (infos.has(this.key)) className = 'info';
+    if (errors.has(this.key)) className = form.props.fieldFeedbackClassNames!.error;
+    else if (warnings.has(this.key)) className = form.props.fieldFeedbackClassNames!.warning;
+    else if (infos.has(this.key)) className = form.props.fieldFeedbackClassNames!.info;
 
     return className;
   }
@@ -184,6 +193,11 @@ export class FieldFeedback extends React.Component<FieldFeedbackProps> {
     const { for: fieldName } = fieldFeedbacks.props;
     const { validationMessage } = form.fieldsStore.getFieldFor(fieldName, fieldFeedbacks.key);
 
+    // Special case for when="valid"
+    if (when === 'valid') {
+      return <FieldFeedbackWhenValid>{children}</FieldFeedbackWhenValid>;
+    }
+
     let classes = this.className();
 
     let feedback = null;
@@ -192,6 +206,6 @@ export class FieldFeedback extends React.Component<FieldFeedbackProps> {
       feedback = children !== undefined ? children : validationMessage;
     }
 
-    return feedback !== null ? <div {...divProps} className={classes}>{feedback}</div> : null;
+    return feedback !== null ? <div data-field-feedback-key={this.key} {...divProps} className={classes}>{feedback}</div> : null;
   }
 }

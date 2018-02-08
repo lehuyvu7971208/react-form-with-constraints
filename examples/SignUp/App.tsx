@@ -58,8 +58,8 @@ interface State {
   submitButtonDisabled: boolean;
 }
 
-class Form extends React.Component<Props, State> {
-  formWithConstraints: FormWithConstraints | null | undefined;
+class SignUp extends React.Component<Props, State> {
+  form: FormWithConstraints | null | undefined;
   passwordInput: HTMLInputElement | null | undefined;
 
   constructor(props: Props) {
@@ -128,8 +128,8 @@ class Form extends React.Component<Props, State> {
   }
 
   async validateFields(target: Input) {
-    await this.formWithConstraints!.validateFields(target);
-    this.setState({submitButtonDisabled: !this.formWithConstraints!.isValid()});
+    await this.form!.validateFields(target);
+    this.setState({submitButtonDisabled: !this.form!.isValid()});
   }
 
   handleHasWebsiteChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -146,8 +146,8 @@ class Form extends React.Component<Props, State> {
   async handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    await this.formWithConstraints!.validateForm();
-    const formIsValid = this.formWithConstraints!.isValid();
+    await this.form!.validateForm();
+    const formIsValid = this.form!.isValid();
     this.setState({submitButtonDisabled: !formIsValid});
     if (formIsValid) {
       alert(`Valid form\n\nthis.state =\n${JSON.stringify(this.state, null, 2)}`);
@@ -156,7 +156,7 @@ class Form extends React.Component<Props, State> {
 
   handleReset() {
     this.setState(this.getInitialState());
-    this.formWithConstraints!.reset();
+    this.form!.reset();
   }
 
   render() {
@@ -202,9 +202,9 @@ class Form extends React.Component<Props, State> {
           </select>
         </label>
 
-        <br/><br/>
+        <br /><br />
 
-        <FormWithConstraints ref={formWithConstraints => this.formWithConstraints = formWithConstraints}
+        <FormWithConstraints ref={formWithConstraints => this.form = formWithConstraints}
                              onSubmit={this.handleSubmit} noValidate>
           <div>
             <label htmlFor="first-name">{t('First Name')}</label>
@@ -214,6 +214,7 @@ class Form extends React.Component<Props, State> {
             <FieldFeedbacks for="firstName">
               <FieldFeedback when="tooShort">{t('Too short')}</FieldFeedback>
               <FieldFeedback when="*" />
+              <FieldFeedback when="valid">{t('Looks good!')}</FieldFeedback>
             </FieldFeedbacks>
           </div>
 
@@ -225,6 +226,7 @@ class Form extends React.Component<Props, State> {
             <FieldFeedbacks for="lastName">
               <FieldFeedback when="tooShort">{t('Too short')}</FieldFeedback>
               <FieldFeedback when="*" />
+              <FieldFeedback when="valid">{t('Looks good!')}</FieldFeedback>
             </FieldFeedbacks>
           </div>
 
@@ -243,6 +245,7 @@ class Form extends React.Component<Props, State> {
                   <FieldFeedback>{t('Username already taken, choose another')}</FieldFeedback>
                 }
               />
+              <FieldFeedback when="valid">{t('Looks good!')}</FieldFeedback>
             </FieldFeedbacks>
           </div>
 
@@ -254,6 +257,7 @@ class Form extends React.Component<Props, State> {
             <FieldFeedbacks for="email">
               <FieldFeedback when="tooShort">{t('Too short')}</FieldFeedback>
               <FieldFeedback when="*" />
+              <FieldFeedback when="valid">{t('Looks good!')}</FieldFeedback>
             </FieldFeedbacks>
           </div>
 
@@ -284,6 +288,7 @@ class Form extends React.Component<Props, State> {
               <FieldFeedback when="*" />
               <FieldFeedback when={value => Number(value) < 18}>{t('Sorry, you must be at least 18 years old')}</FieldFeedback>
               <FieldFeedback when={value => Number(value) < 19} warning>{t('Hmm, you seem a bit young...')}</FieldFeedback>
+              <FieldFeedback when="valid">{t('Looks good!')}</FieldFeedback>
             </FieldFeedbacks>
           </div>
 
@@ -295,6 +300,7 @@ class Form extends React.Component<Props, State> {
             <FieldFeedbacks for="phone">
               <FieldFeedback when="*" />
               <FieldFeedback when={value => !/^\d{10}$/.test(value)}>{t('Invalid phone number, must be 10 digits')}</FieldFeedback>
+              <FieldFeedback when="valid">{t('Looks good!')}</FieldFeedback>
             </FieldFeedbacks>
           </div>
 
@@ -311,6 +317,7 @@ class Form extends React.Component<Props, State> {
             </label>
             <FieldFeedbacks for="favoriteColor">
               <FieldFeedback when="*" />
+              <FieldFeedback when="valid">{t('Looks good!')}</FieldFeedback>
             </FieldFeedbacks>
           </div>
 
@@ -335,7 +342,7 @@ class Form extends React.Component<Props, State> {
           <div>
             <label htmlFor="notes">{t('Notes')}</label>
             <textarea name="notes" id="notes"
-                       value={notes} onChange={this.handleChange} />
+                      value={notes} onChange={this.handleChange} />
           </div>
 
           <div>
@@ -354,6 +361,7 @@ class Form extends React.Component<Props, State> {
                      required minLength={3} />
               <FieldFeedbacks for="website">
                 <FieldFeedback when="*" />
+                <FieldFeedback when="valid">{t('Looks good!')}</FieldFeedback>
               </FieldFeedbacks>
             </div>
           }
@@ -371,6 +379,7 @@ class Form extends React.Component<Props, State> {
               <FieldFeedback when={value => !/[a-z]/.test(value)} warning>{t('Should contain small letters')}</FieldFeedback>
               <FieldFeedback when={value => !/[A-Z]/.test(value)} warning>{t('Should contain capital letters')}</FieldFeedback>
               <FieldFeedback when={value => !/\W/.test(value)} warning>{t('Should contain special characters')}</FieldFeedback>
+              <FieldFeedback when="valid">{t('Looks good!')}</FieldFeedback>
             </FieldFeedbacks>
           </div>
 
@@ -397,5 +406,5 @@ class Form extends React.Component<Props, State> {
   }
 }
 
-const FormTranslated = translate()(Form);
-ReactDOM.render(<FormTranslated />, document.getElementById('app'));
+const SignUpTranslated = translate()(SignUp);
+ReactDOM.render(<SignUpTranslated />, document.getElementById('app'));

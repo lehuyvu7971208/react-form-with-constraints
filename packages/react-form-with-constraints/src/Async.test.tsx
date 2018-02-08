@@ -1,10 +1,12 @@
 import React from 'react';
 import { shallow as _shallow, mount as _mount } from 'enzyme';
 
-import { FormWithConstraints, Async, AsyncProps, AsyncContext, Status, FieldFeedback, FieldFeedbacks, FieldFeedbacksContext, ValidateEvent } from './index';
+import { FormWithConstraints, Async, AsyncProps, AsyncContext, Status, FieldFeedback, FieldFeedbacksContext, ValidateFieldEvent } from './index';
 import createFieldFeedbacks from './createFieldFeedbacks';
 import checkUsernameAvailability from './checkUsernameAvailability';
 import InputMock from './InputMock';
+import new_FormWithConstraints from './FormWithConstraintsEnzymeFix';
+import FieldFeedbacks from './FieldFeedbacksEnzymeFix';
 
 function shallow(node: React.ReactElement<AsyncProps<any>>, options: {context: AsyncContext}) {
   return _shallow<AsyncProps<any>>(node, options);
@@ -17,13 +19,12 @@ function mount(node: React.ReactElement<FieldFeedbacks>, options: {context: Fiel
 let form: FormWithConstraints;
 
 function createFieldFeedbacks_username() {
-  const fieldFeedbacksKey1 = 1;
-  const fieldFeedbackKey11 = 1.1;
-  return createFieldFeedbacks({for: 'username'}, form, fieldFeedbacksKey1, fieldFeedbackKey11);
+  const initialFieldFeedbackKeyCounter = 1;
+  return createFieldFeedbacks({for: 'username'}, form, initialFieldFeedbackKeyCounter);
 }
 
 beforeEach(() => {
-  form = new FormWithConstraints({});
+  form = new_FormWithConstraints({});
 });
 
 test('constructor()', () => {
@@ -36,33 +37,33 @@ test('constructor()', () => {
 });
 
 test('componentWillMount() componentWillUnmount()', () => {
-  const addValidateEventListenerSpy = jest.spyOn(form, 'addValidateEventListener');
-  const removeValidateEventListenerSpy = jest.spyOn(form, 'removeValidateEventListener');
+  const addValidateFieldEventListenerSpy = jest.spyOn(form, 'addValidateFieldEventListener');
+  const removeValidateFieldEventListenerSpy = jest.spyOn(form, 'removeValidateFieldEventListener');
 
   const wrapper = shallow(
     <Async promise={checkUsernameAvailability} />,
     {context: {form, fieldFeedbacks: createFieldFeedbacks_username()}}
   );
-  expect(addValidateEventListenerSpy).toHaveBeenCalledTimes(1);
-  expect(removeValidateEventListenerSpy).toHaveBeenCalledTimes(0);
-  expect(form.validateEventEmitter.listeners.get(ValidateEvent)).toHaveLength(1);
+  expect(addValidateFieldEventListenerSpy).toHaveBeenCalledTimes(1);
+  expect(removeValidateFieldEventListenerSpy).toHaveBeenCalledTimes(0);
+  expect(form.validateFieldEventEmitter.listeners.get(ValidateFieldEvent)).toHaveLength(1);
 
   wrapper.unmount();
-  expect(addValidateEventListenerSpy).toHaveBeenCalledTimes(1);
-  expect(removeValidateEventListenerSpy).toHaveBeenCalledTimes(1);
-  expect(form.validateEventEmitter.listeners.get(ValidateEvent)).toEqual(undefined);
+  expect(addValidateFieldEventListenerSpy).toHaveBeenCalledTimes(1);
+  expect(removeValidateFieldEventListenerSpy).toHaveBeenCalledTimes(1);
+  expect(form.validateFieldEventEmitter.listeners.get(ValidateFieldEvent)).toEqual(undefined);
 });
 
 describe('validate()', () => {
-  test('known input name - emitValidateEvent', async () => {
+  test('known input name - emitValidateFieldEvent', async () => {
     const async = shallow(
       <Async promise={checkUsernameAvailability} />,
       {context: {form, fieldFeedbacks: createFieldFeedbacks_username()}}
     ).instance() as Async<boolean>;
 
-    const emitValidateEventSpy = jest.spyOn(async, 'emitValidateEvent');
+    const emitValidateFieldEventSpy = jest.spyOn(async, 'emitValidateFieldEvent');
 
-    expect(emitValidateEventSpy).toHaveBeenCalledTimes(0);
+    expect(emitValidateFieldEventSpy).toHaveBeenCalledTimes(0);
     const input = new InputMock('username', 'jimmy', {valid: true}, '');
     const fieldFeedbackValidations = await form.validateFields(input);
     expect(fieldFeedbackValidations).toEqual([{
@@ -70,19 +71,19 @@ describe('validate()', () => {
       isValid: expect.any(Function),
       fieldFeedbackValidations: []
     }]);
-    expect(emitValidateEventSpy).toHaveBeenCalledTimes(1);
-    expect(emitValidateEventSpy).toHaveBeenLastCalledWith(input);
+    expect(emitValidateFieldEventSpy).toHaveBeenCalledTimes(1);
+    expect(emitValidateFieldEventSpy).toHaveBeenLastCalledWith(input);
   });
 
-  test('unknown input name - emitValidateEvent', async () => {
+  test('unknown input name - emitValidateFieldEvent', async () => {
     const async = shallow(
       <Async promise={checkUsernameAvailability} />,
       {context: {form, fieldFeedbacks: createFieldFeedbacks_username()}}
     ).instance() as Async<boolean>;
 
-    const emitValidateEventSpy = jest.spyOn(async, 'emitValidateEvent');
+    const emitValidateFieldEventSpy = jest.spyOn(async, 'emitValidateFieldEvent');
 
-    expect(emitValidateEventSpy).toHaveBeenCalledTimes(0);
+    expect(emitValidateFieldEventSpy).toHaveBeenCalledTimes(0);
     const input = new InputMock('unknown', '', {valid: false, valueMissing: true}, 'Suffering from being missing');
     const fieldFeedbackValidations = await form.validateFields(input);
     expect(fieldFeedbackValidations).toEqual([{
@@ -90,7 +91,7 @@ describe('validate()', () => {
       isValid: expect.any(Function),
       fieldFeedbackValidations: []
     }]);
-    expect(emitValidateEventSpy).toHaveBeenCalledTimes(0);
+    expect(emitValidateFieldEventSpy).toHaveBeenCalledTimes(0);
   });
 });
 
@@ -125,7 +126,7 @@ describe('render()', () => {
       fieldFeedbackValidations: [{key: 0.0, isValid: true}]
     }]);
     wrapper.update();
-    expect(wrapper.html()).toEqual(`<div><div class="info">Username 'jimmy' available</div></div>`);
+    expect(wrapper.html()).toEqual(`<div><div data-field-feedback-key="0" class="info">Username 'jimmy' available</div></div>`);
 
     input.value = 'john';
     fieldFeedbackValidationsPromise = form.validateFields(input);
@@ -139,7 +140,7 @@ describe('render()', () => {
       fieldFeedbackValidations: [{key: 0.1, isValid: false}]
     }]);
     wrapper.update();
-    expect(wrapper.html()).toEqual(`<div><div class="error">Username 'john' already taken, choose another</div></div>`);
+    expect(wrapper.html()).toEqual(`<div><div data-field-feedback-key="0.1" class="error">Username 'john' already taken, choose another</div></div>`);
   });
 
   test('catch()', async () => {
@@ -169,7 +170,7 @@ describe('render()', () => {
       fieldFeedbackValidations: [{key: 0.0, isValid: false}]
     }]);
     wrapper.update();
-    expect(wrapper.html()).toEqual(`<div><div class="error">Something wrong with username 'error'</div></div>`);
+    expect(wrapper.html()).toEqual(`<div><div data-field-feedback-key="0" class="error">Something wrong with username 'error'</div></div>`);
   });
 
   test('no catch()', async () => {

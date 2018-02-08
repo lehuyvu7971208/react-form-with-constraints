@@ -252,15 +252,13 @@ test('getFieldFor()', () => {
   });
 });
 
-test('contain*()', () => {
+test('has*For()', () => {
   const store = new FieldsStore();
   store.addField('username');
   store.updateField('username', fieldWithoutFeedback);
-  store.addField('password');
-  store.updateField('password', fieldWithoutFeedback);
-  expect(store.hasErrors('username', 'password')).toEqual(false);
-  expect(store.hasWarnings('username', 'password')).toEqual(false);
-  expect(store.hasInfos('username', 'password')).toEqual(false);
+  expect(store.hasErrorsFor('username')).toEqual(false);
+  expect(store.hasWarningsFor('username')).toEqual(false);
+  expect(store.hasInfosFor('username')).toEqual(false);
 
   store.updateField('username', {
     dirty: true,
@@ -269,16 +267,9 @@ test('contain*()', () => {
     infos: new Set(),
     validationMessage: 'Suffering from being missing'
   });
-  store.updateField('password', {
-    dirty: true,
-    errors: new Set([1.1]),
-    warnings: new Set(),
-    infos: new Set(),
-    validationMessage: 'Suffering from being missing'
-  });
-  expect(store.hasErrors('username', 'password')).toEqual(true);
-  expect(store.hasWarnings('username', 'password')).toEqual(false);
-  expect(store.hasInfos('username', 'password')).toEqual(false);
+  expect(store.hasErrorsFor('username')).toEqual(true);
+  expect(store.hasWarningsFor('username')).toEqual(false);
+  expect(store.hasInfosFor('username')).toEqual(false);
 
   store.updateField('username', {
     dirty: true,
@@ -287,16 +278,10 @@ test('contain*()', () => {
     infos: new Set(),
     validationMessage: 'Suffering from being missing'
   });
-  store.updateField('password', {
-    dirty: true,
-    errors: new Set(),
-    warnings: new Set([1.1]),
-    infos: new Set(),
-    validationMessage: 'Suffering from being missing'
-  });
-  expect(store.hasErrors('username', 'password')).toEqual(false);
-  expect(store.hasWarnings('username', 'password')).toEqual(true);
-  expect(store.hasInfos('username', 'password')).toEqual(false);
+
+  expect(store.hasErrorsFor('username')).toEqual(false);
+  expect(store.hasWarningsFor('username')).toEqual(true);
+  expect(store.hasInfosFor('username')).toEqual(false);
 
   store.updateField('username', {
     dirty: true,
@@ -305,35 +290,24 @@ test('contain*()', () => {
     infos: new Set([1.1]),
     validationMessage: 'Suffering from being missing'
   });
-  store.updateField('password', {
-    dirty: true,
-    errors: new Set(),
-    warnings: new Set(),
-    infos: new Set([1.1]),
-    validationMessage: 'Suffering from being missing'
-  });
-  expect(store.hasErrors('username', 'password')).toEqual(false);
-  expect(store.hasWarnings('username', 'password')).toEqual(false);
-  expect(store.hasInfos('username', 'password')).toEqual(true);
+  expect(store.hasErrorsFor('username')).toEqual(false);
+  expect(store.hasWarningsFor('username')).toEqual(false);
+  expect(store.hasInfosFor('username')).toEqual(true);
 });
 
-test('contain*() - unknown field', () => {
+test('has*() - unknown field', () => {
   const store = new FieldsStore();
 
   // Ignore unknown fields
-  expect(store.hasErrors('email')).toEqual(false);
-  expect(store.hasWarnings('email')).toEqual(false);
-  expect(store.hasInfos('email')).toEqual(false);
-  expect(store.areValidDirtyWithoutWarnings('email')).toEqual(false);
+  expect(store.hasErrorsFor('unknown')).toEqual(false);
+  expect(store.hasWarningsFor('unknown')).toEqual(false);
+  expect(store.hasInfosFor('unknown')).toEqual(false);
+  expect(store.isValidWithoutWarnings('unknown')).toEqual(false);
 });
 
-test('areValidDirtyWithoutWarnings()', () => {
+test('isValidWithoutWarnings()', () => {
   const store = new FieldsStore();
   store.addField('username');
-  store.updateField('username', fieldWithoutFeedback);
-  store.addField('password');
-  store.updateField('password', fieldWithoutFeedback);
-  expect(store.areValidDirtyWithoutWarnings('username', 'password')).toEqual(false);
 
   store.updateField('username', {
     dirty: true,
@@ -342,14 +316,7 @@ test('areValidDirtyWithoutWarnings()', () => {
     infos: new Set(),
     validationMessage: ''
   });
-  store.updateField('password', {
-    dirty: true,
-    errors: new Set(),
-    warnings: new Set(),
-    infos: new Set(),
-    validationMessage: ''
-  });
-  expect(store.areValidDirtyWithoutWarnings('username', 'password')).toEqual(true);
+  expect(store.isValidWithoutWarnings('username')).toEqual(true);
 
   store.updateField('username', {
     dirty: true,
@@ -358,14 +325,7 @@ test('areValidDirtyWithoutWarnings()', () => {
     infos: new Set(),
     validationMessage: 'Suffering from being missing'
   });
-  store.updateField('password', {
-    dirty: true,
-    errors: new Set([1.1]),
-    warnings: new Set(),
-    infos: new Set(),
-    validationMessage: 'Suffering from being missing'
-  });
-  expect(store.areValidDirtyWithoutWarnings('username', 'password')).toEqual(false);
+  expect(store.isValidWithoutWarnings('username')).toEqual(false);
 
   store.updateField('username', {
     dirty: true,
@@ -374,12 +334,5 @@ test('areValidDirtyWithoutWarnings()', () => {
     infos: new Set(),
     validationMessage: 'Suffering from being missing'
   });
-  store.updateField('password', {
-    dirty: true,
-    errors: new Set(),
-    warnings: new Set([1.1]),
-    infos: new Set(),
-    validationMessage: 'Suffering from being missing'
-  });
-  expect(store.areValidDirtyWithoutWarnings('username', 'password')).toEqual(false);
+  expect(store.isValidWithoutWarnings('username')).toEqual(false);
 });

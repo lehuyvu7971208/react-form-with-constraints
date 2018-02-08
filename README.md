@@ -5,7 +5,7 @@
 [![codecov](https://codecov.io/gh/tkrotoff/react-form-with-constraints/branch/master/graph/badge.svg)](https://codecov.io/gh/tkrotoff/react-form-with-constraints)
 [![gzip size](http://img.badgesize.io/https://unpkg.com/react-form-with-constraints@latest/dist/react-form-with-constraints.production.min.js.gz?compression=gzip)](https://unpkg.com/react-form-with-constraints/dist/react-form-with-constraints.production.min.js.gz)
 
-Simple form validation for React in [~500 lines of code](packages/react-form-with-constraints/src)
+Simple form validation for React
 
 - Installation: `npm install react-form-with-constraints`
 - CDN: https://unpkg.com/react-form-with-constraints/dist/
@@ -169,7 +169,7 @@ class MyForm extends React.Component {
   render() {
     return (
       <FormWithConstraints
-        ref={form => this.form = form}
+        ref={formWithConstraints => this.form = formWithConstraints}
         onSubmit={this.handleSubmit} noValidate
       >
         <input
@@ -201,7 +201,11 @@ class MyForm extends React.Component {
   Note: you can place `FieldFeedbacks` anywhere and have as many as you want for the same `field`
 
 - `FieldFeedback`
-  - `when?: `[`ValidityState`](https://developer.mozilla.org/en-US/docs/Web/API/ValidityState)` string | '*' | function` => HTML5 constraint violation name or a callback
+  - `when?:
+    - `[`ValidityState`](https://developer.mozilla.org/en-US/docs/Web/API/ValidityState)` string` => HTML5 constraint violation name
+    - `'*'` => matches any HTML5 constraint violation
+    - `'valid'` => displays the feedback only if the field is valid
+    - `() => boolean` => custom constraint
   - `error?: boolean` => treats the feedback as an error (default)
   - `warning?: boolean` => treats the feedback as a warning
   - `info?: boolean` => treats the feedback as an info

@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import { FormWithConstraintsChildContext } from './FormWithConstraints';
-import { withValidateEventEmitter } from './withValidateEventEmitter';
+import withValidateFieldEventEmitter from './withValidateFieldEventEmitter';
 import FieldFeedbackValidation from './FieldFeedbackValidation';
 // @ts-ignore
 // TS6133: 'EventEmitter' is declared but its value is never read.
@@ -10,7 +10,7 @@ import FieldFeedbackValidation from './FieldFeedbackValidation';
 import { EventEmitter } from './EventEmitter';
 import Input from './Input';
 
-export interface FieldFeedbacksProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface FieldFeedbacksProps {
   for: string;
 
   /**
@@ -30,7 +30,7 @@ export interface FieldFeedbacksChildContext {
 export type ListenerReturnType = FieldFeedbackValidation;
 
 export class FieldFeedbacksComponent extends React.Component<FieldFeedbacksProps> {}
-export class FieldFeedbacks extends withValidateEventEmitter<ListenerReturnType, typeof FieldFeedbacksComponent>(FieldFeedbacksComponent)
+export class FieldFeedbacks extends withValidateFieldEventEmitter<ListenerReturnType, typeof FieldFeedbacksComponent>(FieldFeedbacksComponent)
                             implements React.ChildContextProvider<FieldFeedbacksChildContext> {
   static defaultProps: Partial<FieldFeedbacksProps> = {
     stop: 'first-error'
@@ -79,10 +79,15 @@ export class FieldFeedbacks extends withValidateEventEmitter<ListenerReturnType,
   // We could use a string here instead of a number
   //
   // Public instead of private because of the unit tests
-  fieldFeedbackKey = 0;
+  fieldFeedbackKeyCounter = 0;
   computeFieldFeedbackKey() {
     // Example: this.key = 5, this.fieldFeedbackKey = 2 => 5.2
-    return parseFloat(`${this.key}.${this.fieldFeedbackKey++}`);
+    if (this.fieldFeedbackKeyCounter !== 0 && this.fieldFeedbackKeyCounter % 10 === 0) {
+      // Avoid 10, 100, 1000... and make it 11, 101, 1001...
+      // otherwise 1.10 becomes 1.1 as a number => bug
+      this.fieldFeedbackKeyCounter += 1;
+    }
+    return parseFloat(`${this.key}.${this.fieldFeedbackKeyCounter++}`);
   }
 
   addFieldFeedback() {
@@ -98,7 +103,7 @@ export class FieldFeedbacks extends withValidateEventEmitter<ListenerReturnType,
     const fieldName = this.props.for;
     this.context.form.fieldsStore.addField(fieldName);
 
-    this.context.form.addValidateEventListener(this.validate);
+    this.context.form.addValidateFieldEventListener(this.validate);
   }
 
   componentWillUnmount() {
@@ -106,7 +111,7 @@ export class FieldFeedbacks extends withValidateEventEmitter<ListenerReturnType,
     const fieldName = this.props.for;
     this.context.form.fieldsStore.removeField(fieldName);
 
-    this.context.form.removeValidateEventListener(this.validate);
+    this.context.form.removeValidateFieldEventListener(this.validate);
   }
 
   validate(input: Input) {
@@ -118,7 +123,7 @@ export class FieldFeedbacks extends withValidateEventEmitter<ListenerReturnType,
       // Clear the errors/warnings/infos each time we re-validate the input
       this.context.form.fieldsStore.removeFieldFor(fieldName, this.key);
 
-      fieldFeedbackValidations = this.emitValidateEvent(input);
+      fieldFeedbackValidations = this.emitValidateFieldEvent(input);
     }
 
     return fieldFeedbackValidations;
@@ -126,13 +131,13 @@ export class FieldFeedbacks extends withValidateEventEmitter<ListenerReturnType,
 
   hasErrors() {
     const { for: fieldName } = this.props;
-
     const field = this.context.form.fieldsStore.getFieldFor(fieldName, this.key);
     return field.errors.size > 0;
   }
 
   render() {
-    const { for: fieldName, stop, children, ...divProps } = this.props;
-    return <div {...divProps}>{children}</div>;
+    const { children } = this.props;
+    // See https://codepen.io/tkrotoff/pen/yzKKdB
+    return children !== undefined ? children : null;
   }
 }

@@ -110,31 +110,23 @@ export class FieldsStore extends EventEmitter {
     return fieldFor;
   }
 
-  hasErrors(...fieldNames: string[]) {
-    return fieldNames.some(fieldName => {
-      const field = this.fields[fieldName];
-      return field !== undefined && field.errors.size > 0;
-    });
+  hasErrorsFor(fieldName: string) {
+    const field = this.fields[fieldName];
+    return field !== undefined && field.errors.size > 0;
   }
 
-  hasWarnings(...fieldNames: string[]) {
-    return fieldNames.some(fieldName => {
-      const field = this.fields[fieldName];
-      return field !== undefined && field.warnings.size > 0;
-    });
+  hasWarningsFor(fieldName: string) {
+    const field = this.fields[fieldName];
+    return field !== undefined && field.warnings.size > 0;
   }
 
-  hasInfos(...fieldNames: string[]) {
-    return fieldNames.some(fieldName => {
-      const field = this.fields[fieldName];
-      return field !== undefined && field.infos.size > 0;
-    });
+  hasInfosFor(fieldName: string) {
+    const field = this.fields[fieldName];
+    return field !== undefined && field.infos.size > 0;
   }
 
-  areValidDirtyWithoutWarnings(...fieldNames: string[]) {
-    return fieldNames.some(fieldName => {
-      const field = this.fields[fieldName];
-      return field !== undefined && field.dirty === true && field.errors.size === 0 && field.warnings.size === 0;
-    });
+  isValidWithoutWarnings(fieldName: string) {
+    const field = this.fields[fieldName];
+    return field !== undefined && field.errors.size === 0 && field.warnings.size === 0;
   }
 }

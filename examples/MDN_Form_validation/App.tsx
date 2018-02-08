@@ -98,10 +98,10 @@ class Form extends React.Component {
 }
 
 const App = () => (
-  <div>
+  <>
     Taken and adapted from <a href="https://developer.mozilla.org/en-US/docs/Learn/HTML/Forms/Form_validation">MDN - Form data validation</a>: <a href="original.html">original demo</a>
     <Form />
-  </div>
+  </>
 );
 
 ReactDOM.render(<App />, document.getElementById('app'));

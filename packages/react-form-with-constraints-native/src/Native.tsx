@@ -5,6 +5,7 @@ import { TextInput } from './react-native-TextInput-fix'; // Specific to TypeScr
 import {
   FormWithConstraints as _FormWithConstraints,
   FieldFeedback as _FieldFeedback,
+  FieldFeedbackWhenValid as _FieldFeedbackWhenValid,
   FieldFeedbacks as _FieldFeedbacks,
   FieldFeedbacksValidation
 } from 'react-form-with-constraints';
@@ -38,7 +39,7 @@ export class FormWithConstraints extends _FormWithConstraints {
   }
 
   private _validateFields(validateDirtyFields: boolean, ...inputsOrNames: Array<TextInput | string>) {
-    const fieldFeedbacksValidationPromises = new Array<Promise<FieldFeedbacksValidation>>();
+    const fieldValidationPromises = new Array<Promise<FieldFeedbacksValidation>>();
 
     const inputs = this.normalizeInputs(...inputsOrNames);
 
@@ -54,36 +55,38 @@ export class FormWithConstraints extends _FormWithConstraints {
       };
 
       const field = this.fieldsStore.fields[fieldName];
-      if (validateDirtyFields || (field !== undefined && field.dirty === false)) {
-        const fieldFeedbackValidationsPromise = this.emitValidateEvent(_input)
+      if (validateDirtyFields || (field !== undefined && !field.dirty)) {
+        const fieldFeedbackValidationsPromise = this.emitValidateFieldEvent(_input)
           .filter(fieldFeedbackValidations => fieldFeedbackValidations !== undefined) // Remove undefined results
           .map(fieldFeedbackValidations => Promise.resolve(fieldFeedbackValidations!)); // Transforms all results into Promises
 
-        const _fieldFeedbacksValidationPromises = Promise.all(fieldFeedbackValidationsPromise)
+        const fieldValidationPromise = Promise.all(fieldFeedbackValidationsPromise)
           .then(validations =>
             // See Merge/flatten an array of arrays in JavaScript? https://stackoverflow.com/q/10865025/990356
             validations.reduce((prev, curr) => prev.concat(curr), [])
           )
-          .then(fieldFeedbackValidations =>
-            ({
+          .then(fieldFeedbackValidations => (
+            // tslint:disable-next-line:no-object-literal-type-assertion
+            {
               fieldName,
               isValid: () => fieldFeedbackValidations.every(fieldFeedbackValidation => fieldFeedbackValidation.isValid!),
               fieldFeedbackValidations
-            })
-          );
+            } as FieldFeedbacksValidation
+          ));
 
-        fieldFeedbacksValidationPromises.push(_fieldFeedbacksValidationPromises);
+        this.emitFieldValidatedEvent(_input, fieldValidationPromise);
+
+        fieldValidationPromises.push(fieldValidationPromise);
       }
     });
 
-    return Promise.all(fieldFeedbacksValidationPromises);
+    return Promise.all(fieldValidationPromises);
   }
 
+  // If called without arguments, returns all fields
+  // Returns the inputs in the same order they were given
   private normalizeInputs(...inputsOrNames: Array<TextInput | string>) {
-    const inputs = inputsOrNames.filter(inputOrName => typeof inputOrName !== 'string') as any as React.ReactElement<Input>[];
-    const fieldNames = inputsOrNames.filter(inputOrName => typeof inputOrName === 'string') as string[];
-
-    const otherInputs: React.ReactElement<Input>[] = [];
+    const inputs: React.ReactElement<Input>[] = [];
 
     if (inputsOrNames.length === 0) {
       // Find all children with a name
@@ -91,51 +94,79 @@ export class FormWithConstraints extends _FormWithConstraints {
         if (child.props !== undefined) {
           const fieldName = child.props.name;
           if (fieldName !== undefined && fieldName.length > 0) {
-            otherInputs.push(child);
+            inputs.push(child);
           }
         }
       });
-    }
-    if (fieldNames.length > 0) {
-      deepForEach(this.props.children, (child: React.ReactElement<Input>) => {
-        if (child.props !== undefined) {
-          const fieldName = child.props.name;
-          const matches = fieldNames.filter(_fieldName => _fieldName === fieldName);
-
-          console.assert(matches.length === 0 || matches.length === 1, `Multiple matches for ${fieldName}`);
-
-          if (matches.length === 1) {
-            otherInputs.push(child);
-          }
+    } else {
+      inputsOrNames.forEach(input => {
+        if (typeof input === 'string') {
+          deepForEach(this.props.children, (child: React.ReactElement<Input>) => {
+            if (child.props !== undefined) {
+              const fieldName = child.props.name;
+              if (input === fieldName) {
+                inputs.push(child);
+              }
+            }
+          });
+        } else {
+          inputs.push(input as any as React.ReactElement<Input>);
         }
       });
     }
 
-    return [
-      ...inputs,
-      ...otherInputs
-    ];
+    inputs
+      .map(input => input.props.name)
+      .forEach((name, index, self) => {
+        if (self.indexOf(name) !== index) {
+          throw new Error(`Multiple elements matching '[name="${name}"]' inside the form`);
+        }
+      });
+
+    return inputs;
   }
 
   render() {
-    const { children } = this.props;
-    return <View>{children}</View>;
+    // FIXME See Support for Fragments in react native instead of view https://react-native.canny.io/feature-requests/p/support-for-fragments-in-react-native-instead-of-view
+    return <View>{this.props.children}</View>;
   }
 }
 
+
+// FIXME See Support for Fragments in react native instead of view https://react-native.canny.io/feature-requests/p/support-for-fragments-in-react-native-instead-of-view
 export class FieldFeedbacks extends _FieldFeedbacks {
   render() {
-    const { children } = this.props;
-    return <View>{children}</View>;
+    return <View>{this.props.children}</View>;
+  }
+}
+
+
+class FieldFeedbackWhenValid extends _FieldFeedbackWhenValid {
+  render() {
+    const { children, ...textProps } = this.props;
+    const { fieldIsValid } = this.state;
+    const { form } = this.context;
+                      // React Native implementation needs to access props thus the cast
+    const { style } = (form as any as FormWithConstraints).props;
+
+    const className = form.props.fieldFeedbackClassNames!.valid;
+    const tmp = style !== undefined ? style[className] : undefined;
+
+    return fieldIsValid ? <Text style={tmp} {...textProps as TextProps}>{children}</Text> : null;
   }
 }
 
 
 export class FieldFeedback extends _FieldFeedback {
   render() {
-    const { when, error, warning, info, className: _, children, ...textProps } = this.props;
+    const { when, error, warning, info, children, ...textProps } = this.props;
                       // React Native implementation needs to access props thus the cast
     const { style } = (this.context.form as any as FormWithConstraints).props;
+
+    // Special case for when="valid"
+    if (when === 'valid') {
+      return <FieldFeedbackWhenValid>{children}</FieldFeedbackWhenValid>;
+    }
 
     const className = this.className();
 

@@ -135,7 +135,7 @@ const Hobbies = observer(({memberIndex, member, validateField}: HobbiesProps) =>
   const checkNbHobbiesName = `member${memberIndex}.checkNbHobbies`;
 
   return (
-    <div>
+    <>
       <div className="form-group">
         <button type="button" name={checkNbHobbiesName}
                 onClick={addHobby}
@@ -147,7 +147,7 @@ const Hobbies = observer(({memberIndex, member, validateField}: HobbiesProps) =>
       <ul className="list-none">
         {member.hobbies.map((hobby, index) => renderHobby(hobby, index))}
       </ul>
-    </div>
+    </>
   );
 });
 (Hobbies as React.SFC).displayName = 'Hobbies';
@@ -220,7 +220,7 @@ const Members = observer(({club, validateField}: MembersProps) => {
   }
 
   return (
-    <div>
+    <>
       <div className="form-group">
         <button type="button" name="checkNbMembers"
                 onClick={addMember}
@@ -232,7 +232,7 @@ const Members = observer(({club, validateField}: MembersProps) => {
       <ul className="list-none">
         {club.members.map((member, index) => renderMember(member, index))}
       </ul>
-    </div>
+    </>
   );
 });
 (Members as React.SFC).displayName = 'Members';

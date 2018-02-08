@@ -129,6 +129,7 @@ export default class App extends React.Component<Props, State> {
                   <FieldFeedback>Username already taken, choose another</FieldFeedback>
                 }
               />
+              <FieldFeedback when="valid">Looks good!</FieldFeedback>
             </FieldFeedbacks>
           </View>
 
@@ -149,6 +150,7 @@ export default class App extends React.Component<Props, State> {
               <FieldFeedback when={value => !/[a-z]/.test(value)} warning>Should contain small letters</FieldFeedback>
               <FieldFeedback when={value => !/[A-Z]/.test(value)} warning>Should contain capital letters</FieldFeedback>
               <FieldFeedback when={value => !/\W/.test(value)} warning>Should contain special characters</FieldFeedback>
+              <FieldFeedback when="valid">Looks good!</FieldFeedback>
             </FieldFeedbacks>
           </View>
 
@@ -166,18 +168,17 @@ export default class App extends React.Component<Props, State> {
               <FieldFeedback when={value => value !== this.state.password}>Not the same password</FieldFeedback>
             </FieldFeedbacks>
           </View>
+
+          <Button
+            title="Sign Up"
+            disabled={this.state.submitButtonDisabled}
+            onPress={this.handleSubmit}
+          />
+          <Button
+            title="Reset"
+            onPress={this.handleReset}
+          />
         </FormWithConstraints>
-
-        <Button
-          title="Sign Up"
-          disabled={this.state.submitButtonDisabled}
-          onPress={this.handleSubmit}
-        />
-        <Button
-          title="Reset"
-          onPress={this.handleReset}
-        />
-
       </View>
     );
   }
@@ -206,5 +207,8 @@ const feedbacksStyles = StyleSheet.create({
   },
   info: {
     color: 'blue'
+  },
+  valid: {
+    color: 'green'
   }
 });

@@ -1,8 +1,10 @@
 import React from 'react';
 import { mount as _mount, shallow as _shallow } from 'enzyme';
 
-import { FormWithConstraints, FormWithConstraintsChildContext, fieldWithoutFeedback, FieldFeedback, FieldFeedbacksProps, FieldFeedbacks, ValidateEvent } from './index';
+import { FormWithConstraintsChildContext, fieldWithoutFeedback, FieldFeedback, FieldFeedbacksProps, ValidateFieldEvent } from './index';
 import InputMock from './InputMock';
+import new_FormWithConstraints from './FormWithConstraintsEnzymeFix';
+import FieldFeedbacks from './FieldFeedbacksEnzymeFix';
 
 function shallow(node: React.ReactElement<FieldFeedbacksProps>, options: {context: FormWithConstraintsChildContext}) {
   return _shallow<FieldFeedbacksProps>(node, options);
@@ -14,7 +16,7 @@ function mount(node: React.ReactElement<FieldFeedbacksProps>, options: {context:
 test('constructor()', () => {
   const wrapper = shallow(
     <FieldFeedbacks for="username" />,
-    {context: {form: new FormWithConstraints({})}}
+    {context: {form: new_FormWithConstraints({})}}
   );
   const fieldFeedbacks = wrapper.instance() as FieldFeedbacks;
   expect(fieldFeedbacks.key).toEqual(0.0);
@@ -23,7 +25,7 @@ test('constructor()', () => {
 test('computeFieldFeedbackKey()', () => {
   const wrapper = shallow(
     <FieldFeedbacks for="username" />,
-    {context: {form: new FormWithConstraints({})}}
+    {context: {form: new_FormWithConstraints({})}}
   );
   const fieldFeedbacks = wrapper.instance() as FieldFeedbacks;
   expect(fieldFeedbacks.computeFieldFeedbackKey()).toEqual(0.0);
@@ -36,13 +38,13 @@ test('computeFieldFeedbackKey()', () => {
   expect(fieldFeedbacks.computeFieldFeedbackKey()).toEqual(0.7);
   expect(fieldFeedbacks.computeFieldFeedbackKey()).toEqual(0.8);
   expect(fieldFeedbacks.computeFieldFeedbackKey()).toEqual(0.9);
-  expect(fieldFeedbacks.computeFieldFeedbackKey()).toEqual(0.10);
+  // Avoid 0.10 => 0.1 => bug
   expect(fieldFeedbacks.computeFieldFeedbackKey()).toEqual(0.11);
 });
 
 describe('componentWillMount()', () => {
   test('initialize FieldsStore', () => {
-    const form = new FormWithConstraints({});
+    const form = new_FormWithConstraints({});
     expect(form.fieldsStore.fields).toEqual({});
 
     const wrapper = shallow(
@@ -58,35 +60,35 @@ describe('componentWillMount()', () => {
   });
 
   test('componentWillUnmount()', () => {
-    const form = new FormWithConstraints({});
-    const addValidateEventListenerSpy = jest.spyOn(form, 'addValidateEventListener');
-    const removeValidateEventListenerSpy = jest.spyOn(form, 'removeValidateEventListener');
+    const form = new_FormWithConstraints({});
+    const addValidateFieldEventListenerSpy = jest.spyOn(form, 'addValidateFieldEventListener');
+    const removeValidateFieldEventListenerSpy = jest.spyOn(form, 'removeValidateFieldEventListener');
 
     const wrapper = shallow(
       <FieldFeedbacks for="username" />,
       {context: {form}}
     );
-    expect(addValidateEventListenerSpy).toHaveBeenCalledTimes(1);
-    expect(removeValidateEventListenerSpy).toHaveBeenCalledTimes(0);
-    expect(form.validateEventEmitter.listeners.get(ValidateEvent)).toHaveLength(1);
+    expect(addValidateFieldEventListenerSpy).toHaveBeenCalledTimes(1);
+    expect(removeValidateFieldEventListenerSpy).toHaveBeenCalledTimes(0);
+    expect(form.validateFieldEventEmitter.listeners.get(ValidateFieldEvent)).toHaveLength(1);
 
     wrapper.unmount();
-    expect(addValidateEventListenerSpy).toHaveBeenCalledTimes(1);
-    expect(removeValidateEventListenerSpy).toHaveBeenCalledTimes(1);
-    expect(form.validateEventEmitter.listeners.get(ValidateEvent)).toEqual(undefined);
+    expect(addValidateFieldEventListenerSpy).toHaveBeenCalledTimes(1);
+    expect(removeValidateFieldEventListenerSpy).toHaveBeenCalledTimes(1);
+    expect(form.validateFieldEventEmitter.listeners.get(ValidateFieldEvent)).toEqual(undefined);
   });
 });
 
 describe('validate()', () => {
-  test('known input name - emitValidateEvent', async () => {
-    const form = new FormWithConstraints({});
+  test('known input name - emitValidateFieldEvent', async () => {
+    const form = new_FormWithConstraints({});
     const fieldFeedbacks = shallow(
       <FieldFeedbacks for="username" />,
       {context: {form}}
     ).instance() as FieldFeedbacks;
-    const emitValidateEventSpy = jest.spyOn(fieldFeedbacks, 'emitValidateEvent');
+    const emitValidateFieldEventSpy = jest.spyOn(fieldFeedbacks, 'emitValidateFieldEvent');
 
-    expect(emitValidateEventSpy).toHaveBeenCalledTimes(0);
+    expect(emitValidateFieldEventSpy).toHaveBeenCalledTimes(0);
     const input = new InputMock('username', '', {valid: false, valueMissing: true}, 'Suffering from being missing');
     const fieldFeedbackValidations = await form.validateFields(input);
     expect(fieldFeedbackValidations).toEqual([{
@@ -94,12 +96,12 @@ describe('validate()', () => {
       isValid: expect.any(Function),
       fieldFeedbackValidations: []
     }]);
-    expect(emitValidateEventSpy).toHaveBeenCalledTimes(1);
-    expect(emitValidateEventSpy).toHaveBeenLastCalledWith(input);
+    expect(emitValidateFieldEventSpy).toHaveBeenCalledTimes(1);
+    expect(emitValidateFieldEventSpy).toHaveBeenLastCalledWith(input);
   });
 
   test('known input name', async () => {
-    const form = new FormWithConstraints({});
+    const form = new_FormWithConstraints({});
     mount(
       <FieldFeedbacks for="username">
         <FieldFeedback when="*" />
@@ -125,15 +127,15 @@ describe('validate()', () => {
     });
   });
 
-  test('unknown input name - emitValidateEvent', async () => {
-    const form = new FormWithConstraints({});
+  test('unknown input name - emitValidateFieldEvent', async () => {
+    const form = new_FormWithConstraints({});
     const fieldFeedbacks = shallow(
       <FieldFeedbacks for="username" />,
       {context: {form}}
     ).instance() as FieldFeedbacks;
-    const emitValidateEventSpy = jest.spyOn(fieldFeedbacks, 'emitValidateEvent');
+    const emitValidateFieldEventSpy = jest.spyOn(fieldFeedbacks, 'emitValidateFieldEvent');
 
-    expect(emitValidateEventSpy).toHaveBeenCalledTimes(0);
+    expect(emitValidateFieldEventSpy).toHaveBeenCalledTimes(0);
     const input = new InputMock('unknown', '', {valid: false, valueMissing: true}, 'Suffering from being missing');
     const fieldFeedbackValidations = await form.validateFields(input);
     expect(fieldFeedbackValidations).toEqual([{
@@ -141,11 +143,11 @@ describe('validate()', () => {
       isValid: expect.any(Function),
       fieldFeedbackValidations: []
     }]);
-    expect(emitValidateEventSpy).toHaveBeenCalledTimes(0);
+    expect(emitValidateFieldEventSpy).toHaveBeenCalledTimes(0);
   });
 
   test('unknown input name', async () => {
-    const form = new FormWithConstraints({});
+    const form = new_FormWithConstraints({});
     mount(
       <FieldFeedbacks for="username">
         <FieldFeedback when="*" />
@@ -166,7 +168,7 @@ describe('validate()', () => {
   });
 
   test('remove', async () => {
-    const form = new FormWithConstraints({});
+    const form = new_FormWithConstraints({});
     form.fieldsStore.fields = {
       username: {
         dirty: true,
@@ -202,8 +204,20 @@ describe('validate()', () => {
 });
 
 describe('render()', () => {
+  test('without children', () => {
+    const form = new_FormWithConstraints({});
+    const wrapper = mount(
+      <FieldFeedbacks for="username" />,
+      {context: {form}}
+    );
+
+    expect(wrapper.html()).toEqual(
+      '<div></div>'
+    );
+  });
+
   test('children', async () => {
-    const form = new FormWithConstraints({});
+    const form = new_FormWithConstraints({});
     const wrapper = mount(
       <FieldFeedbacks for="username">
         <FieldFeedback when="*" />
@@ -228,12 +242,12 @@ describe('render()', () => {
       }
     });
     expect(wrapper.html()).toEqual(
-      '<div><div class="error">Suffering from being missing</div></div>'
+      '<div><div data-field-feedback-key="0" class="error">Suffering from being missing</div></div>'
     );
   });
 
   test('children with <div> inside hierarchy', async () => {
-    const form = new FormWithConstraints({});
+    const form = new_FormWithConstraints({});
     const wrapper = mount(
       <FieldFeedbacks for="username">
         <div>
@@ -260,12 +274,12 @@ describe('render()', () => {
       }
     });
     expect(wrapper.html()).toEqual(
-      '<div><div><div class="error">Suffering from being missing</div></div></div>'
+      '<div><div><div data-field-feedback-key="0" class="error">Suffering from being missing</div></div></div>'
     );
   });
 
   test('unknown input name', async () => {
-    const form = new FormWithConstraints({});
+    const form = new_FormWithConstraints({});
     const wrapper = mount(
       <FieldFeedbacks for="username">
         <FieldFeedback when="*" />
@@ -290,7 +304,7 @@ describe('render()', () => {
 
   describe('stop prop', () => {
     test('stop="no" multiple FieldFeedback', async () => {
-      const form = new FormWithConstraints({});
+      const form = new_FormWithConstraints({});
       const wrapper = mount(
         <FieldFeedbacks for="username" stop="no">
           <FieldFeedback when="*" />
@@ -322,12 +336,16 @@ describe('render()', () => {
       });
 
       expect(wrapper.html()).toEqual(
-        '<div><div class="error">Suffering from being missing</div><div class="error">Suffering from being missing</div><div class="error">Suffering from being missing</div></div>'
+        '<div>' +
+        '<div data-field-feedback-key="0" class="error">Suffering from being missing</div>' +
+        '<div data-field-feedback-key="0.1" class="error">Suffering from being missing</div>' +
+        '<div data-field-feedback-key="0.2" class="error">Suffering from being missing</div>' +
+        '</div>'
       );
     });
 
     test('stop="first-error" multiple FieldFeedback', async () => {
-      const form = new FormWithConstraints({});
+      const form = new_FormWithConstraints({});
       const wrapper = mount(
         <FieldFeedbacks for="username" stop="first-error">
           <FieldFeedback when="*" />
@@ -359,12 +377,12 @@ describe('render()', () => {
       });
 
       expect(wrapper.html()).toEqual(
-        '<div><div class="error">Suffering from being missing</div></div>'
+        '<div><div data-field-feedback-key="0" class="error">Suffering from being missing</div></div>'
       );
     });
 
     test('stop="first-error" multiple FieldFeedback with error, warning, info', async () => {
-      const form = new FormWithConstraints({});
+      const form = new_FormWithConstraints({});
       const wrapper = mount(
         <FieldFeedbacks for="username" stop="first-error">
           <FieldFeedback when="*" warning />
@@ -396,7 +414,7 @@ describe('render()', () => {
       });
 
       expect(wrapper.html()).toEqual(
-        '<div><div class="warning">Suffering from being missing</div><div class="error">Suffering from being missing</div></div>'
+        '<div><div data-field-feedback-key="0" class="warning">Suffering from being missing</div><div data-field-feedback-key="0.1" class="error">Suffering from being missing</div></div>'
       );
     });
   });

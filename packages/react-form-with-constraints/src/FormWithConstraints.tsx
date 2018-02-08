@@ -1,8 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import { withValidateEventEmitter } from './withValidateEventEmitter';
+import withValidateFieldEventEmitter from './withValidateFieldEventEmitter';
+import withFieldValidatedEventEmitter from './withFieldValidatedEventEmitter';
+import withResetFormEventEmitter from './withResetFormEventEmitter';
 import FieldFeedbackValidation from './FieldFeedbackValidation';
+import FieldFeedbacksValidation from './FieldFeedbacksValidation';
 // @ts-ignore
 // TS6133: 'EventEmitter' is declared but its value is never read.
 // FIXME See https://github.com/Microsoft/TypeScript/issues/9944#issuecomment-309903027
@@ -49,28 +52,47 @@ Most of the intelligence is inside FieldFeedback validate() and render()
 When an input changes (validateFields()):
  => FormWithConstraints notifies all FieldFeedbacks
   => FieldFeedbacks filters unrelated input changes and then notifies its FieldFeedback (validate())
-   => FieldFeedback updates the FieldsStore and emits an event (validate())
-    => FieldFeedbacks re-renders
+   => FieldFeedback updates the FieldsStore and emits FieldEvent.Updated (validate())
+    => All related FieldFeedback re-render
 */
 
 export interface FormWithConstraintsChildContext {
   form: FormWithConstraints;
 }
 
-export interface FormWithConstraintsProps extends React.FormHTMLAttributes<HTMLFormElement> {}
-
-// FieldFeedbacks returns FieldFeedbackValidation[] | undefined and Async returns Promise<FieldFeedbackValidation[]> | undefined
-type ListenerReturnType = FieldFeedbackValidation[] | Promise<FieldFeedbackValidation[]> | undefined | void /* void for react-form-with-constraints-bootstrap4 */;
-
-export interface FieldFeedbacksValidation {
-  fieldName: string;
-  isValid: () => boolean;
-  fieldFeedbackValidations: FieldFeedbackValidation[];
+export interface FormWithConstraintsProps extends React.FormHTMLAttributes<HTMLFormElement> {
+  fieldFeedbackClassNames?: {
+    error: string;
+    warning: string;
+    info: string;
+    valid: string;
+  };
 }
 
+// FieldFeedbacks returns FieldFeedbackValidation[] | undefined and Async returns Promise<FieldFeedbackValidation[]> | undefined
+type ValidateFieldEventListenerReturnType = FieldFeedbackValidation[] | Promise<FieldFeedbackValidation[]> | undefined | void /* void for react-form-with-constraints-bootstrap4 */;
+
 export class FormWithConstraintsComponent extends React.Component<FormWithConstraintsProps> {}
-export class FormWithConstraints extends withValidateEventEmitter<ListenerReturnType, typeof FormWithConstraintsComponent>(FormWithConstraintsComponent)
-                                 implements React.ChildContextProvider<FormWithConstraintsChildContext> {
+export class FormWithConstraints
+  extends
+    withResetFormEventEmitter(
+      withFieldValidatedEventEmitter(
+        withValidateFieldEventEmitter<ValidateFieldEventListenerReturnType, typeof FormWithConstraintsComponent>(
+          FormWithConstraintsComponent
+        )
+      )
+    )
+  implements React.ChildContextProvider<FormWithConstraintsChildContext> {
+
+  static defaultProps: FormWithConstraintsProps = {
+    fieldFeedbackClassNames: {
+      error: 'error',
+      warning: 'warning',
+      info: 'info',
+      valid: 'valid'
+    }
+  };
+
   static childContextTypes: React.ValidationMap<FormWithConstraintsChildContext> = {
     form: PropTypes.object.isRequired
   };
@@ -85,9 +107,9 @@ export class FormWithConstraints extends withValidateEventEmitter<ListenerReturn
 
   fieldsStore = new FieldsStore();
 
-  private fieldFeedbacksKey = 0;
+  private fieldFeedbacksKeyCounter = 0;
   computeFieldFeedbacksKey() {
-    return this.fieldFeedbacksKey++;
+    return this.fieldFeedbacksKeyCounter++;
   }
 
   /**
@@ -104,7 +126,7 @@ export class FormWithConstraints extends withValidateEventEmitter<ListenerReturn
   }
 
   private _validateFields(validateDirtyFields: boolean, ...inputsOrNames: Array<Input | string>) {
-    const fieldFeedbacksValidationPromises = new Array<Promise<FieldFeedbacksValidation>>();
+    const fieldValidationPromises = new Array<Promise<FieldFeedbacksValidation>>();
 
     const inputs = this.normalizeInputs(...inputsOrNames);
 
@@ -112,65 +134,82 @@ export class FormWithConstraints extends withValidateEventEmitter<ListenerReturn
       const fieldName = input.name;
 
       const field = this.fieldsStore.fields[fieldName];
-      if (validateDirtyFields || (field !== undefined && field.dirty === false)) {
-        const fieldFeedbackValidationsPromise = this.emitValidateEvent(input)
+      if (validateDirtyFields || (field !== undefined && !field.dirty)) {
+        const fieldFeedbackValidationsPromises = this.emitValidateFieldEvent(input)
           .filter(fieldFeedbackValidations => fieldFeedbackValidations !== undefined) // Remove undefined results
           .map(fieldFeedbackValidations => Promise.resolve(fieldFeedbackValidations!)); // Transforms all results into Promises
 
-        const _fieldFeedbacksValidationPromises = Promise.all(fieldFeedbackValidationsPromise)
+        const fieldValidationPromise = Promise.all(fieldFeedbackValidationsPromises)
           .then(validations =>
             // See Merge/flatten an array of arrays in JavaScript? https://stackoverflow.com/q/10865025/990356
             validations.reduce((prev, curr) => prev.concat(curr), [])
           )
-          .then(fieldFeedbackValidations =>
-            ({
+          .then(fieldFeedbackValidations => (
+            // tslint:disable-next-line:no-object-literal-type-assertion
+            {
               fieldName,
               isValid: () => fieldFeedbackValidations.every(fieldFeedbackValidation => fieldFeedbackValidation.isValid!),
               fieldFeedbackValidations
-            })
-          );
+            } as FieldFeedbacksValidation
+          ));
 
-        fieldFeedbacksValidationPromises.push(_fieldFeedbacksValidationPromises);
+        this.emitFieldValidatedEvent(input, fieldValidationPromise);
+
+        fieldValidationPromises.push(fieldValidationPromise);
       }
     });
 
-    return Promise.all(fieldFeedbacksValidationPromises);
+    return Promise.all(fieldValidationPromises);
   }
 
-  // If called without arguments, returns all fields ($('[name]')).
+  // If called without arguments, returns all fields ($('[name]'))
+  // Returns the inputs in the same order they were given
   private normalizeInputs(...inputsOrNames: Array<Input | string>) {
-    const inputs = inputsOrNames.filter(inputOrName => typeof inputOrName !== 'string') as Input[];
-    const fieldNames = inputsOrNames.filter(inputOrName => typeof inputOrName === 'string') as string[];
+    let inputs;
 
-    let otherInputs: Input[] = [];
-
-    // [name] matches <input name="...">, <select name="...">, <button name="...">, ...
     if (inputsOrNames.length === 0) {
-      otherInputs = this.form!.querySelectorAll('[name]') as any;
-    }
-    if (fieldNames.length > 0) {
-      const selectors = fieldNames.map(fieldName => `[name="${fieldName}"]`);
-      otherInputs = this.form!.querySelectorAll(selectors.join(', ')) as any;
+      // [name] matches <input name="...">, <select name="...">, <button name="...">, ...
+      // See Convert JavaScript NodeList to Array? https://stackoverflow.com/a/33822526/990356
+      inputs = [...this.form!.querySelectorAll<HTMLInputElement>('[name]')];
+      inputs
+        .filter(input => input.type !== 'checkbox' && input.type !== 'radio')
+        .map(input => input.name)
+        .forEach((name, index, self) => {
+          if (self.indexOf(name) !== index) {
+            throw new Error(`Multiple elements matching '[name="${name}"]' inside the form`);
+          }
+        });
+    } else {
+      inputs = inputsOrNames.map(input => {
+        if (typeof input === 'string') {
+          const query = `[name="${input}"]`;
+          const elements = [...this.form!.querySelectorAll<HTMLInputElement>(query)];
+          if (elements.filter(element => element.type !== 'checkbox' && element.type !== 'radio').length > 1) {
+            throw new Error(`Multiple elements matching '${query}' inside the form`);
+          }
+          return elements[0];
+        } else {
+          return input;
+        }
+      });
     }
 
-    return [
-      ...inputs,
-      ...otherInputs
-    ];
+    return inputs;
   }
 
   // Lazy check => the fields structure might be incomplete
   isValid() {
     const fieldNames = Object.keys(this.fieldsStore.fields);
-    return !this.fieldsStore.hasErrors(...fieldNames);
+    return fieldNames.every(fieldName => !this.fieldsStore.hasErrorsFor(fieldName));
   }
 
   reset() {
     this.fieldsStore.reset();
+    this.emitResetFormEvent();
   }
 
   render() {
-    const { children, ...formProps } = this.props;
+    const { children, fieldFeedbackClassNames, ...formProps } = this.props;
     return <form ref={form => this.form = form} {...formProps}>{children}</form>;
   }
 }

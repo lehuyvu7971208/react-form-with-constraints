@@ -2,7 +2,9 @@ import React from 'react';
 import { shallow as _shallow } from 'enzyme';
 
 import { FormWithConstraints, FormWithConstraintsChildContext, fieldWithoutFeedback, FieldEvent } from 'react-form-with-constraints';
+
 import { DisplayFields } from './index';
+import new_FormWithConstraints from './FormWithConstraintsEnzymeFix';
 
 function shallow(node: React.ReactElement<{}>, options: {context: FormWithConstraintsChildContext}) {
   return _shallow<{}>(node, options);
@@ -11,14 +13,14 @@ function shallow(node: React.ReactElement<{}>, options: {context: FormWithConstr
 let form_username_empty: FormWithConstraints;
 
 beforeEach(() => {
-  form_username_empty = new FormWithConstraints({});
+  form_username_empty = new_FormWithConstraints({});
   form_username_empty.fieldsStore.fields = {
     username: fieldWithoutFeedback
   };
 });
 
 test('componentWillMount() componentWillUnmount()', () => {
-  const form = new FormWithConstraints({});
+  const form = new_FormWithConstraints({});
   const fieldsStoreAddListenerSpy = jest.spyOn(form.fieldsStore, 'addListener');
   const fieldsStoreRemoveListenerSpy = jest.spyOn(form.fieldsStore, 'removeListener');
 
@@ -32,7 +34,7 @@ test('componentWillMount() componentWillUnmount()', () => {
   expect(fieldsStoreAddListenerSpy.mock.calls).toEqual([
     [FieldEvent.Added, reRender],
     [FieldEvent.Removed, reRender],
-    [FieldEvent.Updated, reRender],
+    [FieldEvent.Updated, reRender]
   ]);
   expect(fieldsStoreRemoveListenerSpy).toHaveBeenCalledTimes(0);
 
@@ -42,7 +44,7 @@ test('componentWillMount() componentWillUnmount()', () => {
   expect(fieldsStoreRemoveListenerSpy.mock.calls).toEqual([
     [FieldEvent.Added, reRender],
     [FieldEvent.Removed, reRender],
-    [FieldEvent.Updated, reRender],
+    [FieldEvent.Updated, reRender]
   ]);
 });
 

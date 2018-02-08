@@ -99,6 +99,7 @@ class Form extends React.Component<Props, State> {
           <FieldFeedbacks for="username">
             <FieldFeedback when="tooShort">Too short</FieldFeedback>
             <FieldFeedback when="*" />
+            <FieldFeedback when="valid">Looks good!</FieldFeedback>
           </FieldFeedbacks>
         </div>
 
@@ -108,13 +109,14 @@ class Form extends React.Component<Props, State> {
                  ref={password => this.password = password}
                  value={this.state.password} onChange={this.handlePasswordChange}
                  required pattern=".{5,}" />
-          <FieldFeedbacks for="password" stop="first-error">
+          <FieldFeedbacks for="password">
             <FieldFeedback when="valueMissing" />
             <FieldFeedback when="patternMismatch">Should be at least 5 characters long</FieldFeedback>
             <FieldFeedback when={value => !/\d/.test(value)} warning>Should contain numbers</FieldFeedback>
             <FieldFeedback when={value => !/[a-z]/.test(value)} warning>Should contain small letters</FieldFeedback>
             <FieldFeedback when={value => !/[A-Z]/.test(value)} warning>Should contain capital letters</FieldFeedback>
             <FieldFeedback when={value => !/\W/.test(value)} warning>Should contain special characters</FieldFeedback>
+            <FieldFeedback when="valid">Looks good!</FieldFeedback>
           </FieldFeedbacks>
         </div>
 
@@ -135,8 +137,6 @@ class Form extends React.Component<Props, State> {
   }
 }
 
-const App = () => (
-  <Form />
-);
+const App = () => <Form />;
 
 export default App;

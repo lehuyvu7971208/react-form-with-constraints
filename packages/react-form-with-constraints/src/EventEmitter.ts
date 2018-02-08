@@ -3,7 +3,7 @@
 // See Proposal: Variadic Kinds -- Give specific types to variadic functions https://github.com/Microsoft/TypeScript/issues/5453
 export type Args = any[];
 
-export type Listener<ListenerReturnType> = (...args: Args) => ListenerReturnType;
+export type Listener<ListenerReturnType = void> = (...args: Args) => ListenerReturnType;
 
 export class EventEmitter<ListenerReturnType = void> {
   listeners = new Map<string, Listener<ListenerReturnType>[]>();
