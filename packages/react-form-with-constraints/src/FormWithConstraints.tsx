@@ -70,7 +70,7 @@ export interface FormWithConstraintsProps extends React.FormHTMLAttributes<HTMLF
 }
 
 // FieldFeedbacks returns FieldFeedbackValidation[] | undefined and Async returns Promise<FieldFeedbackValidation[]> | undefined
-type ValidateFieldEventListenerReturnType = FieldFeedbackValidation[] | Promise<FieldFeedbackValidation[]> | undefined | void /* void for react-form-with-constraints-bootstrap4 */;
+type ValidateFieldEventListenerReturnType = FieldFeedbackValidation[] | Promise<FieldFeedbackValidation[]> | undefined;
 
 export class FormWithConstraintsComponent extends React.Component<FormWithConstraintsProps> {}
 export class FormWithConstraints
