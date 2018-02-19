@@ -113,7 +113,7 @@ export class Async<T> extends withValidateFieldEventEmitter<ListenerReturnType, 
 
           // See Promises: Execute something regardless of resolve/reject? https://stackoverflow.com/q/38830314
           // Instead of componentDidUpdate()
-          // The Promise returned is Promise<FieldFeedbackValidation[]> (Promise<{key: number, invalidatesField: boolean}[]>)
+          // The Promise returned is Promise<FieldFeedbackValidation[]> (Promise<{key: number, show: boolean}[]>)
           .then(() => this.emitValidateFieldEvent(input));
       }
     }
