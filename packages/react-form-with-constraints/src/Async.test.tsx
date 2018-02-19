@@ -123,7 +123,7 @@ describe('render()', () => {
     expect(fieldFeedbackValidations).toEqual([{
       fieldName: 'username',
       isValid: expect.any(Function),
-      fieldFeedbackValidations: [{key: 0.0, isValid: true}]
+      fieldFeedbackValidations: [{key: 0.0, invalidatesField: false}]
     }]);
     wrapper.update();
     expect(wrapper.html()).toEqual(`<div><div data-field-feedback-key="0" class="info">Username 'jimmy' available</div></div>`);
@@ -137,7 +137,7 @@ describe('render()', () => {
     expect(fieldFeedbackValidations).toEqual([{
       fieldName: 'username',
       isValid: expect.any(Function),
-      fieldFeedbackValidations: [{key: 0.1, isValid: false}]
+      fieldFeedbackValidations: [{key: 0.1, invalidatesField: true}]
     }]);
     wrapper.update();
     expect(wrapper.html()).toEqual(`<div><div data-field-feedback-key="0.1" class="error">Username 'john' already taken, choose another</div></div>`);
@@ -167,7 +167,7 @@ describe('render()', () => {
     expect(fieldFeedbackValidations).toEqual([{
       fieldName: 'username',
       isValid: expect.any(Function),
-      fieldFeedbackValidations: [{key: 0.0, isValid: false}]
+      fieldFeedbackValidations: [{key: 0.0, invalidatesField: true}]
     }]);
     wrapper.update();
     expect(wrapper.html()).toEqual(`<div><div data-field-feedback-key="0" class="error">Something wrong with username 'error'</div></div>`);

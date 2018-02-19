@@ -113,7 +113,7 @@ describe('validate()', () => {
     expect(fieldFeedbackValidations).toEqual([{
       fieldName: 'username',
       isValid: expect.any(Function),
-      fieldFeedbackValidations: [{key: 0.0, isValid: false}]
+      fieldFeedbackValidations: [{key: 0.0, invalidatesField: true}]
     }]);
 
     expect(form.fieldsStore.fields).toEqual({
@@ -229,7 +229,7 @@ describe('render()', () => {
     expect(fieldFeedbackValidations).toEqual([{
       fieldName: 'username',
       isValid: expect.any(Function),
-      fieldFeedbackValidations: [{key: 0.0, isValid: false}]
+      fieldFeedbackValidations: [{key: 0.0, invalidatesField: true}]
     }]);
 
     expect(form.fieldsStore.fields).toEqual({
@@ -261,7 +261,7 @@ describe('render()', () => {
     expect(fieldFeedbackValidations).toEqual([{
       fieldName: 'username',
       isValid: expect.any(Function),
-      fieldFeedbackValidations: [{key: 0.0, isValid: false}]
+      fieldFeedbackValidations: [{key: 0.0, invalidatesField: true}]
     }]);
 
     expect(form.fieldsStore.fields).toEqual({
@@ -319,9 +319,9 @@ describe('render()', () => {
         fieldName: 'username',
         isValid: expect.any(Function),
         fieldFeedbackValidations: [
-          {key: 0.0, isValid: false},
-          {key: 0.1, isValid: false},
-          {key: 0.2, isValid: false}
+          {key: 0.0, invalidatesField: true},
+          {key: 0.1, invalidatesField: true},
+          {key: 0.2, invalidatesField: true}
         ]
       }]);
 
@@ -360,9 +360,9 @@ describe('render()', () => {
         fieldName: 'username',
         isValid: expect.any(Function),
         fieldFeedbackValidations: [
-          {key: 0.0, isValid: false},
-          {key: 0.1, isValid: undefined},
-          {key: 0.2, isValid: undefined}
+          {key: 0.0, invalidatesField: true},
+          {key: 0.1, invalidatesField: undefined},
+          {key: 0.2, invalidatesField: undefined}
         ]
       }]);
 
@@ -397,9 +397,9 @@ describe('render()', () => {
         fieldName: 'username',
         isValid: expect.any(Function),
         fieldFeedbackValidations: [
-          {key: 0.0, isValid: true},
-          {key: 0.1, isValid: false},
-          {key: 0.2, isValid: undefined}
+          {key: 0.0, invalidatesField: false},
+          {key: 0.1, invalidatesField: true},
+          {key: 0.2, invalidatesField: undefined}
         ]
       }]);
 

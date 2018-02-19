@@ -78,26 +78,26 @@ describe('validate', () => {
           fieldName: 'username',
           isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 0.0, isValid: false},
-            {key: 0.1, isValid: false},
-            {key: 0.2, isValid: true},
-            {key: 0.3, isValid: true}
+            {key: 0.0, invalidatesField: true},
+            {key: 0.1, invalidatesField: true},
+            {key: 0.2, invalidatesField: false},
+            {key: 0.3, invalidatesField: false}
           ]
         },
         {
           fieldName: 'password',
           isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 1.0, isValid: false},
-            {key: 1.1, isValid: false},
-            {key: 1.2, isValid: true}
+            {key: 1.0, invalidatesField: true},
+            {key: 1.1, invalidatesField: true},
+            {key: 1.2, invalidatesField: false}
           ]
         },
         {
           fieldName: 'passwordConfirm',
           isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 2.0, isValid: true}
+            {key: 2.0, invalidatesField: false}
           ]
         }
       ]);
@@ -136,26 +136,26 @@ describe('validate', () => {
           fieldName: 'username',
           isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 0.0, isValid: false},
-            {key: 0.1, isValid: false},
-            {key: 0.2, isValid: true},
-            {key: 0.3, isValid: true}
+            {key: 0.0, invalidatesField: true},
+            {key: 0.1, invalidatesField: true},
+            {key: 0.2, invalidatesField: false},
+            {key: 0.3, invalidatesField: false}
           ]
         },
         {
           fieldName: 'password',
           isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 1.0, isValid: false},
-            {key: 1.1, isValid: false},
-            {key: 1.2, isValid: true}
+            {key: 1.0, invalidatesField: true},
+            {key: 1.1, invalidatesField: true},
+            {key: 1.2, invalidatesField: false}
           ]
         },
         {
           fieldName: 'passwordConfirm',
           isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 2.0, isValid: true}
+            {key: 2.0, invalidatesField: false}
           ]
         }
       ]);
@@ -176,26 +176,26 @@ describe('validate', () => {
           fieldName: 'username',
           isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 0.0, isValid: false},
-            {key: 0.1, isValid: false},
-            {key: 0.2, isValid: true},
-            {key: 0.3, isValid: true}
+            {key: 0.0, invalidatesField: true},
+            {key: 0.1, invalidatesField: true},
+            {key: 0.2, invalidatesField: false},
+            {key: 0.3, invalidatesField: false}
           ]
         },
         {
           fieldName: 'password',
           isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 1.0, isValid: false},
-            {key: 1.1, isValid: false},
-            {key: 1.2, isValid: true}
+            {key: 1.0, invalidatesField: true},
+            {key: 1.1, invalidatesField: true},
+            {key: 1.2, invalidatesField: false}
           ]
         },
         {
           fieldName: 'passwordConfirm',
           isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 2.0, isValid: true}
+            {key: 2.0, invalidatesField: false}
           ]
         }
       ]);
@@ -216,26 +216,26 @@ describe('validate', () => {
           fieldName: 'username',
           isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 0.0, isValid: false},
-            {key: 0.1, isValid: false},
-            {key: 0.2, isValid: true},
-            {key: 0.3, isValid: true}
+            {key: 0.0, invalidatesField: true},
+            {key: 0.1, invalidatesField: true},
+            {key: 0.2, invalidatesField: false},
+            {key: 0.3, invalidatesField: false}
           ]
         },
         {
           fieldName: 'password',
           isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 1.0, isValid: false},
-            {key: 1.1, isValid: false},
-            {key: 1.2, isValid: true}
+            {key: 1.0, invalidatesField: true},
+            {key: 1.1, invalidatesField: true},
+            {key: 1.2, invalidatesField: false}
           ]
         },
         {
           fieldName: 'passwordConfirm',
           isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 2.0, isValid: true}
+            {key: 2.0, invalidatesField: false}
           ]
         }
       ]);
@@ -257,26 +257,26 @@ describe('validate', () => {
           fieldName: 'username',
           isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 0.0, isValid: false},
-            {key: 0.1, isValid: false},
-            {key: 0.2, isValid: true},
-            {key: 0.3, isValid: true}
+            {key: 0.0, invalidatesField: true},
+            {key: 0.1, invalidatesField: true},
+            {key: 0.2, invalidatesField: false},
+            {key: 0.3, invalidatesField: false}
           ]
         },
         {
           fieldName: 'password',
           isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 1.0, isValid: false},
-            {key: 1.1, isValid: false},
-            {key: 1.2, isValid: true}
+            {key: 1.0, invalidatesField: true},
+            {key: 1.1, invalidatesField: true},
+            {key: 1.2, invalidatesField: false}
           ]
         },
         {
           fieldName: 'passwordConfirm',
           isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 2.0, isValid: true}
+            {key: 2.0, invalidatesField: false}
           ]
         }
       ]);
@@ -300,26 +300,26 @@ describe('validate', () => {
           fieldName: 'username',
           isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 0.0, isValid: true},
-            {key: 0.1, isValid: true},
-            {key: 0.2, isValid: true},
-            {key: 0.4, isValid: true} // FieldFeedback key incremented because Async created a new FieldFeedback
+            {key: 0.0, invalidatesField: false},
+            {key: 0.1, invalidatesField: false},
+            {key: 0.2, invalidatesField: false},
+            {key: 0.4, invalidatesField: false} // FieldFeedback key incremented because Async created a new FieldFeedback
           ]
         },
         {
           fieldName: 'password',
           isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 1.0, isValid: true},
-            {key: 1.1, isValid: false},
-            {key: 1.2, isValid: true}
+            {key: 1.0, invalidatesField: false},
+            {key: 1.1, invalidatesField: true},
+            {key: 1.2, invalidatesField: false}
           ]
         },
         {
           fieldName: 'passwordConfirm',
           isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 2.0, isValid: false}
+            {key: 2.0, invalidatesField: true}
           ]
         }
       ]);
@@ -365,26 +365,26 @@ describe('validate', () => {
           fieldName: 'username',
           isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 0.0, isValid: true},
-            {key: 0.1, isValid: true},
-            {key: 0.2, isValid: true},
-            {key: 0.3, isValid: false}
+            {key: 0.0, invalidatesField: false},
+            {key: 0.1, invalidatesField: false},
+            {key: 0.2, invalidatesField: false},
+            {key: 0.3, invalidatesField: true}
           ]
         },
         {
           fieldName: 'password',
           isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 1.0, isValid: true},
-            {key: 1.1, isValid: false},
-            {key: 1.2, isValid: true}
+            {key: 1.0, invalidatesField: false},
+            {key: 1.1, invalidatesField: true},
+            {key: 1.2, invalidatesField: false}
           ]
         },
         {
           fieldName: 'passwordConfirm',
           isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 2.0, isValid: false}
+            {key: 2.0, invalidatesField: true}
           ]
         }
       ]);
@@ -412,26 +412,26 @@ describe('validate', () => {
           fieldName: 'username',
           isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 0.0, isValid: false},
-            {key: 0.1, isValid: false},
-            {key: 0.2, isValid: true},
-            {key: 0.3, isValid: true}
+            {key: 0.0, invalidatesField: true},
+            {key: 0.1, invalidatesField: true},
+            {key: 0.2, invalidatesField: false},
+            {key: 0.3, invalidatesField: false}
           ]
         },
         {
           fieldName: 'password',
           isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 1.0, isValid: false},
-            {key: 1.1, isValid: false},
-            {key: 1.2, isValid: true}
+            {key: 1.0, invalidatesField: true},
+            {key: 1.1, invalidatesField: true},
+            {key: 1.2, invalidatesField: false}
           ]
         },
         {
           fieldName: 'passwordConfirm',
           isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 2.0, isValid: true}
+            {key: 2.0, invalidatesField: false}
           ]
         }
       ]);

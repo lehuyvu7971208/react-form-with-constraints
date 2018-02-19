@@ -69,7 +69,7 @@ export class FormWithConstraints extends _FormWithConstraints {
             // tslint:disable-next-line:no-object-literal-type-assertion
             {
               fieldName,
-              isValid: () => fieldFeedbackValidations.every(fieldFeedbackValidation => fieldFeedbackValidation.isValid!),
+              isValid: () => fieldFeedbackValidations.every(fieldFeedbackValidation => !fieldFeedbackValidation.invalidatesField),
               fieldFeedbackValidations
             } as FieldFeedbacksValidation
           ));

@@ -87,7 +87,7 @@ export class FieldFeedback extends React.Component<FieldFeedbackProps> {
 
     const fieldFeedbackValidation: FieldFeedbackValidation = {
       key: this.key,
-      isValid: undefined // undefined means the FieldFeedback was not checked
+      invalidatesField: undefined // undefined means the FieldFeedback was not checked
     };
 
     if (fieldFeedbacks.props.stop === 'first-error' && fieldFeedbacks.hasErrors()) {
@@ -131,9 +131,7 @@ export class FieldFeedback extends React.Component<FieldFeedbackProps> {
         throw new TypeError(`Invalid FieldFeedback 'when' type: ${typeof when}`);
       }
 
-      const invalidatesField = this.updateFieldsStore(input, show);
-
-      fieldFeedbackValidation.isValid = !invalidatesField;
+      fieldFeedbackValidation.invalidatesField = this.updateFieldsStore(input, show);
     }
 
     return fieldFeedbackValidation;

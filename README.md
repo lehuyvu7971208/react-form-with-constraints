@@ -237,7 +237,7 @@ class MyForm extends React.Component {
       isValid: () => boolean;
       fieldFeedbackValidations: {
         key: number;
-        isValid: boolean | undefined;
+        invalidatesField: boolean | undefined;
       }[]; // FieldFeedbackValidation[]
     }
     ```
