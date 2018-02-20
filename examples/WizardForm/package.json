@@ -29,6 +29,7 @@
     "@types/webpack": "latest",
     "ts-loader": "latest",
     "file-loader": "latest",
+    "source-map-loader": "latest",
 
     "del-cli": "latest",
     "cross-env": "latest"
