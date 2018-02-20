@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 import {
   FormWithConstraints as _FormWithConstraints, FormWithConstraintsProps, FormWithConstraintsChildContext,
-  FieldFeedbacksValidation, Input
+  FieldValidation, Input
 } from 'react-form-with-constraints';
 
 export interface FormControlInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -11,7 +11,7 @@ export interface FormControlInputProps extends React.InputHTMLAttributes<HTMLInp
 }
 
 export interface FormControlInputState {
-  pending: boolean;
+  fieldValidation: FieldValidation | undefined; /* undefined means pending + do not show anything */
 }
 
 export type FormControlInputContext = FormWithConstraintsChildContext;
@@ -26,7 +26,7 @@ export class FormControlInput extends React.Component<FormControlInputProps, For
     super(props);
 
     this.state = {
-      pending: false
+      fieldValidation: undefined
     };
 
     this.fieldValidated = this.fieldValidated.bind(this);
@@ -43,26 +43,28 @@ export class FormControlInput extends React.Component<FormControlInputProps, For
     this.context.form.removeResetFormEventListener(this.reset);
   }
 
-  async fieldValidated(input: Input, fieldValidationsPromise: Promise<FieldFeedbacksValidation>) {
+  async fieldValidated(input: Input, fieldValidationPromise: Promise<FieldValidation>) {
     if (input.name === this.props.name) { // Ignore the event if it's not for us
-      this.setState({pending: true});
-      await fieldValidationsPromise;
-      this.setState({pending: false});
+      this.setState({fieldValidation: undefined});
+      const fieldValidation = await fieldValidationPromise;
+      this.setState({fieldValidation});
     }
   }
 
   reset() {
-    this.setState({pending: false});
+    this.setState({fieldValidation: undefined});
   }
 
-  className(name: string | undefined) {
+  className() {
+    const { fieldValidation } = this.state;
+
     let className = 'form-control';
-    if (this.state.pending !== true && name !== undefined) {
-      const form = this.context.form;
-      if (form.fieldsStore.hasErrorsFor(name)) {
+
+    if (fieldValidation !== undefined) {
+      if (fieldValidation.hasErrors()) {
         className += ' is-invalid';
       }
-      else if (form.fieldsStore.hasWarningsFor(name)) {
+      else if (fieldValidation.hasWarnings()) {
         // form-control-warning did exist in Bootstrap v4.0.0-alpha.6:
         // see https://v4-alpha.getbootstrap.com/components/forms/#validation
         // see https://github.com/twbs/bootstrap/blob/v4.0.0-alpha.6/scss/_forms.scss#L255
@@ -71,7 +73,7 @@ export class FormControlInput extends React.Component<FormControlInputProps, For
         // see https://github.com/twbs/bootstrap/blob/v3.3.7/less/forms.less#L431
         className += ' is-warning';
       }
-      else if (form.fieldsStore.isValidWithoutWarnings(name)) {
+      else if (fieldValidation.isValid()) {
         className += ' is-valid';
       }
     }
@@ -80,7 +82,7 @@ export class FormControlInput extends React.Component<FormControlInputProps, For
 
   render() {
     const { innerRef, className, children, ...inputProps } = this.props;
-    const classes = className !== undefined ? `${className} ${this.className(inputProps.name)}` : this.className(inputProps.name);
+    const classes = className !== undefined ? `${className} ${this.className()}` : this.className();
     return (
       <input ref={innerRef} {...inputProps} className={classes} />
     );

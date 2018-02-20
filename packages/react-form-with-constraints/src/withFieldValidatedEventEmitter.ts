@@ -1,7 +1,7 @@
 import { EventEmitter, Listener } from './EventEmitter';
 import Input from './Input';
 import Constructor from './Constructor';
-import FieldFeedbacksValidation from './FieldFeedbacksValidation';
+import FieldValidation from './FieldValidation';
 
 export const FieldValidatedEvent = 'FIELD_VALIDATED_EVENT';
 
@@ -10,8 +10,8 @@ export default function withFieldValidatedEventEmitter<TBase extends Constructor
   return class FieldValidatedEventEmitter extends Base {
     fieldValidatedEventEmitter = new EventEmitter();
 
-    emitFieldValidatedEvent(input: Input, fieldValidationsPromise: Promise<FieldFeedbacksValidation>) {
-      return this.fieldValidatedEventEmitter.emit(FieldValidatedEvent, input, fieldValidationsPromise);
+    emitFieldValidatedEvent(input: Input, fieldValidationPromise: Promise<FieldValidation>) {
+      return this.fieldValidatedEventEmitter.emit(FieldValidatedEvent, input, fieldValidationPromise);
     }
 
     addFieldValidatedEventListener(listener: Listener) {

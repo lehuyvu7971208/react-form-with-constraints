@@ -42,7 +42,7 @@ class Form extends React.Component<Props, State> {
       [target.name as any]: target.value
     });
 
-    // Validates only the given field and returns the related FieldFeedbacksValidation structures
+    // Validates only the given field and returns the related FieldValidation structures
     const fieldFeedbacksValidations = await this.form!.validateFields(target);
 
     const fieldIsValid = fieldFeedbacksValidations.every(fieldFeedbacksValidation => fieldFeedbacksValidation.isValid());
@@ -74,7 +74,7 @@ class Form extends React.Component<Props, State> {
   async handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    // Validates the non-dirty fields and returns the related FieldFeedbacksValidation structures
+    // Validates the non-dirty fields and returns the related FieldValidation structures
     const fieldFeedbacksValidations = await this.form!.validateForm();
 
     // or simply this.form.isValid();

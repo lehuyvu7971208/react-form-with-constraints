@@ -4,8 +4,8 @@ import { useStrict, observable, action, computed } from 'mobx';
 import { observer } from 'mobx-react';
 import DevTools from 'mobx-react-devtools';
 
-import { FormWithConstraints, FieldFeedbacks, FieldFeedback } from 'react-form-with-constraints';
-import { DisplayFields } from 'react-form-with-constraints-tools';
+import { FormWithConstraints } from 'react-form-with-constraints';
+import { DisplayFields, FieldFeedbacks, FieldFeedback } from 'react-form-with-constraints-tools';
 
 import './index.html';
 import './style.css';
@@ -243,7 +243,7 @@ interface DisplayClubProps {
 }
 
 const DisplayClub = observer(({club}: DisplayClubProps) =>
-  <pre>Club = {JSON.stringify(club, null, 2)}</pre>
+  <pre style={{fontSize: 'small'}}>Club = {JSON.stringify(club, null, 2)}</pre>
 );
 (DisplayClub as React.SFC).displayName = 'DisplayClub';
 

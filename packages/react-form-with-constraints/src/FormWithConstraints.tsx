@@ -4,8 +4,8 @@ import PropTypes from 'prop-types';
 import withValidateFieldEventEmitter from './withValidateFieldEventEmitter';
 import withFieldValidatedEventEmitter from './withFieldValidatedEventEmitter';
 import withResetFormEventEmitter from './withResetFormEventEmitter';
-import FieldFeedbackValidation from './FieldFeedbackValidation';
-import FieldFeedbacksValidation from './FieldFeedbacksValidation';
+import { FieldFeedbackValidation } from './FieldFeedbackValidation';
+import FieldValidation from './FieldValidation';
 // @ts-ignore
 // TS6133: 'EventEmitter' is declared but its value is never read.
 // FIXME See https://github.com/Microsoft/TypeScript/issues/9944#issuecomment-309903027
@@ -117,16 +117,16 @@ export class FormWithConstraints
    * If called without arguments, validates all fields ($('[name]')).
    */
   validateFields(...inputsOrNames: Array<Input | string>) {
-    return this._validateFields(true /* validateDirtyFields */, ...inputsOrNames);
+    return this._validateFields(true /* forceValidateFields */, ...inputsOrNames);
   }
 
-  // Validates only what's necessary (e.g. non-dirty fields)
+  // Validates only what's necessary (e.g. non-checked fields)
   validateForm() {
-    return this._validateFields(false /* validateDirtyFields */);
+    return this._validateFields(false /* forceValidateFields */);
   }
 
-  private _validateFields(validateDirtyFields: boolean, ...inputsOrNames: Array<Input | string>) {
-    const fieldValidationPromises = new Array<Promise<FieldFeedbacksValidation>>();
+  private _validateFields(forceValidateFields: boolean, ...inputsOrNames: Array<Input | string>) {
+    const fieldValidationPromises = new Array<Promise<FieldValidation>>();
 
     const inputs = this.normalizeInputs(...inputsOrNames);
 
@@ -134,7 +134,15 @@ export class FormWithConstraints
       const fieldName = input.name;
 
       const field = this.fieldsStore.fields[fieldName];
-      if (validateDirtyFields || (field !== undefined && !field.dirty)) {
+
+      if (field === undefined) {
+        // Means the field (<input name="username">) does not have a FieldFeedbacks
+        // so let's ignore this field
+      }
+
+      else if (forceValidateFields || !field.validated) {
+        field.invalid = false; // Since we re-validate the field, reset the invalid state
+
         const fieldFeedbackValidationsPromises = this.emitValidateFieldEvent(input)
           .filter(fieldFeedbackValidations => fieldFeedbackValidations !== undefined) // Remove undefined results
           .map(fieldFeedbackValidations => Promise.resolve(fieldFeedbackValidations!)); // Transforms all results into Promises
@@ -144,14 +152,7 @@ export class FormWithConstraints
             // See Merge/flatten an array of arrays in JavaScript? https://stackoverflow.com/q/10865025/990356
             validations.reduce((prev, curr) => prev.concat(curr), [])
           )
-          .then(fieldFeedbackValidations => (
-            // tslint:disable-next-line:no-object-literal-type-assertion
-            {
-              fieldName,
-              isValid: () => fieldFeedbackValidations.every(fieldFeedbackValidation => !fieldFeedbackValidation.invalidatesField),
-              fieldFeedbackValidations
-            } as FieldFeedbacksValidation
-          ));
+          .then(fieldFeedbackValidations => new FieldValidation(fieldName, fieldFeedbackValidations));
 
         this.emitFieldValidatedEvent(input, fieldValidationPromise);
 
@@ -197,12 +198,13 @@ export class FormWithConstraints
     return inputs;
   }
 
-  // Lazy check => the fields structure might be incomplete
+  // Does not check if fields are dirty
   isValid() {
     const fieldNames = Object.keys(this.fieldsStore.fields);
-    return fieldNames.every(fieldName => !this.fieldsStore.hasErrorsFor(fieldName));
+    return fieldNames.every(fieldName => !this.fieldsStore.fields[fieldName]!.invalid);
   }
 
+  // FIXME
   reset() {
     this.fieldsStore.reset();
     this.emitResetFormEvent();

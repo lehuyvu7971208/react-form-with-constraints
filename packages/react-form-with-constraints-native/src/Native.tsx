@@ -7,7 +7,7 @@ import {
   FieldFeedback as _FieldFeedback,
   FieldFeedbackWhenValid as _FieldFeedbackWhenValid,
   FieldFeedbacks as _FieldFeedbacks,
-  FieldFeedbacksValidation
+  FieldValidation
 } from 'react-form-with-constraints';
 
 // Recursive React.Children.forEach()
@@ -35,11 +35,11 @@ export class FormWithConstraints extends _FormWithConstraints {
   // @ts-ignore
   // TS2416: Property 'validateFields' in type 'FormWithConstraints' is not assignable to the same property in base type 'FormWithConstraints'
   validateFields(...inputsOrNames: Array<TextInput | string>) {
-    return this._validateFields(true /* validateDirtyFields */, ...inputsOrNames);
+    return this._validateFields(true /* forceValidateFields */, ...inputsOrNames);
   }
 
-  private _validateFields(validateDirtyFields: boolean, ...inputsOrNames: Array<TextInput | string>) {
-    const fieldValidationPromises = new Array<Promise<FieldFeedbacksValidation>>();
+  private _validateFields(forceValidateFields: boolean, ...inputsOrNames: Array<TextInput | string>) {
+    const fieldValidationPromises = new Array<Promise<FieldValidation>>();
 
     const inputs = this.normalizeInputs(...inputsOrNames);
 
@@ -55,7 +55,13 @@ export class FormWithConstraints extends _FormWithConstraints {
       };
 
       const field = this.fieldsStore.fields[fieldName];
-      if (validateDirtyFields || (field !== undefined && !field.dirty)) {
+
+      if (field === undefined) {
+        // Means the field (<input name="username">) does not have a FieldFeedbacks
+        // so let's ignore this field
+      }
+
+      else if (forceValidateFields || !field.validated) {
         const fieldFeedbackValidationsPromise = this.emitValidateFieldEvent(_input)
           .filter(fieldFeedbackValidations => fieldFeedbackValidations !== undefined) // Remove undefined results
           .map(fieldFeedbackValidations => Promise.resolve(fieldFeedbackValidations!)); // Transforms all results into Promises
@@ -65,14 +71,7 @@ export class FormWithConstraints extends _FormWithConstraints {
             // See Merge/flatten an array of arrays in JavaScript? https://stackoverflow.com/q/10865025/990356
             validations.reduce((prev, curr) => prev.concat(curr), [])
           )
-          .then(fieldFeedbackValidations => (
-            // tslint:disable-next-line:no-object-literal-type-assertion
-            {
-              fieldName,
-              isValid: () => fieldFeedbackValidations.every(fieldFeedbackValidation => !fieldFeedbackValidation.invalidatesField),
-              fieldFeedbackValidations
-            } as FieldFeedbacksValidation
-          ));
+          .then(fieldFeedbackValidations => new FieldValidation(fieldName, fieldFeedbackValidations));
 
         this.emitFieldValidatedEvent(_input, fieldValidationPromise);
 

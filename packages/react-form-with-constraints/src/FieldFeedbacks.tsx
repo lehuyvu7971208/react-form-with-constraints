@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 import { FormWithConstraintsChildContext } from './FormWithConstraints';
 import withValidateFieldEventEmitter from './withValidateFieldEventEmitter';
-import FieldFeedbackValidation from './FieldFeedbackValidation';
+import { FieldFeedbackValidation } from './FieldFeedbackValidation';
 // @ts-ignore
 // TS6133: 'EventEmitter' is declared but its value is never read.
 // FIXME See https://github.com/Microsoft/TypeScript/issues/9944#issuecomment-309903027
@@ -55,9 +55,9 @@ export class FieldFeedbacks extends withValidateFieldEventEmitter<ListenerReturn
   constructor(props: FieldFeedbacksProps, context: FieldFeedbacksContext) {
     super(props, context);
 
-    this.validate = this.validate.bind(this);
-
     this.key = context.form.computeFieldFeedbacksKey();
+
+    this.validate = this.validate.bind(this);
   }
 
   // FieldFeedback key = FieldFeedbacks key + increment
@@ -65,7 +65,6 @@ export class FieldFeedbacks extends withValidateFieldEventEmitter<ListenerReturn
   // 0.0, 0.1, 0.2 with 0 being the FieldFeedbacks key
   // 1.0, 1.1, 1.2 with 1 being the FieldFeedbacks key
   //
-  // This solves the problem when having multiple FieldFeedbacks with the same for attribute:
   // <FieldFeedbacks for="username" stop="first-error"> key=0
   //   <FieldFeedback ...> key=0.0
   //   <FieldFeedback ...> key=0.1
@@ -76,30 +75,18 @@ export class FieldFeedbacks extends withValidateFieldEventEmitter<ListenerReturn
   //   <FieldFeedback ...> key=1.2
   // </FieldFeedbacks>
   //
-  // We could use a string here instead of a number
-  //
   // Public instead of private because of the unit tests
   fieldFeedbackKeyCounter = 0;
   computeFieldFeedbackKey() {
-    // Example: this.key = 5, this.fieldFeedbackKey = 2 => 5.2
-    if (this.fieldFeedbackKeyCounter !== 0 && this.fieldFeedbackKeyCounter % 10 === 0) {
-      // Avoid 10, 100, 1000... and make it 11, 101, 1001...
-      // otherwise 1.10 becomes 1.1 as a number => bug
-      this.fieldFeedbackKeyCounter += 1;
-    }
-    return parseFloat(`${this.key}.${this.fieldFeedbackKeyCounter++}`);
+    return `${this.key}.${this.fieldFeedbackKeyCounter++}`;
   }
 
   addFieldFeedback() {
     return this.computeFieldFeedbackKey();
   }
 
-  removeFieldFeedback(key: number) {
-    const fieldName = this.props.for;
-    this.context.form.fieldsStore.removeFieldFor(fieldName, key);
-  }
-
   componentWillMount() {
+    // FIXME What about multiple FieldFeedbacks for the same field?
     const fieldName = this.props.for;
     this.context.form.fieldsStore.addField(fieldName);
 
@@ -107,32 +94,25 @@ export class FieldFeedbacks extends withValidateFieldEventEmitter<ListenerReturn
   }
 
   componentWillUnmount() {
-    // FieldFeedbacks.componentWillUnmount() is called before (instead of after) its children FieldFeedback.componentWillUnmount()
+    // FIXME What about multiple FieldFeedbacks for the same field?
+    // FIXME FieldFeedbacks.componentWillUnmount() is called before (instead of after) its children FieldFeedback.componentWillUnmount()
     const fieldName = this.props.for;
     this.context.form.fieldsStore.removeField(fieldName);
 
     this.context.form.removeValidateFieldEventListener(this.validate);
   }
 
+  // FIXME Remove? cannot because of Async
   validate(input: Input) {
     const { for: fieldName } = this.props;
 
     let fieldFeedbackValidations;
 
     if (input.name === fieldName) { // Ignore the event if it's not for us
-      // Clear the errors/warnings/infos each time we re-validate the input
-      this.context.form.fieldsStore.removeFieldFor(fieldName, this.key);
-
       fieldFeedbackValidations = this.emitValidateFieldEvent(input);
     }
 
     return fieldFeedbackValidations;
-  }
-
-  hasErrors() {
-    const { for: fieldName } = this.props;
-    const field = this.context.form.fieldsStore.getFieldFor(fieldName, this.key);
-    return field.errors.size > 0;
   }
 
   render() {

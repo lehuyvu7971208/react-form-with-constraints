@@ -382,7 +382,7 @@ describe('className()', () => {
     const form = new_FormWithConstraints({});
     form.fieldsStore.fields = {
       username: {
-        dirty: true,
+        validated: true,
         errors: new Set([0.1]),
         warnings: new Set(),
         infos: new Set(),
@@ -404,7 +404,7 @@ describe('className()', () => {
     const form = new_FormWithConstraints({});
     form.fieldsStore.fields = {
       username: {
-        dirty: true,
+        validated: true,
         errors: new Set(),
         warnings: new Set([0.1]),
         infos: new Set(),
@@ -426,7 +426,7 @@ describe('className()', () => {
     const form = new_FormWithConstraints({});
     form.fieldsStore.fields = {
       username: {
-        dirty: true,
+        validated: true,
         errors: new Set(),
         warnings: new Set(),
         infos: new Set([0.1]),
@@ -448,7 +448,7 @@ describe('className()', () => {
     const form = new_FormWithConstraints({});
     form.fieldsStore.fields = {
       username: {
-        dirty: false,
+        validated: false,
         errors: new Set(),
         warnings: new Set(),
         infos: new Set(),
@@ -472,7 +472,7 @@ describe('render()', () => {
     const form = new_FormWithConstraints({});
     form.fieldsStore.fields = {
       username: {
-        dirty: true,
+        validated: true,
         errors: new Set([0.1]),
         warnings: new Set(),
         infos: new Set(),
@@ -493,7 +493,7 @@ describe('render()', () => {
     const form = new_FormWithConstraints({});
     form.fieldsStore.fields = {
       username: {
-        dirty: true,
+        validated: true,
         errors: new Set([0.1]),
         warnings: new Set(),
         infos: new Set(),
@@ -514,7 +514,7 @@ describe('render()', () => {
     const form = new_FormWithConstraints({});
     form.fieldsStore.fields = {
       username: {
-        dirty: true,
+        validated: true,
         errors: new Set([0.1]),
         warnings: new Set(),
         infos: new Set(),
@@ -535,7 +535,7 @@ describe('render()', () => {
     const form = new_FormWithConstraints({});
     form.fieldsStore.fields = {
       username: {
-        dirty: true,
+        validated: true,
         errors: new Set(),
         warnings: new Set(),
         infos: new Set(),
@@ -556,7 +556,7 @@ describe('render()', () => {
     const form = new_FormWithConstraints({});
     form.fieldsStore.fields = {
       username: {
-        dirty: true,
+        validated: true,
         errors: new Set([0.1]),
         warnings: new Set(),
         infos: new Set(),

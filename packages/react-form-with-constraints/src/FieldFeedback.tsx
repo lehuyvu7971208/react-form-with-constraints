@@ -5,8 +5,7 @@ import { FormWithConstraintsChildContext } from './FormWithConstraints';
 import { FieldFeedbacksChildContext } from './FieldFeedbacks';
 import { AsyncChildContext } from './Async';
 import Input from './Input';
-import FieldFeedbackValidation from './FieldFeedbackValidation';
-import { FieldEvent } from './FieldsStore';
+import { FieldFeedbackType, FieldFeedbackValidation } from './FieldFeedbackValidation';
 import { FieldFeedbackWhenValid } from './FieldFeedbackWhenValid';
 
 export type WhenString =
@@ -31,9 +30,18 @@ export interface FieldFeedbackProps extends React.HTMLAttributes<HTMLDivElement>
   info?: boolean;
 }
 
+export interface FieldFeedbackState {
+  validation: FieldFeedbackValidation;
+
+  // Copy of input.validationMessage
+  // See https://developer.mozilla.org/en/docs/Web/API/HTMLInputElement
+  // See https://www.w3.org/TR/html51/sec-forms.html#the-constraint-validation-api
+  validationMessage: string;
+}
+
 export type FieldFeedbackContext = FormWithConstraintsChildContext & FieldFeedbacksChildContext & Partial<AsyncChildContext>;
 
-export class FieldFeedback extends React.Component<FieldFeedbackProps> {
+export class FieldFeedback extends React.Component<FieldFeedbackProps, FieldFeedbackState> {
   static defaultProps: Partial<FieldFeedbackProps> = {
     when: () => true
   };
@@ -45,64 +53,75 @@ export class FieldFeedback extends React.Component<FieldFeedbackProps> {
   };
   context!: FieldFeedbackContext;
 
-  // Example: key=0.1
-  key: number;
+  // Example: key="0.1"
+  key: string;
 
   constructor(props: FieldFeedbackProps, context: FieldFeedbackContext) {
     super(props);
 
     this.key = context.fieldFeedbacks.addFieldFeedback();
 
-    // Special case for when="valid"
     const { error, warning, info, when } = props;
-    if (when === 'valid' && (error || warning || info)) {
+
+    let type = FieldFeedbackType.Error; // Default is error
+    if (warning) type = FieldFeedbackType.Warning;
+    else if (info) type = FieldFeedbackType.Info;
+    else if (when === 'valid') type = FieldFeedbackType.WhenValid;
+
+    // Special case for when="valid"
+    if (type === FieldFeedbackType.WhenValid && (error || warning || info)) {
       throw new Error('Cannot have an attribute (error, warning...) with FieldFeedback when="valid"');
     }
 
+    this.state = {
+      validation: {
+        key: this.key,
+        type,
+        show: false
+      },
+      validationMessage: ''
+    };
+
     this.validate = this.validate.bind(this);
-    this.reRender = this.reRender.bind(this);
+    this.reset = this.reset.bind(this);
   }
 
   componentWillMount() {
     if (this.context.async) this.context.async.addValidateFieldEventListener(this.validate);
     else this.context.fieldFeedbacks.addValidateFieldEventListener(this.validate);
 
-    this.context.form.fieldsStore.addListener(FieldEvent.Updated, this.reRender);
+    this.context.form.addResetFormEventListener(this.reset);
   }
 
   componentWillUnmount() {
-    // FieldFeedbacks.componentWillUnmount() is called before (instead of after) its children FieldFeedback.componentWillUnmount()
-    this.context.fieldFeedbacks.removeFieldFeedback(this.key);
-
     if (this.context.async) this.context.async.removeValidateFieldEventListener(this.validate);
     else this.context.fieldFeedbacks.removeValidateFieldEventListener(this.validate);
 
-    this.context.form.fieldsStore.removeListener(FieldEvent.Updated, this.reRender);
+    this.context.form.removeResetFormEventListener(this.reset);
   }
 
-  // Generates Field for Fields structure
+  // Generates FieldFeedbackValidation structure
   validate(input: Input) {
     const { when } = this.props;
-    const { fieldFeedbacks } = this.context;
+    const { form, fieldFeedbacks } = this.context;
 
-    const fieldFeedbackValidation: FieldFeedbackValidation = {
-      key: this.key,
-      invalidatesField: undefined // undefined means the FieldFeedback was not checked
-    };
+    let show: boolean | undefined = false;
 
-    if (fieldFeedbacks.props.stop === 'first-error' && fieldFeedbacks.hasErrors()) {
+    const fieldName = fieldFeedbacks.props.for;
+    const field = form.fieldsStore.fields[fieldName]!;
+
+    if (fieldFeedbacks.props.stop === 'first-error' && field.validated && field.invalid) {
       // No need to perform validation if another FieldFeedback is already invalid
     }
     else {
-      let show = false;
-
       if (typeof when === 'function') {
         show = when(input.value);
       }
 
       else if (typeof when === 'string') {
         if (when === 'valid') {
-          show = true;
+          // undefined => special case for when="valid": always displayed, then FieldFeedbackWhenValid decides what to do
+          show = undefined;
         } else {
           const validity = input.validity;
 
@@ -130,70 +149,53 @@ export class FieldFeedback extends React.Component<FieldFeedbackProps> {
       else {
         throw new TypeError(`Invalid FieldFeedback 'when' type: ${typeof when}`);
       }
-
-      fieldFeedbackValidation.invalidatesField = this.updateFieldsStore(input, show);
     }
 
-    return fieldFeedbackValidation;
+    const validation = {...this.state.validation}; // Copy state so we don't modify it directly (use of setState() instead)
+    validation.show = show;
+
+    form.fieldsStore.updateField(fieldName, {
+      validated: true,
+      invalid: field.invalid || (validation.type === FieldFeedbackType.Error && show === true)
+    });
+
+    this.setState({
+      validation,
+      validationMessage: input.validationMessage
+    });
+
+    return validation;
   }
 
-  // Update the Fields structure
-  updateFieldsStore(input: Input, show: boolean) {
-    const { warning, info, when } = this.props;
-    const fieldName = this.context.fieldFeedbacks.props.for;
-
-    let invalidatesField = false;
-
-    const field = this.context.form.fieldsStore.cloneField(fieldName);
-    field.dirty = true;
-    field.validationMessage = input.validationMessage;
-    if (show) {
-      // No need to "append if not already there": Set ignores duplicates
-      if (warning) field.warnings.add(this.key);
-      else if (info) field.infos.add(this.key);
-      else if (when === 'valid') { /* Do nothing */ }
-      else {
-        field.errors.add(this.key); // Feedback type is error if nothing is specified
-        invalidatesField = true;
-      }
-    }
-    this.context.form.fieldsStore.updateField(fieldName, field);
-
-    return invalidatesField;
+  reset() {
+    this.setState(prevState => ({
+      validation: {...prevState.validation, ...{show: false}},
+      validationMessage: ''
+    }));
   }
 
   className() {
-    const { form, fieldFeedbacks } = this.context;
-    const { for: fieldName } = fieldFeedbacks.props;
+    const { validation } = this.state;
+    const classNames = this.context.form.props.fieldFeedbackClassNames!;
 
-    // Retrieve errors/warnings/infos only related to the parent FieldFeedbacks
-    const { errors, warnings, infos } = this.context.form.fieldsStore.getFieldFor(fieldName, fieldFeedbacks.key);
+    let className;
 
-    let className: string | undefined;
-
-    if (errors.has(this.key)) className = form.props.fieldFeedbackClassNames!.error;
-    else if (warnings.has(this.key)) className = form.props.fieldFeedbackClassNames!.warning;
-    else if (infos.has(this.key)) className = form.props.fieldFeedbackClassNames!.info;
+    if (validation.show) {
+      if (validation.type === FieldFeedbackType.Error) className = classNames.error;
+      else if (validation.type === FieldFeedbackType.Warning) className = classNames.warning;
+      else if (validation.type === FieldFeedbackType.Info) className = classNames.info;
+    }
 
     return className;
   }
 
-  reRender(_fieldName: string) {
-    const fieldName = this.context.fieldFeedbacks.props.for;
-    if (fieldName === _fieldName) { // Ignore the event if it's not for us
-      this.forceUpdate();
-    }
-  }
-
   render() {
     const { when, error, warning, info, className, children, ...divProps } = this.props;
-    const { form, fieldFeedbacks } = this.context;
-    const { for: fieldName } = fieldFeedbacks.props;
-    const { validationMessage } = form.fieldsStore.getFieldFor(fieldName, fieldFeedbacks.key);
+    const { validation, validationMessage } = this.state;
 
-    // Special case for when="valid"
-    if (when === 'valid') {
-      return <FieldFeedbackWhenValid>{children}</FieldFeedbackWhenValid>;
+    // Special case for when="valid": always displayed, then FieldFeedbackWhenValid decides what to do
+    if (validation.type === FieldFeedbackType.WhenValid) {
+      return <FieldFeedbackWhenValid data-field-feedback-key={this.key} {...divProps}>{children}</FieldFeedbackWhenValid>;
     }
 
     let classes = this.className();

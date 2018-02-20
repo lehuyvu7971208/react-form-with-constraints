@@ -7,7 +7,7 @@ import withValidateFieldEventEmitter from './withValidateFieldEventEmitter';
 // @ts-ignore
 // TS6133: 'FieldFeedbackValidation' is declared but its value is never read.
 // FIXME See https://github.com/Microsoft/TypeScript/issues/9944#issuecomment-309903027
-import FieldFeedbackValidation from './FieldFeedbackValidation';
+import { FieldFeedbackValidation } from './FieldFeedbackValidation';
 // @ts-ignore
 // TS6133: 'EventEmitter' is declared but its value is never read.
 // FIXME See https://github.com/Microsoft/TypeScript/issues/9944#issuecomment-309903027
@@ -83,14 +83,17 @@ export class Async<T> extends withValidateFieldEventEmitter<ListenerReturnType, 
   }
 
   validate(input: Input) {
-    const { fieldFeedbacks } = this.context;
+    const { form, fieldFeedbacks } = this.context;
     const fieldName = fieldFeedbacks.props.for;
 
     let fieldFeedbackValidationsPromise;
 
+    const field = form.fieldsStore.fields[fieldName]!;
+
     if (input.name === fieldName) { // Ignore the event if it's not for us
-      if (fieldFeedbacks.props.stop === 'first-error' && fieldFeedbacks.hasErrors()) {
+      if (fieldFeedbacks.props.stop === 'first-error' && field.validated && field.invalid) {
         // No need to perform validation if another FieldFeedback is already invalid
+        this.setState({status: Status.None});
       }
       else {
         this.setState({status: Status.Pending});
@@ -98,14 +101,12 @@ export class Async<T> extends withValidateFieldEventEmitter<ListenerReturnType, 
         fieldFeedbackValidationsPromise = this.props.promise(input.value)
 
           // See Make setState return a promise https://github.com/facebook/react/issues/2642
-          // The Promise returned is Promise<undefined>
           .then(value =>
                                                                                                 // Instead of Promise<{}> given by TypeScript 2.6.2, verified inside vscode debugguer
             new Promise(resolve => this.setState({status: Status.Resolved, value}, resolve)) as Promise<undefined>
           )
 
           // setState() wrapped inside a promise so validate() Promise is done when setState() is done
-          // The Promise returned is Promise<undefined>
           .catch(e =>
                                                                                                    // Instead of Promise<{}> given by TypeScript 2.6.2, verified inside vscode debugguer
             new Promise(resolve => this.setState({status: Status.Rejected, value: e}, resolve)) as Promise<undefined>
@@ -113,7 +114,6 @@ export class Async<T> extends withValidateFieldEventEmitter<ListenerReturnType, 
 
           // See Promises: Execute something regardless of resolve/reject? https://stackoverflow.com/q/38830314
           // Instead of componentDidUpdate()
-          // The Promise returned is Promise<FieldFeedbackValidation[]> (Promise<{key: number, show: boolean}[]>)
           .then(() => this.emitValidateFieldEvent(input));
       }
     }

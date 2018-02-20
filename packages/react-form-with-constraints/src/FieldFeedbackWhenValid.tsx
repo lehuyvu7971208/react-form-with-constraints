@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 import { FormWithConstraintsChildContext } from './FormWithConstraints';
 import { FieldFeedbacksChildContext } from './FieldFeedbacks';
-import FieldFeedbacksValidation from './FieldFeedbacksValidation';
+import FieldValidation from './FieldValidation';
 import Input from './Input';
 
 export interface FieldFeedbackWhenValidProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -43,7 +43,7 @@ export class FieldFeedbackWhenValid extends React.Component<FieldFeedbackWhenVal
     this.context.form.removeResetFormEventListener(this.reset);
   }
 
-  async fieldValidated(input: Input, fieldValidationsPromise: Promise<FieldFeedbacksValidation>) {
+  async fieldValidated(input: Input, fieldValidationsPromise: Promise<FieldValidation>) {
     const fieldName = this.context.fieldFeedbacks.props.for;
     if (input.name === fieldName) { // Ignore the event if it's not for us
       this.setState({fieldIsValid: undefined});
@@ -57,13 +57,13 @@ export class FieldFeedbackWhenValid extends React.Component<FieldFeedbackWhenVal
   }
 
   render() {
-    const { className, children, ...divProps } = this.props;
+    const { className, children, ...otherProps } = this.props;
     const { fieldIsValid } = this.state;
     const { form } = this.context;
 
     let classes = form.props.fieldFeedbackClassNames!.valid;
     classes = className !== undefined ? `${className} ${classes}` : classes;
 
-    return fieldIsValid ? <div {...divProps} className={classes}>{children}</div> : null;
+    return fieldIsValid ? <div {...otherProps} className={classes}>{children}</div> : null;
   }
 }

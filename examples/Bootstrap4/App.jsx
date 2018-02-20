@@ -3,9 +3,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import { FieldFeedbacks, FieldFeedback, Async } from 'react-form-with-constraints';
 import { FormWithConstraints, FormControlInput } from 'react-form-with-constraints-bootstrap4';
-import { DisplayFields } from 'react-form-with-constraints-tools';
+import { DisplayFields, FieldFeedback, FieldFeedbacks, Async } from 'react-form-with-constraints-tools';
 
 import './index.html';
 import './App.scss';
@@ -95,7 +94,7 @@ class Form extends React.Component {
                 promise={checkUsernameAvailability}
                 pending="..."
                 then={available => available ?
-                  <FieldFeedback info style={{color: 'green'}}>Username available</FieldFeedback> :
+                  <FieldFeedback info style={{color: '#28a745'}}>Username available</FieldFeedback> :
                   <FieldFeedback>Username already taken, choose another</FieldFeedback>
                 }
               />
@@ -109,9 +108,12 @@ class Form extends React.Component {
                             innerRef={password => this.password = password}
                             value={this.state.password} onChange={this.handlePasswordChange}
                             required pattern=".{5,}" />
-          <FieldFeedbacks for="password">
+          <FieldFeedbacks for="password" stop="first-error">
             <FieldFeedback when="valueMissing" />
             <FieldFeedback when="patternMismatch">Should be at least 5 characters long</FieldFeedback>
+            <FieldFeedback when="valid">Looks good!</FieldFeedback>
+          </FieldFeedbacks>
+          <FieldFeedbacks for="password" stop="no">
             <FieldFeedback when={value => !/\d/.test(value)} warning>Should contain numbers</FieldFeedback>
             <FieldFeedback when={value => !/[a-z]/.test(value)} warning>Should contain small letters</FieldFeedback>
             <FieldFeedback when={value => !/[A-Z]/.test(value)} warning>Should contain capital letters</FieldFeedback>
