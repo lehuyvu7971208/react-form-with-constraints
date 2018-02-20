@@ -9,7 +9,7 @@ export enum FieldEvent {
 }
 
 export class FieldsStore extends EventEmitter {
-  // Why Object.create(null) insteaf of just {}? See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map#Objects_and_maps_compared
+  // Why Object.create(null) instead of just {}? See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map#Objects_and_maps_compared
   fields: Fields = Object.create(null);
 
   reset() {
