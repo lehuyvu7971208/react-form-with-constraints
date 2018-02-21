@@ -3,7 +3,7 @@ import { shallow as _shallow } from 'enzyme';
 
 import {
   FormWithConstraints, fieldWithoutFeedback,
-  FieldValidatedEvent, ResetFormEvent,
+  FieldValidatedEvent, ResetEvent,
   FieldFeedbackWhenValid, FieldFeedbackWhenValidProps, FieldFeedbackWhenValidContext
 } from './index';
 import createFieldFeedbacks from './createFieldFeedbacks';
@@ -38,9 +38,9 @@ test('constructor', () => {
 
 test('componentWillMount() componentWillUnmount()', () => {
   const addFieldValidatedEventListenerSpy = jest.spyOn(form_username_empty, 'addFieldValidatedEventListener');
-  const addResetFormEventListenerSpy = jest.spyOn(form_username_empty, 'addResetFormEventListener');
+  const addResetEventListenerSpy = jest.spyOn(form_username_empty, 'addResetEventListener');
   const removeFieldValidatedEventListenerSpy = jest.spyOn(form_username_empty, 'removeFieldValidatedEventListener');
-  const removeResetFormEventListenerSpy = jest.spyOn(form_username_empty, 'removeResetFormEventListener');
+  const removeResetEventListenerSpy = jest.spyOn(form_username_empty, 'removeResetEventListener');
 
   const wrapper = shallow(
     <FieldFeedbackWhenValid />,
@@ -49,17 +49,17 @@ test('componentWillMount() componentWillUnmount()', () => {
   expect(addFieldValidatedEventListenerSpy).toHaveBeenCalledTimes(1);
   expect(removeFieldValidatedEventListenerSpy).toHaveBeenCalledTimes(0);
   expect(form_username_empty.fieldValidatedEventEmitter.listeners.get(FieldValidatedEvent)).toHaveLength(1);
-  expect(addResetFormEventListenerSpy).toHaveBeenCalledTimes(1);
-  expect(removeResetFormEventListenerSpy).toHaveBeenCalledTimes(0);
-  expect(form_username_empty.resetEventEmitter.listeners.get(ResetFormEvent)).toHaveLength(1);
+  expect(addResetEventListenerSpy).toHaveBeenCalledTimes(1);
+  expect(removeResetEventListenerSpy).toHaveBeenCalledTimes(0);
+  expect(form_username_empty.resetEventEmitter.listeners.get(ResetEvent)).toHaveLength(1);
 
   wrapper.unmount();
   expect(addFieldValidatedEventListenerSpy).toHaveBeenCalledTimes(1);
   expect(removeFieldValidatedEventListenerSpy).toHaveBeenCalledTimes(1);
   expect(form_username_empty.fieldValidatedEventEmitter.listeners.get(FieldValidatedEvent)).toEqual(undefined);
-  expect(addResetFormEventListenerSpy).toHaveBeenCalledTimes(1);
-  expect(removeResetFormEventListenerSpy).toHaveBeenCalledTimes(1);
-  expect(form_username_empty.resetEventEmitter.listeners.get(ResetFormEvent)).toEqual(undefined);
+  expect(addResetEventListenerSpy).toHaveBeenCalledTimes(1);
+  expect(removeResetEventListenerSpy).toHaveBeenCalledTimes(1);
+  expect(form_username_empty.resetEventEmitter.listeners.get(ResetEvent)).toEqual(undefined);
 });
 
 test('fieldValidated()', async () => {
@@ -101,7 +101,7 @@ test('reset()', async () => {
   await fieldValidationsPromise;
   expect(fieldFeedbackWhenValid.state.fieldIsValid).toEqual(true);
 
-  form_username_empty.emitResetFormEvent();
+  form_username_empty.emitResetEvent();
   expect(fieldFeedbackWhenValid.state.fieldIsValid).toEqual(undefined);
 });
 

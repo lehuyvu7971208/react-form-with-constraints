@@ -98,9 +98,12 @@ export class DisplayFields extends React.Component<DisplayFieldsProps, DisplayFi
 
 export class FieldFeedbacks extends _FieldFeedbacks {
   render() {
+    const style = {
+    };
+
     return (
       <>
-        <span style={{fontSize: 'small'}}>{this.key}</span>
+        <li style={style}>{this.key}</li>
         <ul>
           {super.render()}
         </ul>
@@ -111,22 +114,20 @@ export class FieldFeedbacks extends _FieldFeedbacks {
 
 export class FieldFeedback extends _FieldFeedback {
   render() {
-    const { show } = this.state.validation;
+    const { key, type, show } = this.state.validation;
 
-    const style: any = {
-      fontSize: 'small'
+    const style = {
+      textDecoration: 'none'
     };
-
     if (show === false) {
       style.textDecoration = 'line-through';
     } else if (show === undefined) {
-      // Special case for when="valid": always displayed, then FieldFeedbackWhenValid decides what to do
-      style.filter = 'brightness(300%)';
+      style.textDecoration = 'line-through dotted';
     }
 
     return (
       <li>
-        <span style={style}>{this.key}</span>{' '}
+        <span style={style}>{key} ({type})</span>{' '}
         {super.render()}
       </li>
     );
@@ -144,8 +145,7 @@ export class FieldFeedback extends _FieldFeedback {
 export class Async<T> extends _Async<T> {
   render() {
     const style = {
-      fontSize: 'small',
-      filter: 'brightness(300%)'
+      textDecoration: 'line-through dotted'
     };
 
     return (

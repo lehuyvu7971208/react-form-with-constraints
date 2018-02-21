@@ -2,12 +2,12 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import { FormWithConstraintsChildContext } from './FormWithConstraints';
-import { FieldFeedbacksChildContext, ListenerReturnType } from './FieldFeedbacks';
+import { FieldFeedbacksChildContext } from './FieldFeedbacks';
 import withValidateFieldEventEmitter from './withValidateFieldEventEmitter';
 // @ts-ignore
 // TS6133: 'FieldFeedbackValidation' is declared but its value is never read.
 // FIXME See https://github.com/Microsoft/TypeScript/issues/9944#issuecomment-309903027
-import { FieldFeedbackValidation } from './FieldFeedbackValidation';
+import { FieldFeedbackValidation } from './FieldValidation';
 // @ts-ignore
 // TS6133: 'EventEmitter' is declared but its value is never read.
 // FIXME See https://github.com/Microsoft/TypeScript/issues/9944#issuecomment-309903027
@@ -47,7 +47,7 @@ export type AsyncComponentType = AsyncComponent<any>;
 // See How to render promises in React https://gist.github.com/hex13/6d46f8b54631871ea8bf87576b635c49
 // Cannot be inside a separated npm package since FieldFeedback needs to attach itself to Async
 export class AsyncComponent<T = any> extends React.Component<AsyncProps<T>, AsyncState<T>> {}
-export class Async<T> extends withValidateFieldEventEmitter<ListenerReturnType, typeof AsyncComponent>(AsyncComponent)
+export class Async<T> extends withValidateFieldEventEmitter<FieldFeedbackValidation, typeof AsyncComponent>(AsyncComponent)
                       implements React.ChildContextProvider<AsyncChildContext> {
   static contextTypes: React.ValidationMap<AsyncContext> = {
     form: PropTypes.object.isRequired,
@@ -64,9 +64,12 @@ export class Async<T> extends withValidateFieldEventEmitter<ListenerReturnType, 
     };
   }
 
-  constructor(props: AsyncProps<T>) {
+  readonly fieldName: string; // Instead of reading props each time
+
+  constructor(props: AsyncProps<T>, context: AsyncContext) {
     super(props);
 
+    this.fieldName = context.fieldFeedbacks.fieldName;
     this.state = {
       status: Status.None
     };
@@ -84,13 +87,12 @@ export class Async<T> extends withValidateFieldEventEmitter<ListenerReturnType, 
 
   validate(input: Input) {
     const { form, fieldFeedbacks } = this.context;
-    const fieldName = fieldFeedbacks.props.for;
 
     let fieldFeedbackValidationsPromise;
 
-    const field = form.fieldsStore.fields[fieldName]!;
+    const field = form.fieldsStore.fields[this.fieldName]!;
 
-    if (input.name === fieldName) { // Ignore the event if it's not for us
+    if (input.name === this.fieldName) { // Ignore the event if it's not for us
       if (fieldFeedbacks.props.stop === 'first-error' && field.validated && field.invalid) {
         // No need to perform validation if another FieldFeedback is already invalid
         this.setState({status: Status.None});

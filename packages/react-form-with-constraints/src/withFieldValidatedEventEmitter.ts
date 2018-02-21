@@ -1,7 +1,7 @@
 import { EventEmitter, Listener } from './EventEmitter';
 import Input from './Input';
 import Constructor from './Constructor';
-import FieldValidation from './FieldValidation';
+import { FieldValidation } from './FieldValidation';
 
 export const FieldValidatedEvent = 'FIELD_VALIDATED_EVENT';
 

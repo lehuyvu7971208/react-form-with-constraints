@@ -35,12 +35,12 @@ export class FormControlInput extends React.Component<FormControlInputProps, For
 
   componentWillMount() {
     this.context.form.addFieldValidatedEventListener(this.fieldValidated);
-    this.context.form.addResetFormEventListener(this.reset);
+    this.context.form.addResetEventListener(this.reset);
   }
 
   componentWillUnmount() {
     this.context.form.removeFieldValidatedEventListener(this.fieldValidated);
-    this.context.form.removeResetFormEventListener(this.reset);
+    this.context.form.removeResetEventListener(this.reset);
   }
 
   async fieldValidated(input: Input, fieldValidationPromise: Promise<FieldValidation>) {

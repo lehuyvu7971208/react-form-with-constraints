@@ -3,9 +3,8 @@ import PropTypes from 'prop-types';
 
 import withValidateFieldEventEmitter from './withValidateFieldEventEmitter';
 import withFieldValidatedEventEmitter from './withFieldValidatedEventEmitter';
-import withResetFormEventEmitter from './withResetFormEventEmitter';
-import { FieldFeedbackValidation } from './FieldFeedbackValidation';
-import FieldValidation from './FieldValidation';
+import withResetEventEmitter from './withResetEventEmitter';
+import { FieldValidation, FieldFeedbackValidation } from './FieldValidation';
 // @ts-ignore
 // TS6133: 'EventEmitter' is declared but its value is never read.
 // FIXME See https://github.com/Microsoft/TypeScript/issues/9944#issuecomment-309903027
@@ -75,7 +74,7 @@ type ValidateFieldEventListenerReturnType = FieldFeedbackValidation[] | Promise<
 export class FormWithConstraintsComponent extends React.Component<FormWithConstraintsProps> {}
 export class FormWithConstraints
   extends
-    withResetFormEventEmitter(
+    withResetEventEmitter(
       withFieldValidatedEventEmitter(
         withValidateFieldEventEmitter<ValidateFieldEventListenerReturnType, typeof FormWithConstraintsComponent>(
           FormWithConstraintsComponent
@@ -185,10 +184,14 @@ export class FormWithConstraints
         if (typeof input === 'string') {
           const query = `[name="${input}"]`;
           const elements = [...this.form!.querySelectorAll<HTMLInputElement>(query)];
-          if (elements.filter(element => element.type !== 'checkbox' && element.type !== 'radio').length > 1) {
+          if (elements.filter(el => el.type !== 'checkbox' && el.type !== 'radio').length > 1) {
             throw new Error(`Multiple elements matching '${query}' inside the form`);
           }
-          return elements[0];
+          const element = elements[0];
+          if (element === undefined) {
+            throw new Error(`Could not find field '${query}' inside the form`);
+          }
+          return element;
         } else {
           return input;
         }
@@ -206,8 +209,8 @@ export class FormWithConstraints
 
   // FIXME
   reset() {
-    this.fieldsStore.reset();
-    this.emitResetFormEvent();
+    this.fieldsStore.reset(); // FIXME Remove
+    this.emitResetEvent();
   }
 
   render() {
