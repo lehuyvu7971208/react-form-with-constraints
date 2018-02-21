@@ -62,7 +62,7 @@ class Form extends React.Component<Props, State> {
       [target.name as any]: target.value
     });
 
-    const fieldFeedbacksValidations = await this.form!.validateFields(target /* FIXME , 'passwordConfirm'*/);
+    const fieldFeedbacksValidations = await this.form!.validateFields(target, 'passwordConfirm');
 
     const fieldsAreValid = fieldFeedbacksValidations.every(fieldFeedbacksValidation => fieldFeedbacksValidation.isValid());
     if (fieldsAreValid) console.log(`Fields '${target.name}' and 'passwordConfirm' are valid`);
@@ -93,7 +93,6 @@ class Form extends React.Component<Props, State> {
     return (
       <FormWithConstraints ref={formWithConstraints => this.form = formWithConstraints}
                            onSubmit={this.handleSubmit} noValidate>
-        {/*
         <div>
           <label htmlFor="username">Username</label>
           <input type="email" name="username" id="username"
@@ -105,7 +104,6 @@ class Form extends React.Component<Props, State> {
             <FieldFeedback when="valid">Looks good!</FieldFeedback>
           </FieldFeedbacks>
         </div>
-        */}
 
         <div>
           <label htmlFor="password">Password</label>
@@ -119,7 +117,7 @@ class Form extends React.Component<Props, State> {
               <FieldFeedback when="patternMismatch">Should be at least 5 characters long</FieldFeedback>
             </FieldFeedbacks>
 
-            <FieldFeedbacks stop="no">
+            <FieldFeedbacks stop="first-warning">
               <FieldFeedback when={value => !/\d/.test(value)} warning>Should contain numbers</FieldFeedback>
               <FieldFeedback when={value => !/[a-z]/.test(value)} warning>Should contain small letters</FieldFeedback>
               <FieldFeedback when={value => !/[A-Z]/.test(value)} warning>Should contain capital letters</FieldFeedback>
@@ -140,7 +138,6 @@ class Form extends React.Component<Props, State> {
           </FieldFeedbacks>
         </div>
 
-        {/*
         <div>
           <label htmlFor="password-confirm">Confirm Password</label>
           <input type="password" name="passwordConfirm" id="password-confirm"
@@ -149,7 +146,6 @@ class Form extends React.Component<Props, State> {
             <FieldFeedback when={value => value !== this.password!.value}>Not the same password</FieldFeedback>
           </FieldFeedbacks>
         </div>
-        */}
 
         <button disabled={this.state.submitButtonDisabled}>Sign Up</button>
 

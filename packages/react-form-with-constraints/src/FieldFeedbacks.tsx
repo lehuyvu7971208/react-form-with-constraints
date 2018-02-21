@@ -4,21 +4,21 @@ import PropTypes from 'prop-types';
 import { FormWithConstraintsChildContext } from './FormWithConstraints';
 import withValidateFieldEventEmitter from './withValidateFieldEventEmitter';
 import withResetEventEmitter from './withResetEventEmitter';
-import { FieldFeedbackValidation, FieldFeedbackType } from './FieldValidation';
 // @ts-ignore
 // TS6133: 'EventEmitter' is declared but its value is never read.
 // FIXME See https://github.com/Microsoft/TypeScript/issues/9944#issuecomment-309903027
 import { EventEmitter } from './EventEmitter';
 import Input from './Input';
+import { FieldFeedbackValidation, FieldFeedbackType } from './FieldValidation';
 
 export interface FieldFeedbacksProps {
   for?: string;
 
   /**
-   * first-error => stops on the first error encountered
+   * first-* => stops on the first * encountered
    * no => shows everything
    */
-  stop?: 'first' | 'first-error' | 'no';
+  stop?: 'first' | 'first-error' | 'first-warning' | 'first-info' | 'no';
 }
 
 export type FieldFeedbacksContext = FormWithConstraintsChildContext & Partial<FieldFeedbacksChildContext>;
@@ -31,8 +31,10 @@ export class FieldFeedbacksComponent extends React.Component<FieldFeedbacksProps
 export class FieldFeedbacks extends
                               withResetEventEmitter(
                                 withValidateFieldEventEmitter<
-                                  // FieldFeedback returns FieldFeedbackValidation, FieldFeedbacks returns FieldFeedbackValidation[]
-                                  FieldFeedbackValidation | FieldFeedbackValidation[],
+                                  // FieldFeedback returns FieldFeedbackValidation
+                                  // FieldFeedbacks returns Promise<FieldFeedbackValidation[]> | undefined
+                                  // Async returns Promise<FieldFeedbackValidation[]> | undefined
+                                  FieldFeedbackValidation | Promise<FieldFeedbackValidation[]> | undefined,
                                   typeof FieldFeedbacksComponent
                                 >(
                                   FieldFeedbacksComponent
@@ -75,7 +77,7 @@ export class FieldFeedbacks extends
     }
 
     this.validate = this.validate.bind(this);
-    this.resetChilds = this.resetChilds.bind(this);
+    this.reset = this.reset.bind(this);
   }
 
   // FieldFeedback key = FieldFeedbacks key + increment
@@ -109,11 +111,11 @@ export class FieldFeedbacks extends
 
     if (this.context.fieldFeedbacks) {
       this.context.fieldFeedbacks.addValidateFieldEventListener(this.validate);
-      this.context.fieldFeedbacks.addResetEventListener(this.resetChilds);
+      this.context.fieldFeedbacks.addResetEventListener(this.reset);
     }
     else {
       this.context.form.addValidateFieldEventListener(this.validate);
-      this.context.form.addResetEventListener(this.resetChilds);
+      this.context.form.addResetEventListener(this.reset);
     }
   }
 
@@ -124,55 +126,91 @@ export class FieldFeedbacks extends
 
     if (this.context.fieldFeedbacks) {
       this.context.fieldFeedbacks.removeValidateFieldEventListener(this.validate);
-      this.context.fieldFeedbacks.removeResetEventListener(this.resetChilds);
+      this.context.fieldFeedbacks.removeResetEventListener(this.reset);
     }
     else {
       this.context.form.removeValidateFieldEventListener(this.validate);
-      this.context.form.removeResetEventListener(this.resetChilds);
+      this.context.form.removeResetEventListener(this.reset);
     }
   }
 
-  invalid = false;
+  hasErrors = false;
+  hasWarnings = false;
+  hasInfos = false;
+
+  hasFeedbacks() {
+    return this.hasErrors || this.hasWarnings || this.hasInfos;
+  }
 
   validate(input: Input) {
-    const { fieldFeedbacks } = this.context;
+    const { form, fieldFeedbacks } = this.context;
 
-    this.resetChilds();
+    this.reset();
 
-    console.log('FieldFeedbacks.validate()', this.fieldName, this.key);
-
-    const fieldFeedbackValidations: FieldFeedbackValidation[] = [];
+    let validationsPromise;
 
     if (input.name === this.fieldName) { // Ignore the event if it's not for us
-      if (fieldFeedbacks !== undefined && fieldFeedbacks.props.stop === 'first-error' && fieldFeedbacks.invalid) {
-        // No need to perform validation if another FieldFeedback is already invalid
-        console.log('FieldFeedbacks.validate()', this.fieldName, this.key, 'ignore');
+
+      if (fieldFeedbacks !== undefined && (
+          (fieldFeedbacks.props.stop === 'first' && fieldFeedbacks.hasFeedbacks()) ||
+          (fieldFeedbacks.props.stop === 'first-error' && fieldFeedbacks.hasErrors) ||
+          (fieldFeedbacks.props.stop === 'first-warning' && fieldFeedbacks.hasWarnings) ||
+          (fieldFeedbacks.props.stop === 'first-info' && fieldFeedbacks.hasInfos)
+         )) {
+        // Do nothing
       }
+
       else {
-        const twoDimensionalArrayValidations = this.emitValidateFieldEvent(input);
-        console.log('FieldFeedbacks.validate()', this.fieldName, this.key, 'twoDimensionalArrayValidations=', twoDimensionalArrayValidations);
+        this.emitResetEvent();
 
-        // One-dimensional array
-        twoDimensionalArrayValidations.forEach(validations => {
-          if (validations instanceof Array) fieldFeedbackValidations.push(...validations); // child is a FieldFeedbacks
-          else fieldFeedbackValidations.push(validations); // child is a FieldFeedback
-        });
+        const allValidations = this.emitValidateFieldEvent(input);
 
-        if (fieldFeedbacks !== undefined) {
-          for (const validation of fieldFeedbackValidations) {
-            fieldFeedbacks.invalid = fieldFeedbacks.invalid || (validation.type === FieldFeedbackType.Error && validation.show === true);
-            if (fieldFeedbacks.invalid) break;
+        const promises = allValidations
+          .filter(promise => promise !== undefined) // Remove undefined results
+          .map(validations => {
+            if (validations instanceof Promise) {
+              return validations;
+            } else {
+              return Promise.resolve(validations!);
+            }
+          });
+
+        const promisesMerged = promises
+          .map(promise => {
+            return (promise as Promise<any>).then(validations => {
+              if (validations instanceof Array) {
+                return validations as FieldFeedbackValidation[];
+              } else {
+                return [validations as FieldFeedbackValidation];
+              }
+            });
+          });
+
+        validationsPromise = Promise.all(promisesMerged)
+          .then(validations =>
+            // See Merge/flatten an array of arrays in JavaScript? https://stackoverflow.com/q/10865025/990356
+            validations.reduce((prev, curr) => prev.concat(curr), [])
+          );
+
+        const parent = fieldFeedbacks !== undefined ? fieldFeedbacks : form;
+
+        validationsPromise.then(validations => {
+          for (const validation of validations) {
+            parent.hasErrors = parent.hasErrors || (validation.type === FieldFeedbackType.Error && validation.show === true);
+            parent.hasWarnings = parent.hasWarnings || (validation.type === FieldFeedbackType.Warning && validation.show === true);
+            parent.hasInfos = parent.hasInfos || (validation.type === FieldFeedbackType.Info && validation.show === true);
           }
-        }
+        });
       }
     }
 
-    return fieldFeedbackValidations;
+    return validationsPromise;
   }
 
-  resetChilds() {
-    this.invalid = false;
-    this.emitResetEvent();
+  reset() {
+    this.hasErrors = false;
+    this.hasWarnings = false;
+    this.hasInfos = false;
   }
 
   render() {

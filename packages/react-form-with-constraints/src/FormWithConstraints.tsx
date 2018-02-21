@@ -68,15 +68,16 @@ export interface FormWithConstraintsProps extends React.FormHTMLAttributes<HTMLF
   };
 }
 
-// FieldFeedbacks returns FieldFeedbackValidation[] | undefined and Async returns Promise<FieldFeedbackValidation[]> | undefined
-type ValidateFieldEventListenerReturnType = FieldFeedbackValidation[] | Promise<FieldFeedbackValidation[]> | undefined;
-
 export class FormWithConstraintsComponent extends React.Component<FormWithConstraintsProps> {}
 export class FormWithConstraints
   extends
     withResetEventEmitter(
       withFieldValidatedEventEmitter(
-        withValidateFieldEventEmitter<ValidateFieldEventListenerReturnType, typeof FormWithConstraintsComponent>(
+        withValidateFieldEventEmitter<
+          // FieldFeedbacks returns Promise<FieldFeedbackValidation[]> | undefined and Async returns Promise<FieldFeedbackValidation[]> | undefined
+          Promise<FieldFeedbackValidation[]> | undefined,
+          typeof FormWithConstraintsComponent
+        >(
           FormWithConstraintsComponent
         )
       )
@@ -140,11 +141,9 @@ export class FormWithConstraints
       }
 
       else if (forceValidateFields || !field.validated) {
-        field.invalid = false; // Since we re-validate the field, reset the invalid state
-
         const fieldFeedbackValidationsPromises = this.emitValidateFieldEvent(input)
           .filter(fieldFeedbackValidations => fieldFeedbackValidations !== undefined) // Remove undefined results
-          .map(fieldFeedbackValidations => Promise.resolve(fieldFeedbackValidations!)); // Transforms all results into Promises
+          .map(fieldFeedbackValidations => fieldFeedbackValidations!);
 
         const fieldValidationPromise = Promise.all(fieldFeedbackValidationsPromises)
           .then(validations =>
@@ -201,14 +200,21 @@ export class FormWithConstraints
     return inputs;
   }
 
+  hasErrors = false;
+  hasWarnings = false;
+  hasInfos = false;
+
   // Does not check if fields are dirty
   isValid() {
-    const fieldNames = Object.keys(this.fieldsStore.fields);
-    return fieldNames.every(fieldName => !this.fieldsStore.fields[fieldName]!.invalid);
+    return !this.hasErrors;
   }
 
   // FIXME
   reset() {
+    this.hasErrors = false;
+    this.hasWarnings = false;
+    this.hasInfos = false;
+
     this.fieldsStore.reset(); // FIXME Remove
     this.emitResetEvent();
   }
