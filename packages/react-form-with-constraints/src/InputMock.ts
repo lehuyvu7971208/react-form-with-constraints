@@ -1,10 +1,10 @@
 import { Input } from './index';
 
 export class InputMock implements Input {
-  type = 'input'; // Can also be checkbox;
-  validity: ValidityState;
+  readonly type = 'input'; // Can also be checkbox;
+  readonly validity: ValidityState;
 
-  constructor(public name: string, public value: string, validity: Partial<ValidityState>, public validationMessage: string) {
+  constructor(public readonly name: string, public readonly value: string, validity: Partial<ValidityState>, public readonly validationMessage: string) {
     const defaultValidity = {
       valid: true,
       badInput: false,

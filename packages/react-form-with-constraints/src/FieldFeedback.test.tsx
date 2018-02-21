@@ -99,8 +99,7 @@ describe('validate()', () => {
           <FieldFeedback when={'unknown' as any} />,
           {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
         );
-        const input = input_username_valueMissing;
-        const validations = fieldFeedbacks_username.emitValidateFieldEvent(input);
+        const validations = fieldFeedbacks_username.emitValidateFieldEvent(input_username_valueMissing);
 
         expect(validations).toEqual([
           {key: '0.0', type: FieldFeedbackType.Error, show: false}
@@ -112,8 +111,7 @@ describe('validate()', () => {
           <FieldFeedback when="badInput" />,
           {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
         );
-        const input = input_username_valueMissing;
-        const validations = fieldFeedbacks_username.emitValidateFieldEvent(input);
+        const validations = fieldFeedbacks_username.emitValidateFieldEvent(input_username_valueMissing);
 
         expect(validations).toEqual([
           {key: '0.0', type: FieldFeedbackType.Error, show: false}
@@ -125,8 +123,7 @@ describe('validate()', () => {
           <FieldFeedback when="*" />,
           {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
         );
-        const input = input_username_valueMissing;
-        const validations = fieldFeedbacks_username.emitValidateFieldEvent(input);
+        const validations = fieldFeedbacks_username.emitValidateFieldEvent(input_username_valueMissing);
 
         expect(validations).toEqual([
           {key: '0.0', type: FieldFeedbackType.Error, show: true}
@@ -242,8 +239,7 @@ describe('validate()', () => {
           <FieldFeedback when="valueMissing" />,
           {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
         );
-        const input = input_username_valueMissing;
-        const validations = fieldFeedbacks_username.emitValidateFieldEvent(input);
+        const validations = fieldFeedbacks_username.emitValidateFieldEvent(input_username_valueMissing);
 
         expect(validations).toEqual([
           {key: '0.0', type: FieldFeedbackType.Error, show: true}
@@ -255,8 +251,7 @@ describe('validate()', () => {
           <FieldFeedback when="valid">Looks good!</FieldFeedback>,
           {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
         );
-        const input = input_username_valueMissing;
-        const validations = fieldFeedbacks_username.emitValidateFieldEvent(input);
+        const validations = fieldFeedbacks_username.emitValidateFieldEvent(input_username_valueMissing);
 
         expect(validations).toEqual([
           {key: '0.0', type: FieldFeedbackType.WhenValid, show: undefined}
@@ -308,8 +303,7 @@ describe('validate()', () => {
       <FieldFeedback when="*" />,
       {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
     );
-    const input = input_username_valueMissing;
-    const validations = fieldFeedbacks_username.emitValidateFieldEvent(input);
+    const validations = fieldFeedbacks_username.emitValidateFieldEvent(input_username_valueMissing);
 
     expect(validations).toEqual([
       {key: '0.0', type: FieldFeedbackType.Error, show: true}
@@ -321,8 +315,7 @@ describe('validate()', () => {
       <FieldFeedback when="*" error />,
       {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
     );
-    const input = input_username_valueMissing;
-    const validations = fieldFeedbacks_username.emitValidateFieldEvent(input);
+    const validations = fieldFeedbacks_username.emitValidateFieldEvent(input_username_valueMissing);
 
     expect(validations).toEqual([
       {key: '0.0', type: FieldFeedbackType.Error, show: true}
@@ -336,8 +329,7 @@ describe('validate()', () => {
       <FieldFeedback when="*" warning />,
       {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
     );
-    const input = input_username_valueMissing;
-    const validations = fieldFeedbacks_username.emitValidateFieldEvent(input);
+    const validations = fieldFeedbacks_username.emitValidateFieldEvent(input_username_valueMissing);
 
     expect(validations).toEqual([
       {key: '0.0', type: FieldFeedbackType.Warning, show: true}
@@ -349,8 +341,7 @@ describe('validate()', () => {
       <FieldFeedback when="*" info />,
       {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
     );
-    const input = input_username_valueMissing;
-    const validations = fieldFeedbacks_username.emitValidateFieldEvent(input);
+    const validations = fieldFeedbacks_username.emitValidateFieldEvent(input_username_valueMissing);
 
     expect(validations).toEqual([
       {key: '0.0', type: FieldFeedbackType.Info, show: true}
@@ -364,8 +355,7 @@ describe('render()', () => {
       <FieldFeedback when="*" error />,
       {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
     );
-    const input = input_username_valueMissing;
-    const validations = fieldFeedbacks_username.emitValidateFieldEvent(input);
+    const validations = fieldFeedbacks_username.emitValidateFieldEvent(input_username_valueMissing);
 
     expect(validations).toEqual([
       {key: '0.0', type: FieldFeedbackType.Error, show: true}
@@ -378,8 +368,7 @@ describe('render()', () => {
       <FieldFeedback when="*" warning />,
       {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
     );
-    const input = input_username_valueMissing;
-    const validations = fieldFeedbacks_username.emitValidateFieldEvent(input);
+    const validations = fieldFeedbacks_username.emitValidateFieldEvent(input_username_valueMissing);
 
     expect(validations).toEqual([
       {key: '0.0', type: FieldFeedbackType.Warning, show: true}
@@ -392,8 +381,7 @@ describe('render()', () => {
       <FieldFeedback when="*" info />,
       {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
     );
-    const input = input_username_valueMissing;
-    const validations = fieldFeedbacks_username.emitValidateFieldEvent(input);
+    const validations = fieldFeedbacks_username.emitValidateFieldEvent(input_username_valueMissing);
 
     expect(validations).toEqual([
       {key: '0.0', type: FieldFeedbackType.Info, show: true}
@@ -406,8 +394,7 @@ describe('render()', () => {
       <FieldFeedback when="*" />,
       {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
     );
-    const input = input_username_valid;
-    const validations = fieldFeedbacks_username.emitValidateFieldEvent(input);
+    const validations = fieldFeedbacks_username.emitValidateFieldEvent(input_username_valid);
 
     expect(validations).toEqual([
       {key: '0.0', type: FieldFeedbackType.Error, show: false}
@@ -420,8 +407,7 @@ describe('render()', () => {
       <FieldFeedback when="*">message</FieldFeedback>,
       {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
     );
-    const input = input_username_valueMissing;
-    const validations = fieldFeedbacks_username.emitValidateFieldEvent(input);
+    const validations = fieldFeedbacks_username.emitValidateFieldEvent(input_username_valueMissing);
 
     expect(validations).toEqual([
       {key: '0.0', type: FieldFeedbackType.Error, show: true}
@@ -434,8 +420,7 @@ describe('render()', () => {
       <FieldFeedback when="*" className="alreadyExistingClassName" />,
       {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
     );
-    const input = input_username_valueMissing;
-    const validations = fieldFeedbacks_username.emitValidateFieldEvent(input);
+    const validations = fieldFeedbacks_username.emitValidateFieldEvent(input_username_valueMissing);
 
     expect(validations).toEqual([
       {key: '0.0', type: FieldFeedbackType.Error, show: true}
@@ -448,8 +433,7 @@ describe('render()', () => {
       <FieldFeedback when="*" style={{color: 'yellow'}} />,
       {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
     );
-    const input = input_username_valueMissing;
-    const validations = fieldFeedbacks_username.emitValidateFieldEvent(input);
+    const validations = fieldFeedbacks_username.emitValidateFieldEvent(input_username_valueMissing);
 
     expect(validations).toEqual([
       {key: '0.0', type: FieldFeedbackType.Error, show: true}

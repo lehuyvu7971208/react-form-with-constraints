@@ -71,12 +71,11 @@ describe('validate()', () => {
     const emitValidateFieldEventSpy = jest.spyOn(async, 'emitValidateFieldEvent');
 
     expect(emitValidateFieldEventSpy).toHaveBeenCalledTimes(0);
-    const input = input_username_valid;
-    const validations = await fieldFeedbacks_username.emitValidateFieldEvent(input);
+    const validations = await fieldFeedbacks_username.emitValidateFieldEvent(input_username_valid);
 
     expect(validations).toEqual([Promise.resolve({})]);
     expect(emitValidateFieldEventSpy).toHaveBeenCalledTimes(1);
-    expect(emitValidateFieldEventSpy).toHaveBeenLastCalledWith(input);
+    expect(emitValidateFieldEventSpy).toHaveBeenLastCalledWith(input_username_valid);
   });
 
   test('unknown input name - emitValidateFieldEvent', async () => {
@@ -113,7 +112,7 @@ describe('render()', () => {
     );
     expect(wrapper.html()).toEqual('<div></div>');
 
-    const input = input_username_valid;
+    const input = {...input_username_valid};
     let fieldFeedbackValidationsPromise = form_username.validateFields(input);
     expect(wrapper.html()).toEqual('<div>Pending...</div>');
 
