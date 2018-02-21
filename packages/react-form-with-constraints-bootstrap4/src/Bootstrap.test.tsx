@@ -50,31 +50,28 @@ describe('FormWithConstraints', () => {
     expect(fieldFeedbackValidations).toEqual([
       {
         fieldName: 'username',
-        isValid: expect.any(Function),
         fieldFeedbackValidations: [
-          {key: 0.0, show: true},
-          {key: 0.1, show: true},
-          {key: 0.2, show: false}
+          {key: '0.0', type: 'error', show: true},
+          {key: '0.1', type: 'error', show: true},
+          {key: '0.2', type: 'whenValid', show: undefined}
         ]
       },
       {
         fieldName: 'password',
-        isValid: expect.any(Function),
         fieldFeedbackValidations: [
-          {key: 1.0, show: true},
-          {key: 1.1, show: true},
-          {key: 1.2, show: false},
-          {key: 1.3, show: false},
-          {key: 1.4, show: false},
-          {key: 1.5, show: false},
-          {key: 1.6, show: false}
+          {key: '1.0', type: 'error', show: true},
+          {key: '1.1', type: 'error', show: true},
+          {key: '1.2', type: 'warning', show: true},
+          {key: '1.3', type: 'warning', show: true},
+          {key: '1.4', type: 'warning', show: true},
+          {key: '1.5', type: 'warning', show: true},
+          {key: '1.6', type: 'whenValid', show: undefined}
         ]
       },
       {
         fieldName: 'passwordConfirm',
-        isValid: expect.any(Function),
         fieldFeedbackValidations: [
-          {key: 2.0, show: false}
+          {key: '2.0', type: 'error', show: false}
         ]
       }
     ]);
@@ -82,12 +79,12 @@ describe('FormWithConstraints', () => {
 <form>\
 <input type="email" name="username" class="form-control is-invalid">\
 <div>\
-<div data-field-feedback-key="0" class="invalid-feedback">Cannot be empty</div>\
+<div data-field-feedback-key="0.0" class="invalid-feedback">Cannot be empty</div>\
 <div data-field-feedback-key="0.1" class="invalid-feedback">Should be at least 3 characters long</div>\
 </div>\
 <input type="password" name="password" class="form-control is-invalid">\
 <div>\
-<div data-field-feedback-key="1" class="invalid-feedback">Cannot be empty</div>\
+<div data-field-feedback-key="1.0" class="invalid-feedback">Cannot be empty</div>\
 <div data-field-feedback-key="1.1" class="invalid-feedback">Should be at least 5 characters long</div>\
 <div data-field-feedback-key="1.2" class="warning-feedback">Should contain numbers</div>\
 <div data-field-feedback-key="1.3" class="warning-feedback">Should contain small letters</div>\
@@ -107,31 +104,28 @@ describe('FormWithConstraints', () => {
     expect(fieldFeedbackValidations).toEqual([
       {
         fieldName: 'username',
-        isValid: expect.any(Function),
         fieldFeedbackValidations: [
-          {key: 0.0, show: false},
-          {key: 0.1, show: false},
-          {key: 0.2, show: false}
+          {key: '0.0', type: 'error', show: false},
+          {key: '0.1', type: 'error', show: false},
+          {key: '0.2', type: 'whenValid', show: undefined}
         ]
       },
       {
         fieldName: 'password',
-        isValid: expect.any(Function),
         fieldFeedbackValidations: [
-          {key: 1.0, show: false},
-          {key: 1.1, show: true},
-          {key: 1.2, show: false},
-          {key: 1.3, show: false},
-          {key: 1.4, show: false},
-          {key: 1.5, show: false},
-          {key: 1.6, show: false}
+          {key: '1.0', type: 'error', show: false},
+          {key: '1.1', type: 'error', show: true},
+          {key: '1.2', type: 'warning', show: false},
+          {key: '1.3', type: 'warning', show: true},
+          {key: '1.4', type: 'warning', show: true},
+          {key: '1.5', type: 'warning', show: true},
+          {key: '1.6', type: 'whenValid', show: undefined}
         ]
       },
       {
         fieldName: 'passwordConfirm',
-        isValid: expect.any(Function),
         fieldFeedbackValidations: [
-          {key: 2.0, show: true}
+          {key: '2.0', type: 'error', show: true}
         ]
       }
     ]);
@@ -139,7 +133,7 @@ describe('FormWithConstraints', () => {
 <form>\
 <input type="email" name="username" class="form-control is-valid">\
 <div>\
-<div class="valid-feedback">Looks good!</div>\
+<div data-field-feedback-key="0.2" class="valid-feedback">Looks good!</div>\
 </div>\
 <input type="password" name="password" class="form-control is-invalid">\
 <div>\
@@ -150,7 +144,7 @@ describe('FormWithConstraints', () => {
 </div>\
 <input type="password" name="passwordConfirm" class="form-control is-invalid">\
 <div>\
-<div data-field-feedback-key="2" class="invalid-feedback">Not the same password</div>\
+<div data-field-feedback-key="2.0" class="invalid-feedback">Not the same password</div>\
 </div>\
 </form>`
     );
