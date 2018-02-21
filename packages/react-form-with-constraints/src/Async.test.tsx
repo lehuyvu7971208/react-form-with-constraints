@@ -1,7 +1,7 @@
 import React from 'react';
 import { shallow as _shallow, mount as _mount } from 'enzyme';
 
-import { FormWithConstraints, Async, AsyncProps, AsyncContext, Status, fieldWithoutFeedback, FieldFeedback, FieldFeedbacksContext, ValidateFieldEvent, ResetEvent, FieldFeedbackType } from './index';
+import { FormWithConstraints, Async, AsyncProps, AsyncContext, Status, fieldWithoutFeedback, FieldFeedback, FieldFeedbacksContext, ValidateFieldEvent, ResetEvent } from './index';
 import checkUsernameAvailability from './checkUsernameAvailability';
 import { InputMock, input_username_valid } from './InputMock';
 import new_FormWithConstraints from './FormWithConstraintsEnzymeFix';
@@ -120,7 +120,7 @@ describe('render()', () => {
     expect(fieldFeedbackValidations).toEqual([{
       fieldName: 'username',
       fieldFeedbackValidations: [
-        {key: '1.0', type: FieldFeedbackType.Info, show: true}
+        {key: '1.0', type: 'info', show: true}
       ]
     }]);
     expect(wrapper.html()).toEqual(`<div><div data-field-feedback-key="1.0" class="info">Username 'jimmy' available</div></div>`);
@@ -133,7 +133,7 @@ describe('render()', () => {
     expect(fieldFeedbackValidations).toEqual([{
       fieldName: 'username',
       fieldFeedbackValidations: [
-        {key: '1.1', type: FieldFeedbackType.Error, show: true}
+        {key: '1.1', type: 'error', show: true}
       ]
     }]);
     expect(wrapper.html()).toEqual(`<div><div data-field-feedback-key="1.1" class="error">Username 'john' already taken, choose another</div></div>`);
@@ -161,7 +161,7 @@ describe('render()', () => {
     expect(fieldFeedbackValidations).toEqual([{
       fieldName: 'username',
       fieldFeedbackValidations: [
-        {key: '1.0', type: FieldFeedbackType.Error, show: true}
+        {key: '1.0', type: 'error', show: true}
       ]
     }]);
     expect(wrapper.html()).toEqual(`<div><div data-field-feedback-key="1.0" class="error">Something wrong with username 'error'</div></div>`);

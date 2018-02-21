@@ -1,7 +1,7 @@
 import React from 'react';
 import { mount as _mount, shallow as _shallow } from 'enzyme';
 
-import { FormWithConstraintsChildContext, fieldWithoutFeedback, FieldFeedback, FieldFeedbackType, FieldFeedbacksProps, ValidateFieldEvent } from './index';
+import { FormWithConstraintsChildContext, FieldFeedback, FieldFeedbacksProps, ValidateFieldEvent } from './index';
 import { InputMock, input_username_valueMissing, input_username_valid } from './InputMock';
 import new_FormWithConstraints from './FormWithConstraintsEnzymeFix';
 import FieldFeedbacks from './FieldFeedbacksEnzymeFix';
@@ -115,7 +115,7 @@ describe('validate()', () => {
     expect(fieldFeedbackValidations).toEqual([{
       fieldName: 'username',
       fieldFeedbackValidations: [
-        {key: '0.0', type: FieldFeedbackType.Error, show: false}
+        {key: '0.0', type: 'error', show: false}
       ]
     }]);
 
@@ -206,7 +206,7 @@ describe('render()', () => {
     expect(fieldFeedbackValidations).toEqual([{
       fieldName: 'username',
       fieldFeedbackValidations: [
-        {key: '0.0', type: FieldFeedbackType.Error, show: true}
+        {key: '0.0', type: 'error', show: true}
       ]
     }]);
 
@@ -229,7 +229,7 @@ describe('render()', () => {
     expect(fieldFeedbackValidations).toEqual([{
       fieldName: 'username',
       fieldFeedbackValidations: [
-        {key: '0.0', type: FieldFeedbackType.Error, show: true}
+        {key: '0.0', type: 'error', show: true}
       ]
     }]);
 
@@ -270,9 +270,9 @@ describe('render()', () => {
       expect(fieldFeedbackValidations).toEqual([{
         fieldName: 'username',
         fieldFeedbackValidations: [
-          {key: '0.0', type: FieldFeedbackType.Error, show: true},
-          {key: '0.1', type: FieldFeedbackType.Error, show: true},
-          {key: '0.2', type: FieldFeedbackType.Error, show: true}
+          {key: '0.0', type: 'error', show: true},
+          {key: '0.1', type: 'error', show: true},
+          {key: '0.2', type: 'error', show: true}
         ]
       }]);
 
@@ -299,9 +299,9 @@ describe('render()', () => {
       expect(fieldFeedbackValidations).toEqual([{
         fieldName: 'username',
         fieldFeedbackValidations: [
-          {key: '0.0', type: FieldFeedbackType.Error, show: true},
-          {key: '0.1', type: FieldFeedbackType.Error, show: undefined},
-          {key: '0.2', type: FieldFeedbackType.Error, show: undefined}
+          {key: '0.0', type: 'error', show: true},
+          {key: '0.1', type: 'error', show: undefined},
+          {key: '0.2', type: 'error', show: undefined}
         ]
       }]);
 
@@ -324,9 +324,9 @@ describe('render()', () => {
       expect(fieldFeedbackValidations).toEqual([{
         fieldName: 'username',
         fieldFeedbackValidations: [
-          {key: '0.0', type: FieldFeedbackType.Warning, show: true},
-          {key: '0.1', type: FieldFeedbackType.Error, show: true},
-          {key: '0.2', type: FieldFeedbackType.Info, show: undefined}
+          {key: '0.0', type: 'warning', show: true},
+          {key: '0.1', type: 'error', show: true},
+          {key: '0.2', type: 'info', show: undefined}
         ]
       }]);
 

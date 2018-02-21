@@ -76,28 +76,25 @@ describe('validate', () => {
       expect(fieldFeedbackValidations).toEqual([
         {
           fieldName: 'username',
-          isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 0.0, show: true},
-            {key: 0.1, show: true},
-            {key: 0.2, show: false},
-            {key: 0.3, show: false}
+            {key: '0.0', type: 'error', show: true},
+            {key: '0.1', type: 'error', show: true},
+            {key: '0.3', type: 'info', show: true},
+            {key: '0.2', type: 'whenValid', show: undefined}
           ]
         },
         {
           fieldName: 'password',
-          isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 1.0, show: true},
-            {key: 1.1, show: true},
-            {key: 1.2, show: false}
+            {key: '1.0', type: 'error', show: true},
+            {key: '1.1', type: 'error', show: true},
+            {key: '1.2', type: 'whenValid', show: undefined}
           ]
         },
         {
           fieldName: 'passwordConfirm',
-          isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 2.0, show: false}
+            {key: '2.0', type: 'error', show: false}
           ]
         }
       ]);
@@ -111,13 +108,13 @@ describe('validate', () => {
 <form>\
 <input name="username">\
 <div>\
-<div data-field-feedback-key="0" class="error">Cannot be empty</div>\
+<div data-field-feedback-key="0.0" class="error">Cannot be empty</div>\
 <div data-field-feedback-key="0.1" class="error">Should be at least 3 characters long</div>\
 <div data-field-feedback-key="0.3" class="info">Username '' available</div>\
 </div>\
 <input type="password" name="password">\
 <div>\
-<div data-field-feedback-key="1" class="error">Cannot be empty</div>\
+<div data-field-feedback-key="1.0" class="error">Cannot be empty</div>\
 <div data-field-feedback-key="1.1" class="error">Should be at least 5 characters long</div>\
 </div>\
 <input type="password" name="passwordConfirm">\
@@ -134,28 +131,25 @@ describe('validate', () => {
       expect(fieldFeedbackValidations).toEqual([
         {
           fieldName: 'username',
-          isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 0.0, show: true},
-            {key: 0.1, show: true},
-            {key: 0.2, show: false},
-            {key: 0.3, show: false}
+            {key: '0.0', type: 'error', show: true},
+            {key: '0.1', type: 'error', show: true},
+            {key: '0.3', type: 'info', show: true},
+            {key: '0.2', type: 'whenValid', show: undefined}
           ]
         },
         {
           fieldName: 'password',
-          isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 1.0, show: true},
-            {key: 1.1, show: true},
-            {key: 1.2, show: false}
+            {key: '1.0', type: 'error', show: true},
+            {key: '1.1', type: 'error', show: true},
+            {key: '1.2', type: 'whenValid', show: undefined}
           ]
         },
         {
           fieldName: 'passwordConfirm',
-          isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 2.0, show: false}
+            {key: '2.0', type: 'error', show: false}
           ]
         }
       ]);
@@ -174,28 +168,25 @@ describe('validate', () => {
       expect(fieldFeedbackValidations).toEqual([
         {
           fieldName: 'username',
-          isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 0.0, show: true},
-            {key: 0.1, show: true},
-            {key: 0.2, show: false},
-            {key: 0.3, show: false}
+            {key: '0.0', type: 'error', show: true},
+            {key: '0.1', type: 'error', show: true},
+            {key: '0.3', type: 'info', show: true},
+            {key: '0.2', type: 'whenValid', show: undefined}
           ]
         },
         {
           fieldName: 'password',
-          isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 1.0, show: true},
-            {key: 1.1, show: true},
-            {key: 1.2, show: false}
+            {key: '1.0', type: 'error', show: true},
+            {key: '1.1', type: 'error', show: true},
+            {key: '1.2', type: 'whenValid', show: undefined}
           ]
         },
         {
           fieldName: 'passwordConfirm',
-          isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 2.0, show: false}
+            {key: '2.0', type: 'error', show: false}
           ]
         }
       ]);
@@ -214,28 +205,25 @@ describe('validate', () => {
       expect(fieldFeedbackValidations).toEqual([
         {
           fieldName: 'username',
-          isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 0.0, show: true},
-            {key: 0.1, show: true},
-            {key: 0.2, show: false},
-            {key: 0.3, show: false}
+            {key: '0.0', type: 'error', show: true},
+            {key: '0.1', type: 'error', show: true},
+            {key: '0.3', type: 'info', show: true},
+            {key: '0.2', type: 'whenValid', show: undefined}
           ]
         },
         {
           fieldName: 'password',
-          isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 1.0, show: true},
-            {key: 1.1, show: true},
-            {key: 1.2, show: false}
+            {key: '1.0', type: 'error', show: true},
+            {key: '1.1', type: 'error', show: true},
+            {key: '1.2', type: 'whenValid', show: undefined}
           ]
         },
         {
           fieldName: 'passwordConfirm',
-          isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 2.0, show: false}
+            {key: '2.0', type: 'error', show: false}
           ]
         }
       ]);
@@ -255,28 +243,25 @@ describe('validate', () => {
       expect(fieldFeedbackValidations).toEqual([
         {
           fieldName: 'username',
-          isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 0.0, show: true},
-            {key: 0.1, show: true},
-            {key: 0.2, show: false},
-            {key: 0.3, show: false}
+            {key: '0.0', type: 'error', show: true},
+            {key: '0.1', type: 'error', show: true},
+            {key: '0.3', type: 'info', show: true},
+            {key: '0.2', type: 'whenValid', show: undefined}
           ]
         },
         {
           fieldName: 'password',
-          isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 1.0, show: true},
-            {key: 1.1, show: true},
-            {key: 1.2, show: false}
+            {key: '1.0', type: 'error', show: true},
+            {key: '1.1', type: 'error', show: true},
+            {key: '1.2', type: 'whenValid', show: undefined}
           ]
         },
         {
           fieldName: 'passwordConfirm',
-          isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 2.0, show: false}
+            {key: '2.0', type: 'error', show: false}
           ]
         }
       ]);
@@ -298,28 +283,25 @@ describe('validate', () => {
       expect(fieldFeedbackValidations).toEqual([
         {
           fieldName: 'username',
-          isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 0.0, show: false},
-            {key: 0.1, show: false},
-            {key: 0.2, show: false},
-            {key: 0.4, show: false} // FieldFeedback key incremented because Async created a new FieldFeedback
+            {key: '0.0', type: 'error', show: false},
+            {key: '0.1', type: 'error', show: false},
+            {key: '0.4', type: 'info', show: true}, // FieldFeedback key incremented because Async created a new FieldFeedback
+            {key: '0.2', type: 'whenValid', show: undefined}
           ]
         },
         {
           fieldName: 'password',
-          isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 1.0, show: false},
-            {key: 1.1, show: true},
-            {key: 1.2, show: false}
+            {key: '1.0', type: 'error', show: false},
+            {key: '1.1', type: 'error', show: true},
+            {key: '1.2', type: 'whenValid', show: undefined}
           ]
         },
         {
           fieldName: 'passwordConfirm',
-          isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 2.0, show: true}
+            {key: '2.0', type: 'error', show: true}
           ]
         }
       ]);
@@ -338,7 +320,7 @@ describe('validate', () => {
 <input name="username">\
 <div>\
 <div data-field-feedback-key="0.4" class="info">Username 'jimmy' available</div>\
-<div class="valid">Looks good!</div>\
+<div data-field-feedback-key="0.2" class="valid">Looks good!</div>\
 </div>\
 <input type="password" name="password">\
 <div>\
@@ -346,7 +328,7 @@ describe('validate', () => {
 </div>\
 <input type="password" name="passwordConfirm">\
 <div>\
-<div data-field-feedback-key="2" class="error">Not the same password</div>\
+<div data-field-feedback-key="2.0" class="error">Not the same password</div>\
 </div>\
 </form>`
       );
@@ -363,28 +345,25 @@ describe('validate', () => {
       expect(fieldFeedbackValidations).toEqual([
         {
           fieldName: 'username',
-          isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 0.0, show: false},
-            {key: 0.1, show: false},
-            {key: 0.2, show: false},
-            {key: 0.3, show: true}
+            {key: '0.0', type: 'error', show: false},
+            {key: '0.1', type: 'error', show: false},
+            {key: '0.3', type: 'error', show: true},
+            {key: '0.2', type: 'whenValid', show: undefined}
           ]
         },
         {
           fieldName: 'password',
-          isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 1.0, show: false},
-            {key: 1.1, show: true},
-            {key: 1.2, show: false}
+            {key: '1.0', type: 'error', show: false},
+            {key: '1.1', type: 'error', show: true},
+            {key: '1.2', type: 'whenValid', show: undefined}
           ]
         },
         {
           fieldName: 'passwordConfirm',
-          isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 2.0, show: true}
+            {key: '2.0', type: 'error', show: true}
           ]
         }
       ]);
@@ -395,7 +374,7 @@ describe('validate', () => {
 <input type="password" name="password">\
 <div><div data-field-feedback-key="1.1" class="error">Should be at least 5 characters long</div></div>\
 <input type="password" name="passwordConfirm">\
-<div><div data-field-feedback-key="2" class="error">Not the same password</div></div>\
+<div><div data-field-feedback-key="2.0" class="error">Not the same password</div></div>\
 </form>`
       );
     });
@@ -410,28 +389,25 @@ describe('validate', () => {
       expect(fieldFeedbackValidations).toEqual([
         {
           fieldName: 'username',
-          isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 0.0, show: true},
-            {key: 0.1, show: true},
-            {key: 0.2, show: false},
-            {key: 0.3, show: false}
+            {key: '0.0', type: 'error', show: true},
+            {key: '0.1', type: 'error', show: true},
+            {key: '0.3', type: 'info', show: true},
+            {key: '0.2', type: 'whenValid', show: undefined}
           ]
         },
         {
           fieldName: 'password',
-          isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 1.0, show: true},
-            {key: 1.1, show: true},
-            {key: 1.2, show: false}
+            {key: '1.0', type: 'error', show: true},
+            {key: '1.1', type: 'error', show: true},
+            {key: '1.2', type: 'whenValid', show: undefined}
           ]
         },
         {
           fieldName: 'passwordConfirm',
-          isValid: expect.any(Function),
           fieldFeedbackValidations: [
-            {key: 2.0, show: false}
+            {key: '2.0', type: 'error', show: false}
           ]
         }
       ]);
@@ -445,27 +421,9 @@ describe('validate', () => {
       // Fields are already dirty so calling validateForm() again won't do anything
 
       expect(signUp.form!.fieldsStore.fields).toEqual({
-        username: {
-          dirty: true,
-          errors: new Set([0.0, 0.1]),
-          warnings: new Set(),
-          infos: new Set([0.3]),
-          validationMessage: undefined
-        },
-        password: {
-          dirty: true,
-          errors: new Set([1.0, 1.1]),
-          warnings: new Set(),
-          infos: new Set(),
-          validationMessage: undefined
-        },
-        passwordConfirm: {
-          dirty: true,
-          errors: new Set(),
-          warnings: new Set(),
-          infos: new Set(),
-          validationMessage: undefined
-        }
+        username: {validateEventEmitted: true},
+        password: {validateEventEmitted: true},
+        passwordConfirm: {validateEventEmitted: true}
       });
 
       emitValidateFieldEventSpy.mockClear();
@@ -499,74 +457,8 @@ test('isValid()', () => {
   const form = new_FormWithConstraints({});
 
   form.fieldsStore.fields = {
-    username: {
-      validateEventEmitted: false,
-      errors: new Set(),
-      warnings: new Set(),
-      infos: new Set(),
-      validationMessage: ''
-    },
-    password: {
-      validateEventEmitted: false,
-      errors: new Set(),
-      warnings: new Set(),
-      infos: new Set(),
-      validationMessage: ''
-    }
-  };
-  expect(form.isValid()).toEqual(true);
-
-  form.fieldsStore.fields = {
-    username: {
-      validateEventEmitted: true,
-      errors: new Set([0]),
-      warnings: new Set(),
-      infos: new Set(),
-      validationMessage: 'Suffering from being missing'
-    },
-    password: {
-      validateEventEmitted: true,
-      errors: new Set([0]),
-      warnings: new Set(),
-      infos: new Set(),
-      validationMessage: 'Suffering from being missing'
-    }
-  };
-  expect(form.isValid()).toEqual(false);
-
-  form.fieldsStore.fields = {
-    username: {
-      validateEventEmitted: true,
-      errors: new Set(),
-      warnings: new Set([0]),
-      infos: new Set(),
-      validationMessage: ''
-    },
-    password: {
-      validateEventEmitted: true,
-      errors: new Set(),
-      warnings: new Set([0]),
-      infos: new Set(),
-      validationMessage: ''
-    }
-  };
-  expect(form.isValid()).toEqual(true);
-
-  form.fieldsStore.fields = {
-    username: {
-      validateEventEmitted: true,
-      errors: new Set(),
-      warnings: new Set(),
-      infos: new Set([0]),
-      validationMessage: ''
-    },
-    password: {
-      validateEventEmitted: true,
-      errors: new Set(),
-      warnings: new Set(),
-      infos: new Set([0]),
-      validationMessage: ''
-    }
+    username: {validateEventEmitted: false},
+    password: {validateEventEmitted: false}
   };
   expect(form.isValid()).toEqual(true);
 });
@@ -575,20 +467,8 @@ test('reset()', () => {
   const form = new_FormWithConstraints({});
 
   form.fieldsStore.fields = {
-    username: {
-      validateEventEmitted: true,
-      errors: new Set([0]),
-      warnings: new Set(),
-      infos: new Set(),
-      validationMessage: 'Suffering from being missing'
-    },
-    password: {
-      validateEventEmitted: true,
-      errors: new Set([0]),
-      warnings: new Set(),
-      infos: new Set(),
-      validationMessage: 'Suffering from being missing'
-    }
+    username: {validateEventEmitted: true},
+    password: {validateEventEmitted: true}
   };
 
   form.reset();

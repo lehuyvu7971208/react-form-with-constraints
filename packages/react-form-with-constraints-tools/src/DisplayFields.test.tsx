@@ -10,11 +10,11 @@ function shallow(node: React.ReactElement<{}>, options: {context: FormWithConstr
   return _shallow<{}>(node, options);
 }
 
-let form_username_empty: FormWithConstraints;
+let form_username: FormWithConstraints;
 
 beforeEach(() => {
-  form_username_empty = new_FormWithConstraints({});
-  form_username_empty.fieldsStore.fields = {
+  form_username = new_FormWithConstraints({});
+  form_username.fieldsStore.fields = {
     username: fieldWithoutFeedback
   };
 });
@@ -51,7 +51,7 @@ test('componentWillMount() componentWillUnmount()', () => {
 test('render()', () => {
   const wrapper = shallow(
     <DisplayFields />,
-    {context: {form: form_username_empty}}
+    {context: {form: form_username}}
   );
 
   expect(wrapper.text()).toEqual(
@@ -82,10 +82,10 @@ describe('reRender()', () => {
   test('adding field', () => {
     const wrapper = shallow(
       <DisplayFields />,
-      {context: {form: form_username_empty}}
+      {context: {form: form_username}}
     );
 
-    form_username_empty.fieldsStore.addField('password');
+    form_username.fieldsStore.addField('password');
 
     // See http://airbnb.io/enzyme/docs/guides/migration-from-2-to-3.html#for-mount-updates-are-sometimes-required-when-they-werent-before
     wrapper.update();
@@ -112,10 +112,10 @@ describe('reRender()', () => {
   test('removing field', () => {
     const wrapper = shallow(
       <DisplayFields />,
-      {context: {form: form_username_empty}}
+      {context: {form: form_username}}
     );
 
-    form_username_empty.fieldsStore.removeField('username');
+    form_username.fieldsStore.removeField('username');
 
     wrapper.update();
 
@@ -125,16 +125,16 @@ describe('reRender()', () => {
   test('updating field', () => {
     const wrapper = shallow(
       <DisplayFields />,
-      {context: {form: form_username_empty}}
+      {context: {form: form_username}}
     );
 
-    const field = form_username_empty.fieldsStore.cloneField('username');
+    const field = form_username.fieldsStore.cloneField('username');
     field.dirty = true;
     field.errors.add(1.0);
     field.warnings.add(2.0);
     field.infos.add(3.0);
     field.validationMessage = "I'm a clone";
-    form_username_empty.fieldsStore.updateField('username', field);
+    form_username.fieldsStore.updateField('username', field);
 
     wrapper.update();
 
@@ -159,16 +159,16 @@ describe('reRender()', () => {
   test('updating unknown field', () => {
     const wrapper = shallow(
       <DisplayFields />,
-      {context: {form: form_username_empty}}
+      {context: {form: form_username}}
     );
 
-    const field = form_username_empty.fieldsStore.cloneField('username');
+    const field = form_username.fieldsStore.cloneField('username');
     field.dirty = true;
     field.errors.add(1.0);
     field.warnings.add(2.0);
     field.infos.add(3.0);
     field.validationMessage = "I'm a clone";
-    expect(() => form_username_empty.fieldsStore.updateField('unknown', field)).toThrow("Unknown field 'unknown'");
+    expect(() => form_username.fieldsStore.updateField('unknown', field)).toThrow("Unknown field 'unknown'");
 
     expect(wrapper.text()).toEqual(
 `react-form-with-constraints = {

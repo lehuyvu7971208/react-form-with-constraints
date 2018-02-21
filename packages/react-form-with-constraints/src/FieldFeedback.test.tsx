@@ -1,7 +1,7 @@
 import React from 'react';
 import { shallow as _shallow, mount as _mount } from 'enzyme';
 
-import { FormWithConstraints, FieldFeedback, FieldFeedbackType, FieldFeedbackContext, FieldFeedbackProps, ValidateFieldEvent, ResetEvent } from './index';
+import { FormWithConstraints, FieldFeedback, FieldFeedbackContext, FieldFeedbackProps, ValidateFieldEvent, ResetEvent } from './index';
 import { InputMock, input_username_valueMissing, input_username_valid } from './InputMock';
 import new_FormWithConstraints from './FormWithConstraintsEnzymeFix';
 import FieldFeedbacks from './FieldFeedbacksEnzymeFix';
@@ -102,7 +102,7 @@ describe('validate()', () => {
         const validations = fieldFeedbacks_username.emitValidateFieldEvent(input_username_valueMissing);
 
         expect(validations).toEqual([
-          {key: '0.0', type: FieldFeedbackType.Error, show: false}
+          {key: '0.0', type: 'error', show: false}
         ]);
       });
 
@@ -114,7 +114,7 @@ describe('validate()', () => {
         const validations = fieldFeedbacks_username.emitValidateFieldEvent(input_username_valueMissing);
 
         expect(validations).toEqual([
-          {key: '0.0', type: FieldFeedbackType.Error, show: false}
+          {key: '0.0', type: 'error', show: false}
         ]);
       });
 
@@ -126,7 +126,7 @@ describe('validate()', () => {
         const validations = fieldFeedbacks_username.emitValidateFieldEvent(input_username_valueMissing);
 
         expect(validations).toEqual([
-          {key: '0.0', type: FieldFeedbackType.Error, show: true}
+          {key: '0.0', type: 'error', show: true}
         ]);
       });
 
@@ -139,7 +139,7 @@ describe('validate()', () => {
         const validations = fieldFeedbacks_username.emitValidateFieldEvent(input);
 
         expect(validations).toEqual([
-          {key: '0.0', type: FieldFeedbackType.Error, show: true}
+          {key: '0.0', type: 'error', show: true}
         ]);
       });
 
@@ -152,7 +152,7 @@ describe('validate()', () => {
         const validations = fieldFeedbacks_username.emitValidateFieldEvent(input);
 
         expect(validations).toEqual([
-          {key: '0.0', type: FieldFeedbackType.Error, show: true}
+          {key: '0.0', type: 'error', show: true}
         ]);
       });
 
@@ -165,7 +165,7 @@ describe('validate()', () => {
         const validations = fieldFeedbacks_username.emitValidateFieldEvent(input);
 
         expect(validations).toEqual([
-          {key: '0.0', type: FieldFeedbackType.Error, show: true}
+          {key: '0.0', type: 'error', show: true}
         ]);
       });
 
@@ -178,7 +178,7 @@ describe('validate()', () => {
         const validations = fieldFeedbacks_username.emitValidateFieldEvent(input);
 
         expect(validations).toEqual([
-          {key: '0.0', type: FieldFeedbackType.Error, show: true}
+          {key: '0.0', type: 'error', show: true}
         ]);
       });
 
@@ -191,7 +191,7 @@ describe('validate()', () => {
         const validations = fieldFeedbacks_username.emitValidateFieldEvent(input);
 
         expect(validations).toEqual([
-          {key: '0.0', type: FieldFeedbackType.Error, show: true}
+          {key: '0.0', type: 'error', show: true}
         ]);
       });
 
@@ -204,7 +204,7 @@ describe('validate()', () => {
         const validations = fieldFeedbacks_username.emitValidateFieldEvent(input);
 
         expect(validations).toEqual([
-          {key: '0.0', type: FieldFeedbackType.Error, show: true}
+          {key: '0.0', type: 'error', show: true}
         ]);
       });
 
@@ -217,7 +217,7 @@ describe('validate()', () => {
         const validations = fieldFeedbacks_username.emitValidateFieldEvent(input);
 
         expect(validations).toEqual([
-          {key: '0.0', type: FieldFeedbackType.Error, show: true}
+          {key: '0.0', type: 'error', show: true}
         ]);
       });
 
@@ -230,7 +230,7 @@ describe('validate()', () => {
         const validations = fieldFeedbacks_username.emitValidateFieldEvent(input);
 
         expect(validations).toEqual([
-          {key: '0.0', type: FieldFeedbackType.Error, show: true}
+          {key: '0.0', type: 'error', show: true}
         ]);
       });
 
@@ -242,7 +242,7 @@ describe('validate()', () => {
         const validations = fieldFeedbacks_username.emitValidateFieldEvent(input_username_valueMissing);
 
         expect(validations).toEqual([
-          {key: '0.0', type: FieldFeedbackType.Error, show: true}
+          {key: '0.0', type: 'error', show: true}
         ]);
       });
 
@@ -254,7 +254,7 @@ describe('validate()', () => {
         const validations = fieldFeedbacks_username.emitValidateFieldEvent(input_username_valueMissing);
 
         expect(validations).toEqual([
-          {key: '0.0', type: FieldFeedbackType.WhenValid, show: undefined}
+          {key: '0.0', type: 'whenValid', show: undefined}
         ]);
       });
     });
@@ -269,7 +269,7 @@ describe('validate()', () => {
         const validations = fieldFeedbacks_username.emitValidateFieldEvent(input);
 
         expect(validations).toEqual([
-          {key: '0.0', type: FieldFeedbackType.Error, show: false}
+          {key: '0.0', type: 'error', show: false}
         ]);
       });
 
@@ -282,7 +282,7 @@ describe('validate()', () => {
         const validations = fieldFeedbacks_username.emitValidateFieldEvent(input);
 
         expect(validations).toEqual([
-          {key: '0.0', type: FieldFeedbackType.Error, show: true}
+          {key: '0.0', type: 'error', show: true}
         ]);
       });
     });
@@ -306,7 +306,7 @@ describe('validate()', () => {
     const validations = fieldFeedbacks_username.emitValidateFieldEvent(input_username_valueMissing);
 
     expect(validations).toEqual([
-      {key: '0.0', type: FieldFeedbackType.Error, show: true}
+      {key: '0.0', type: 'error', show: true}
     ]);
   });
 
@@ -318,7 +318,7 @@ describe('validate()', () => {
     const validations = fieldFeedbacks_username.emitValidateFieldEvent(input_username_valueMissing);
 
     expect(validations).toEqual([
-      {key: '0.0', type: FieldFeedbackType.Error, show: true}
+      {key: '0.0', type: 'error', show: true}
     ]);
 
     expect(wrapper.html()).toEqual('<div data-field-feedback-key="0.0" class="error">Suffering from being missing</div>');
@@ -332,7 +332,7 @@ describe('validate()', () => {
     const validations = fieldFeedbacks_username.emitValidateFieldEvent(input_username_valueMissing);
 
     expect(validations).toEqual([
-      {key: '0.0', type: FieldFeedbackType.Warning, show: true}
+      {key: '0.0', type: 'warning', show: true}
     ]);
   });
 
@@ -344,7 +344,7 @@ describe('validate()', () => {
     const validations = fieldFeedbacks_username.emitValidateFieldEvent(input_username_valueMissing);
 
     expect(validations).toEqual([
-      {key: '0.0', type: FieldFeedbackType.Info, show: true}
+      {key: '0.0', type: 'info', show: true}
     ]);
   });
 });
@@ -358,7 +358,7 @@ describe('render()', () => {
     const validations = fieldFeedbacks_username.emitValidateFieldEvent(input_username_valueMissing);
 
     expect(validations).toEqual([
-      {key: '0.0', type: FieldFeedbackType.Error, show: true}
+      {key: '0.0', type: 'error', show: true}
     ]);
     expect(fieldFeedback.html()).toEqual('<div data-field-feedback-key="0.0" class="error">Suffering from being missing</div>');
   });
@@ -371,7 +371,7 @@ describe('render()', () => {
     const validations = fieldFeedbacks_username.emitValidateFieldEvent(input_username_valueMissing);
 
     expect(validations).toEqual([
-      {key: '0.0', type: FieldFeedbackType.Warning, show: true}
+      {key: '0.0', type: 'warning', show: true}
     ]);
     expect(fieldFeedback.html()).toEqual('<div data-field-feedback-key="0.0" class="warning">Suffering from being missing</div>');
   });
@@ -384,7 +384,7 @@ describe('render()', () => {
     const validations = fieldFeedbacks_username.emitValidateFieldEvent(input_username_valueMissing);
 
     expect(validations).toEqual([
-      {key: '0.0', type: FieldFeedbackType.Info, show: true}
+      {key: '0.0', type: 'info', show: true}
     ]);
     expect(fieldFeedback.html()).toEqual('<div data-field-feedback-key="0.0" class="info">Suffering from being missing</div>');
   });
@@ -397,7 +397,7 @@ describe('render()', () => {
     const validations = fieldFeedbacks_username.emitValidateFieldEvent(input_username_valid);
 
     expect(validations).toEqual([
-      {key: '0.0', type: FieldFeedbackType.Error, show: false}
+      {key: '0.0', type: 'error', show: false}
     ]);
     expect(fieldFeedback.html()).toEqual(null);
   });
@@ -410,7 +410,7 @@ describe('render()', () => {
     const validations = fieldFeedbacks_username.emitValidateFieldEvent(input_username_valueMissing);
 
     expect(validations).toEqual([
-      {key: '0.0', type: FieldFeedbackType.Error, show: true}
+      {key: '0.0', type: 'error', show: true}
     ]);
     expect(fieldFeedback.html()).toEqual('<div data-field-feedback-key="0.0" class="error">message</div>');
   });
@@ -423,7 +423,7 @@ describe('render()', () => {
     const validations = fieldFeedbacks_username.emitValidateFieldEvent(input_username_valueMissing);
 
     expect(validations).toEqual([
-      {key: '0.0', type: FieldFeedbackType.Error, show: true}
+      {key: '0.0', type: 'error', show: true}
     ]);
     expect(fieldFeedback.html()).toEqual('<div data-field-feedback-key="0.0" class="alreadyExistingClassName error">Suffering from being missing</div>');
   });
@@ -436,7 +436,7 @@ describe('render()', () => {
     const validations = fieldFeedbacks_username.emitValidateFieldEvent(input_username_valueMissing);
 
     expect(validations).toEqual([
-      {key: '0.0', type: FieldFeedbackType.Error, show: true}
+      {key: '0.0', type: 'error', show: true}
     ]);
     expect(fieldFeedback.html()).toEqual('<div data-field-feedback-key="0.0" style="color: yellow;" class="error">Suffering from being missing</div>');
   });
