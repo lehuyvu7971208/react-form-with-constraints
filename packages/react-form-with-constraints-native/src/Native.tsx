@@ -54,29 +54,8 @@ export class FormWithConstraints extends _FormWithConstraints {
         validationMessage: undefined as any
       };
 
-      const field = this.fieldsStore.fields[fieldName];
-
-      if (field === undefined) {
-        // Means the field (<input name="username">) does not have a FieldFeedbacks
-        // so let's ignore this field
-      }
-
-      else if (forceValidateFields || !field.validated) {
-        const fieldFeedbackValidationsPromise = this.emitValidateFieldEvent(_input)
-          .filter(fieldFeedbackValidations => fieldFeedbackValidations !== undefined) // Remove undefined results
-          .map(fieldFeedbackValidations => Promise.resolve(fieldFeedbackValidations!)); // Transforms all results into Promises
-
-        const fieldValidationPromise = Promise.all(fieldFeedbackValidationsPromise)
-          .then(validations =>
-            // See Merge/flatten an array of arrays in JavaScript? https://stackoverflow.com/q/10865025/990356
-            validations.reduce((prev, curr) => prev.concat(curr), [])
-          )
-          .then(fieldFeedbackValidations => new FieldValidation(fieldName, fieldFeedbackValidations));
-
-        this.emitFieldValidatedEvent(_input, fieldValidationPromise);
-
-        fieldValidationPromises.push(fieldValidationPromise);
-      }
+      const fieldValidationPromise = this.validateField(forceValidateFields, _input);
+      if (fieldValidationPromise !== undefined) fieldValidationPromises.push(fieldValidationPromise);
     });
 
     return Promise.all(fieldValidationPromises);

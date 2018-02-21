@@ -171,7 +171,7 @@ describe('validate()', () => {
     const form = new_FormWithConstraints({});
     form.fieldsStore.fields = {
       username: {
-        validated: true,
+        validateEventEmitted: true,
         errors: new Set([1.1, 0.0, 0.1]),
         warnings: new Set([1.1, 0.0, 0.1]),
         infos: new Set([1.1, 0.0, 0.1]),

@@ -125,37 +125,47 @@ export class FormWithConstraints
     return this._validateFields(false /* forceValidateFields */);
   }
 
+  validateField(forceValidateFields: boolean, input: Input) {
+    const fieldName = input.name;
+    const field = this.fieldsStore.fields[fieldName];
+
+    let fieldValidationPromise;
+
+    if (field === undefined) {
+      // Means the field (<input name="username">) does not have a FieldFeedbacks
+      // so let's ignore this field
+    }
+
+    else if (forceValidateFields || !field.validateEventEmitted) {
+      this.resetErrors();
+
+      field.validateEventEmitted = true;
+
+      const fieldFeedbackValidationsPromises = this.emitValidateFieldEvent(input)
+        .filter(fieldFeedbackValidations => fieldFeedbackValidations !== undefined) // Remove undefined results
+        .map(fieldFeedbackValidations => fieldFeedbackValidations!);
+
+      fieldValidationPromise = Promise.all(fieldFeedbackValidationsPromises)
+        .then(validations =>
+          // See Merge/flatten an array of arrays in JavaScript? https://stackoverflow.com/q/10865025/990356
+          validations.reduce((prev, curr) => prev.concat(curr), [])
+        )
+        .then(fieldFeedbackValidations => new FieldValidation(fieldName, fieldFeedbackValidations));
+
+      this.emitFieldValidatedEvent(input, fieldValidationPromise);
+    }
+
+    return fieldValidationPromise;
+  }
+
   private _validateFields(forceValidateFields: boolean, ...inputsOrNames: Array<Input | string>) {
     const fieldValidationPromises = new Array<Promise<FieldValidation>>();
 
     const inputs = this.normalizeInputs(...inputsOrNames);
 
     inputs.forEach(input => {
-      const fieldName = input.name;
-
-      const field = this.fieldsStore.fields[fieldName];
-
-      if (field === undefined) {
-        // Means the field (<input name="username">) does not have a FieldFeedbacks
-        // so let's ignore this field
-      }
-
-      else if (forceValidateFields || !field.validated) {
-        const fieldFeedbackValidationsPromises = this.emitValidateFieldEvent(input)
-          .filter(fieldFeedbackValidations => fieldFeedbackValidations !== undefined) // Remove undefined results
-          .map(fieldFeedbackValidations => fieldFeedbackValidations!);
-
-        const fieldValidationPromise = Promise.all(fieldFeedbackValidationsPromises)
-          .then(validations =>
-            // See Merge/flatten an array of arrays in JavaScript? https://stackoverflow.com/q/10865025/990356
-            validations.reduce((prev, curr) => prev.concat(curr), [])
-          )
-          .then(fieldFeedbackValidations => new FieldValidation(fieldName, fieldFeedbackValidations));
-
-        this.emitFieldValidatedEvent(input, fieldValidationPromise);
-
-        fieldValidationPromises.push(fieldValidationPromise);
-      }
+      const fieldValidationPromise = this.validateField(forceValidateFields, input);
+      if (fieldValidationPromise !== undefined) fieldValidationPromises.push(fieldValidationPromise);
     });
 
     return Promise.all(fieldValidationPromises);
@@ -204,18 +214,20 @@ export class FormWithConstraints
   hasWarnings = false;
   hasInfos = false;
 
+  private resetErrors() {
+    this.hasErrors = false;
+    this.hasWarnings = false;
+    this.hasInfos = false;
+  }
+
   // Does not check if fields are dirty
   isValid() {
     return !this.hasErrors;
   }
 
-  // FIXME
   reset() {
-    this.hasErrors = false;
-    this.hasWarnings = false;
-    this.hasInfos = false;
-
-    this.fieldsStore.reset(); // FIXME Remove
+    this.resetErrors();
+    this.fieldsStore.reset();
     this.emitResetEvent();
   }
 

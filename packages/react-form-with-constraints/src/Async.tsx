@@ -64,25 +64,25 @@ export class Async<T> extends withResetEventEmitter(
     };
   }
 
-  readonly fieldName: string; // Instead of reading props each time
-
-  constructor(props: AsyncProps<T>, context: AsyncContext) {
+  constructor(props: AsyncProps<T>) {
     super(props);
 
-    this.fieldName = context.fieldFeedbacks.fieldName;
     this.state = {
       status: Status.None
     };
 
     this.validate = this.validate.bind(this);
+    this.reset = this.reset.bind(this);
   }
 
   componentWillMount() {
     this.context.fieldFeedbacks.addValidateFieldEventListener(this.validate);
+    this.context.fieldFeedbacks.addResetEventListener(this.reset);
   }
 
   componentWillUnmount() {
     this.context.fieldFeedbacks.removeValidateFieldEventListener(this.validate);
+    this.context.fieldFeedbacks.removeResetEventListener(this.reset);
   }
 
   validate(input: Input) {
@@ -122,6 +122,10 @@ export class Async<T> extends withResetEventEmitter(
     }
 
     return validationsPromise;
+  }
+
+  reset() {
+    this.emitResetEvent();
   }
 
   render() {

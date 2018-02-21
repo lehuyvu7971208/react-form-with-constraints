@@ -5,8 +5,15 @@ import { FormWithConstraintsChildContext } from './FormWithConstraints';
 import { FieldFeedbacksChildContext } from './FieldFeedbacks';
 import { AsyncChildContext } from './Async';
 import Input from './Input';
-import { FieldFeedbackType, FieldFeedbackValidation } from './FieldValidation';
+import { FieldFeedbackValidation } from './FieldValidation';
 import { FieldFeedbackWhenValid } from './FieldFeedbackWhenValid';
+
+export enum FieldFeedbackType {
+  Error = 'error',
+  Warning = 'warning',
+  Info = 'info',
+  WhenValid = 'whenValid'
+}
 
 export type WhenString =
   | 'valid'
@@ -54,13 +61,11 @@ export class FieldFeedback extends React.Component<FieldFeedbackProps, FieldFeed
   context!: FieldFeedbackContext;
 
   readonly key: string; // Example: key="0.1"
-  readonly fieldName: string; // Instead of reading props each time
 
   constructor(props: FieldFeedbackProps, context: FieldFeedbackContext) {
     super(props);
 
     this.key = context.fieldFeedbacks.addFieldFeedback();
-    this.fieldName = context.fieldFeedbacks.fieldName;
 
     const { error, warning, info, when } = props;
 

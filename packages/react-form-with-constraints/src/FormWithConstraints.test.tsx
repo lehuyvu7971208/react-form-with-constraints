@@ -500,14 +500,14 @@ test('isValid()', () => {
 
   form.fieldsStore.fields = {
     username: {
-      validated: false,
+      validateEventEmitted: false,
       errors: new Set(),
       warnings: new Set(),
       infos: new Set(),
       validationMessage: ''
     },
     password: {
-      validated: false,
+      validateEventEmitted: false,
       errors: new Set(),
       warnings: new Set(),
       infos: new Set(),
@@ -518,14 +518,14 @@ test('isValid()', () => {
 
   form.fieldsStore.fields = {
     username: {
-      validated: true,
+      validateEventEmitted: true,
       errors: new Set([0]),
       warnings: new Set(),
       infos: new Set(),
       validationMessage: 'Suffering from being missing'
     },
     password: {
-      validated: true,
+      validateEventEmitted: true,
       errors: new Set([0]),
       warnings: new Set(),
       infos: new Set(),
@@ -536,14 +536,14 @@ test('isValid()', () => {
 
   form.fieldsStore.fields = {
     username: {
-      validated: true,
+      validateEventEmitted: true,
       errors: new Set(),
       warnings: new Set([0]),
       infos: new Set(),
       validationMessage: ''
     },
     password: {
-      validated: true,
+      validateEventEmitted: true,
       errors: new Set(),
       warnings: new Set([0]),
       infos: new Set(),
@@ -554,14 +554,14 @@ test('isValid()', () => {
 
   form.fieldsStore.fields = {
     username: {
-      validated: true,
+      validateEventEmitted: true,
       errors: new Set(),
       warnings: new Set(),
       infos: new Set([0]),
       validationMessage: ''
     },
     password: {
-      validated: true,
+      validateEventEmitted: true,
       errors: new Set(),
       warnings: new Set(),
       infos: new Set([0]),
@@ -576,14 +576,14 @@ test('reset()', () => {
 
   form.fieldsStore.fields = {
     username: {
-      validated: true,
+      validateEventEmitted: true,
       errors: new Set([0]),
       warnings: new Set(),
       infos: new Set(),
       validationMessage: 'Suffering from being missing'
     },
     password: {
-      validated: true,
+      validateEventEmitted: true,
       errors: new Set([0]),
       warnings: new Set(),
       infos: new Set(),

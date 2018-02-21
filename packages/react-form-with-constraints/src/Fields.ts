@@ -1,6 +1,6 @@
 // Field is a better name than Input, see Django Form fields https://docs.djangoproject.com/en/1.11/ref/forms/fields/
 export interface Field {
-  validated: boolean;
+  validateEventEmitted: boolean;
 }
 
 export interface Fields {

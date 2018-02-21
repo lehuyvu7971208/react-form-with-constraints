@@ -1,7 +1,7 @@
 import { Field } from './index';
 
 const fieldWithoutFeedback: Readonly<Field> = {
-  validated: false
+  validateEventEmitted: false
 };
 
 export default fieldWithoutFeedback;

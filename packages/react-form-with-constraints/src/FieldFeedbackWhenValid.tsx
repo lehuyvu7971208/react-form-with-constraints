@@ -22,12 +22,9 @@ export class FieldFeedbackWhenValid extends React.Component<FieldFeedbackWhenVal
   };
   context!: FieldFeedbackWhenValidContext;
 
-  readonly fieldName: string; // Instead of reading props each time
-
-  constructor(props: FieldFeedbackWhenValidProps, context: FieldFeedbackWhenValidContext) {
+  constructor(props: FieldFeedbackWhenValidProps) {
     super(props);
 
-    this.fieldName = context.fieldFeedbacks.fieldName;
     this.state = {
       fieldIsValid: undefined
     };
@@ -47,7 +44,7 @@ export class FieldFeedbackWhenValid extends React.Component<FieldFeedbackWhenVal
   }
 
   async fieldValidated(input: Input, fieldValidationsPromise: Promise<FieldValidation>) {
-    if (input.name === this.fieldName) { // Ignore the event if it's not for us
+    if (input.name === this.context.fieldFeedbacks.fieldName) { // Ignore the event if it's not for us
       this.setState({fieldIsValid: undefined});
       const fieldValidations = await fieldValidationsPromise;
       this.setState({fieldIsValid: fieldValidations.isValid()});

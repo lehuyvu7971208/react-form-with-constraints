@@ -1,3 +1,5 @@
+import { FieldFeedbackType } from './FieldFeedback';
+
 // FIXME Change this to make it like FieldFeedbacksValidation, make it as an helper?
 export class FieldValidation {
               // FIXME Rename to just name or remove completely?
@@ -16,13 +18,6 @@ export class FieldValidation {
   isValid() {
     return !this.hasErrors();
   }
-}
-
-export enum FieldFeedbackType {
-  Error = 'error',
-  Warning = 'warning',
-  Info = 'info',
-  WhenValid = 'whenValid'
 }
 
 // FIXME Merge with FieldValidation?

@@ -7,17 +7,21 @@ import {
   FieldFeedback as _FieldFeedback,
   FieldFeedbacks as _FieldFeedbacks,
   Async as _Async,
-  Input, FieldValidation, FieldEvent
+  Input, FieldValidation, FieldEvent, FieldFeedbackValidation, Field
 } from 'react-form-with-constraints';
 
 export interface DisplayFieldsProps {}
 
-export interface Fields {
-  [fieldName: string]: FieldValidation;
+export interface Field2 extends Partial<Field> {
+  fieldFeedbackValidations?: FieldFeedbackValidation[];
+}
+
+export interface Fields2 {
+  [fieldName: string]: Field2 | undefined;
 }
 
 export interface DisplayFieldsState {
-  fields: Fields;
+  fields: Fields2;
 }
 
 export class DisplayFields extends React.Component<DisplayFieldsProps, DisplayFieldsState> {
@@ -35,25 +39,28 @@ export class DisplayFields extends React.Component<DisplayFieldsProps, DisplayFi
     };
 
     this.fieldValidated = this.fieldValidated.bind(this);
+    this.reset = this.reset.bind(this);
     this.fieldAdded = this.fieldAdded.bind(this);
     this.fieldRemoved = this.fieldRemoved.bind(this);
     this.fieldUpdated = this.fieldUpdated.bind(this);
   }
 
   componentWillMount() {
+    this.context.form.addFieldValidatedEventListener(this.fieldValidated);
+    this.context.form.addResetEventListener(this.reset);
+
     this.context.form.fieldsStore.addListener(FieldEvent.Added, this.fieldAdded);
     this.context.form.fieldsStore.addListener(FieldEvent.Removed, this.fieldRemoved);
     this.context.form.fieldsStore.addListener(FieldEvent.Updated, this.fieldUpdated);
-
-    this.context.form.addFieldValidatedEventListener(this.fieldValidated);
   }
 
   componentWillUnmount() {
+    this.context.form.removeFieldValidatedEventListener(this.fieldValidated);
+    this.context.form.removeResetEventListener(this.reset);
+
     this.context.form.fieldsStore.removeListener(FieldEvent.Added, this.fieldAdded);
     this.context.form.fieldsStore.removeListener(FieldEvent.Removed, this.fieldRemoved);
     this.context.form.fieldsStore.removeListener(FieldEvent.Updated, this.fieldUpdated);
-
-    this.context.form.removeFieldValidatedEventListener(this.fieldValidated);
   }
 
   fieldAdded() {
@@ -70,29 +77,39 @@ export class DisplayFields extends React.Component<DisplayFieldsProps, DisplayFi
 
   async fieldValidated(_input: Input, fieldValidationPromise: Promise<FieldValidation>) {
     const fieldValidation = await fieldValidationPromise;
-    this.setState(prevState => (
-      {fields: {...prevState.fields, ...{[fieldValidation.fieldName]: fieldValidation}}}
-    ));
+
+    this.setState(prevState => ({
+      fields: {...prevState.fields, ...{[fieldValidation.fieldName]: fieldValidation}}
+    }));
+  }
+
+  reset() {
+    const { fieldsStore } = this.context.form;
+
+    this.setState({
+      fields: fieldsStore.fields
+    });
   }
 
   render() {
     const { fields } = this.state;
+    const { fieldsStore } = this.context.form;
 
     // Why Object.create(null) instead of just {}? See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map#Objects_and_maps_compared
-    let merged = Object.create(null);
+    const merged: Fields2 = Object.create(null);
 
     // tslint:disable-next-line:forin
-    for (const fieldName in this.context.form.fieldsStore.fields) {
-      merged[fieldName] = {...this.context.form.fieldsStore.fields[fieldName], ...fields[fieldName]};
-      delete merged[fieldName].fieldName;
+    for (const fieldName in fieldsStore.fields) {
+      merged[fieldName] = {...fieldsStore.fields[fieldName], ...fields[fieldName]};
+      delete (merged[fieldName] as any).fieldName;
     }
 
-    merged = JSON.stringify(merged, null, 2);
+    let str = JSON.stringify(merged, null, 2);
 
     // See JSON.stringify without quotes on properties? https://stackoverflow.com/q/11233498
-    merged = merged.replace(/\"([^(\")"]+)\":/g, '$1:');
+    str = str.replace(/\"([^(\")"]+)\":/g, '$1:');
 
-    return <pre style={{fontSize: 'small'}}>react-form-with-constraints = {merged}</pre>;
+    return <pre style={{fontSize: 'small'}}>react-form-with-constraints = {str}</pre>;
   }
 }
 

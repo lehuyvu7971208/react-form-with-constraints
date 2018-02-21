@@ -19,7 +19,7 @@ export class FieldsStore extends EventEmitter {
     }
   }
 
-  updateField(fieldName: string, field: Field) {
+  private updateField(fieldName: string, field: Field) {
     console.assert(this.fields[fieldName] !== undefined, `Unknown field '${fieldName}'`);
     this.fields[fieldName] = field;
     this.emit(FieldEvent.Updated, fieldName);

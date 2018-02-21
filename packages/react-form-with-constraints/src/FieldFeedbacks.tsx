@@ -9,7 +9,8 @@ import withResetEventEmitter from './withResetEventEmitter';
 // FIXME See https://github.com/Microsoft/TypeScript/issues/9944#issuecomment-309903027
 import { EventEmitter } from './EventEmitter';
 import Input from './Input';
-import { FieldFeedbackValidation, FieldFeedbackType } from './FieldValidation';
+import { FieldFeedbackValidation } from './FieldValidation';
+import { FieldFeedbackType } from './FieldFeedback';
 
 export interface FieldFeedbacksProps {
   for?: string;
@@ -72,7 +73,7 @@ export class FieldFeedbacks extends
       this.fieldName = context.fieldFeedbacks.fieldName;
       if (props.for !== undefined) throw new TypeError("FieldFeedbacks cannot have a parent and a 'for' prop");
     } else {
-      if (props.for === undefined) throw new TypeError("FieldFeedbacks without parent and without 'for' prop");
+      if (props.for === undefined) throw new TypeError("FieldFeedbacks cannot be without parent and without 'for' prop");
       else this.fieldName = props.for;
     }
 
@@ -106,7 +107,6 @@ export class FieldFeedbacks extends
   }
 
   componentWillMount() {
-    // FIXME What about multiple FieldFeedbacks for the same field?
     this.context.form.fieldsStore.addField(this.fieldName);
 
     if (this.context.fieldFeedbacks) {
@@ -121,7 +121,6 @@ export class FieldFeedbacks extends
 
   componentWillUnmount() {
     // FIXME What about multiple FieldFeedbacks for the same field?
-    // FIXME FieldFeedbacks.componentWillUnmount() is called before (instead of after) its children FieldFeedback.componentWillUnmount()
     this.context.form.fieldsStore.removeField(this.fieldName);
 
     if (this.context.fieldFeedbacks) {
@@ -138,14 +137,18 @@ export class FieldFeedbacks extends
   hasWarnings = false;
   hasInfos = false;
 
+  private resetErrors() {
+    this.hasErrors = false;
+    this.hasWarnings = false;
+    this.hasInfos = false;
+  }
+
   hasFeedbacks() {
     return this.hasErrors || this.hasWarnings || this.hasInfos;
   }
 
   validate(input: Input) {
     const { form, fieldFeedbacks } = this.context;
-
-    this.reset();
 
     let validationsPromise;
 
@@ -161,7 +164,7 @@ export class FieldFeedbacks extends
       }
 
       else {
-        this.emitResetEvent();
+        this.resetErrors();
 
         const allValidations = this.emitValidateFieldEvent(input);
 
@@ -208,9 +211,8 @@ export class FieldFeedbacks extends
   }
 
   reset() {
-    this.hasErrors = false;
-    this.hasWarnings = false;
-    this.hasInfos = false;
+    this.resetErrors();
+    this.emitResetEvent();
   }
 
   render() {
