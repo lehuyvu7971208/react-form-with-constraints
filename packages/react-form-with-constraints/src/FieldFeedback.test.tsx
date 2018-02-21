@@ -2,7 +2,7 @@ import React from 'react';
 import { shallow as _shallow, mount as _mount } from 'enzyme';
 
 import { FormWithConstraints, FieldFeedback, FieldFeedbackType, FieldFeedbackContext, FieldFeedbackProps, ValidateFieldEvent, ResetEvent } from './index';
-import InputMock from './InputMock';
+import { InputMock, input_username_valueMissing, input_username_valid } from './InputMock';
 import new_FormWithConstraints from './FormWithConstraintsEnzymeFix';
 import FieldFeedbacks from './FieldFeedbacksEnzymeFix';
 
@@ -99,7 +99,7 @@ describe('validate()', () => {
           <FieldFeedback when={'unknown' as any} />,
           {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
         );
-        const input = new InputMock('username', '', {valid: false, valueMissing: true}, 'Suffering from being missing');
+        const input = input_username_valueMissing;
         const validations = fieldFeedbacks_username.emitValidateFieldEvent(input);
 
         expect(validations).toEqual([
@@ -112,7 +112,7 @@ describe('validate()', () => {
           <FieldFeedback when="badInput" />,
           {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
         );
-        const input = new InputMock('username', '', {valid: false, valueMissing: true}, 'Suffering from being missing');
+        const input = input_username_valueMissing;
         const validations = fieldFeedbacks_username.emitValidateFieldEvent(input);
 
         expect(validations).toEqual([
@@ -125,7 +125,7 @@ describe('validate()', () => {
           <FieldFeedback when="*" />,
           {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
         );
-        const input = new InputMock('username', '', {valid: false, valueMissing: true}, 'Suffering from being missing');
+        const input = input_username_valueMissing;
         const validations = fieldFeedbacks_username.emitValidateFieldEvent(input);
 
         expect(validations).toEqual([
@@ -242,7 +242,7 @@ describe('validate()', () => {
           <FieldFeedback when="valueMissing" />,
           {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
         );
-        const input = new InputMock('username', '', {valid: false, valueMissing: true}, 'Suffering from being missing');
+        const input = input_username_valueMissing;
         const validations = fieldFeedbacks_username.emitValidateFieldEvent(input);
 
         expect(validations).toEqual([
@@ -255,7 +255,7 @@ describe('validate()', () => {
           <FieldFeedback when="valid">Looks good!</FieldFeedback>,
           {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
         );
-        const input = new InputMock('username', '', {valid: false, valueMissing: true}, 'Suffering from being missing');
+        const input = input_username_valueMissing;
         const validations = fieldFeedbacks_username.emitValidateFieldEvent(input);
 
         expect(validations).toEqual([
@@ -308,7 +308,7 @@ describe('validate()', () => {
       <FieldFeedback when="*" />,
       {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
     );
-    const input = new InputMock('username', '', {valid: false, valueMissing: true}, 'Suffering from being missing');
+    const input = input_username_valueMissing;
     const validations = fieldFeedbacks_username.emitValidateFieldEvent(input);
 
     expect(validations).toEqual([
@@ -321,7 +321,7 @@ describe('validate()', () => {
       <FieldFeedback when="*" error />,
       {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
     );
-    const input = new InputMock('username', '', {valid: false, valueMissing: true}, 'Suffering from being missing');
+    const input = input_username_valueMissing;
     const validations = fieldFeedbacks_username.emitValidateFieldEvent(input);
 
     expect(validations).toEqual([
@@ -336,7 +336,7 @@ describe('validate()', () => {
       <FieldFeedback when="*" warning />,
       {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
     );
-    const input = new InputMock('username', '', {valid: false, valueMissing: true}, 'Suffering from being missing');
+    const input = input_username_valueMissing;
     const validations = fieldFeedbacks_username.emitValidateFieldEvent(input);
 
     expect(validations).toEqual([
@@ -349,7 +349,7 @@ describe('validate()', () => {
       <FieldFeedback when="*" info />,
       {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
     );
-    const input = new InputMock('username', '', {valid: false, valueMissing: true}, 'Suffering from being missing');
+    const input = input_username_valueMissing;
     const validations = fieldFeedbacks_username.emitValidateFieldEvent(input);
 
     expect(validations).toEqual([
@@ -364,7 +364,7 @@ describe('render()', () => {
       <FieldFeedback when="*" error />,
       {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
     );
-    const input = new InputMock('username', '', {valid: false, valueMissing: true}, 'Suffering from being missing');
+    const input = input_username_valueMissing;
     const validations = fieldFeedbacks_username.emitValidateFieldEvent(input);
 
     expect(validations).toEqual([
@@ -378,7 +378,7 @@ describe('render()', () => {
       <FieldFeedback when="*" warning />,
       {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
     );
-    const input = new InputMock('username', '', {valid: false, valueMissing: true}, 'Suffering from being missing');
+    const input = input_username_valueMissing;
     const validations = fieldFeedbacks_username.emitValidateFieldEvent(input);
 
     expect(validations).toEqual([
@@ -392,7 +392,7 @@ describe('render()', () => {
       <FieldFeedback when="*" info />,
       {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
     );
-    const input = new InputMock('username', '', {valid: false, valueMissing: true}, 'Suffering from being missing');
+    const input = input_username_valueMissing;
     const validations = fieldFeedbacks_username.emitValidateFieldEvent(input);
 
     expect(validations).toEqual([
@@ -406,7 +406,7 @@ describe('render()', () => {
       <FieldFeedback when="*" />,
       {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
     );
-    const input = new InputMock('username', 'jimmy', {valid: true}, '');
+    const input = input_username_valid;
     const validations = fieldFeedbacks_username.emitValidateFieldEvent(input);
 
     expect(validations).toEqual([
@@ -420,7 +420,7 @@ describe('render()', () => {
       <FieldFeedback when="*">message</FieldFeedback>,
       {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
     );
-    const input = new InputMock('username', '', {valid: false, valueMissing: true}, 'Suffering from being missing');
+    const input = input_username_valueMissing;
     const validations = fieldFeedbacks_username.emitValidateFieldEvent(input);
 
     expect(validations).toEqual([
@@ -434,7 +434,7 @@ describe('render()', () => {
       <FieldFeedback when="*" className="alreadyExistingClassName" />,
       {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
     );
-    const input = new InputMock('username', '', {valid: false, valueMissing: true}, 'Suffering from being missing');
+    const input = input_username_valueMissing;
     const validations = fieldFeedbacks_username.emitValidateFieldEvent(input);
 
     expect(validations).toEqual([
@@ -448,7 +448,7 @@ describe('render()', () => {
       <FieldFeedback when="*" style={{color: 'yellow'}} />,
       {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
     );
-    const input = new InputMock('username', '', {valid: false, valueMissing: true}, 'Suffering from being missing');
+    const input = input_username_valueMissing;
     const validations = fieldFeedbacks_username.emitValidateFieldEvent(input);
 
     expect(validations).toEqual([

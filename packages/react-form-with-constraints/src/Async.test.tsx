@@ -3,7 +3,7 @@ import { shallow as _shallow, mount as _mount } from 'enzyme';
 
 import { FormWithConstraints, Async, AsyncProps, AsyncContext, Status, fieldWithoutFeedback, FieldFeedback, FieldFeedbacksContext, ValidateFieldEvent, ResetEvent, FieldFeedbackType } from './index';
 import checkUsernameAvailability from './checkUsernameAvailability';
-import InputMock from './InputMock';
+import { InputMock, input_username_valid } from './InputMock';
 import new_FormWithConstraints from './FormWithConstraintsEnzymeFix';
 import FieldFeedbacks from './FieldFeedbacksEnzymeFix';
 
@@ -71,7 +71,7 @@ describe('validate()', () => {
     const emitValidateFieldEventSpy = jest.spyOn(async, 'emitValidateFieldEvent');
 
     expect(emitValidateFieldEventSpy).toHaveBeenCalledTimes(0);
-    const input = new InputMock('username', 'jimmy', {valid: true}, '');
+    const input = input_username_valid;
     const validations = await fieldFeedbacks_username.emitValidateFieldEvent(input);
 
     expect(validations).toEqual([Promise.resolve({})]);
@@ -113,7 +113,7 @@ describe('render()', () => {
     );
     expect(wrapper.html()).toEqual('<div></div>');
 
-    const input = new InputMock('username', 'jimmy', {valid: true}, '');
+    const input = input_username_valid;
     let fieldFeedbackValidationsPromise = form_username.validateFields(input);
     expect(wrapper.html()).toEqual('<div>Pending...</div>');
 

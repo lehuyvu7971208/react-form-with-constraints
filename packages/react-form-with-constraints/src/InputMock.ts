@@ -1,6 +1,6 @@
 import { Input } from './index';
 
-class InputMock implements Input {
+export class InputMock implements Input {
   type = 'input'; // Can also be checkbox;
   validity: ValidityState;
 
@@ -25,4 +25,6 @@ class InputMock implements Input {
   }
 }
 
-export default InputMock;
+export const input_username_valueMissing = new InputMock('username', '', {valid: false, valueMissing: true}, 'Suffering from being missing');
+
+export const input_username_valid = new InputMock('username', 'jimmy', {valid: true}, '');
