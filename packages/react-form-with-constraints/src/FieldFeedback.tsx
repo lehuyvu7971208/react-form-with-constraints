@@ -63,16 +63,16 @@ export class FieldFeedback extends React.Component<FieldFeedbackProps, FieldFeed
   readonly key: string; // Example: key="0.1"
 
   constructor(props: FieldFeedbackProps, context: FieldFeedbackContext) {
-    super(props);
+    super(props, context);
 
     this.key = context.fieldFeedbacks.addFieldFeedback();
 
     const { error, warning, info, when } = props;
 
     let type = FieldFeedbackType.Error; // Default is error
-    if (warning) type = FieldFeedbackType.Warning;
+    if (when === 'valid') type = FieldFeedbackType.WhenValid;
+    else if (warning) type = FieldFeedbackType.Warning;
     else if (info) type = FieldFeedbackType.Info;
-    else if (when === 'valid') type = FieldFeedbackType.WhenValid;
 
     // Special case for when="valid"
     if (type === FieldFeedbackType.WhenValid && (error || warning || info)) {
@@ -194,15 +194,7 @@ export class FieldFeedback extends React.Component<FieldFeedbackProps, FieldFeed
     const { validation } = this.state;
     const classNames = this.context.form.props.fieldFeedbackClassNames!;
 
-    let className;
-
-    if (validation.show) {
-      if (validation.type === FieldFeedbackType.Error) className = classNames.error;
-      else if (validation.type === FieldFeedbackType.Warning) className = classNames.warning;
-      else if (validation.type === FieldFeedbackType.Info) className = classNames.info;
-    }
-
-    return className;
+    return validation.show ? classNames[validation.type] : undefined;
   }
 
   render() {

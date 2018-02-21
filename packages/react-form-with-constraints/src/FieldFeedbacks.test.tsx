@@ -1,7 +1,7 @@
 import React from 'react';
 import { mount as _mount, shallow as _shallow } from 'enzyme';
 
-import { FormWithConstraintsChildContext, fieldWithoutFeedback, FieldFeedback, FieldFeedbacksProps, ValidateFieldEvent } from './index';
+import { FormWithConstraintsChildContext, fieldWithoutFeedback, FieldFeedback, FieldFeedbackType, FieldFeedbacksProps, ValidateFieldEvent } from './index';
 import InputMock from './InputMock';
 import new_FormWithConstraints from './FormWithConstraintsEnzymeFix';
 import FieldFeedbacks from './FieldFeedbacksEnzymeFix';
@@ -19,7 +19,7 @@ test('constructor()', () => {
     {context: {form: new_FormWithConstraints({})}}
   );
   const fieldFeedbacks = wrapper.instance() as FieldFeedbacks;
-  expect(fieldFeedbacks.key).toEqual(0.0);
+  expect(fieldFeedbacks.key).toEqual(0);
 });
 
 test('computeFieldFeedbackKey()', () => {
@@ -28,18 +28,17 @@ test('computeFieldFeedbackKey()', () => {
     {context: {form: new_FormWithConstraints({})}}
   );
   const fieldFeedbacks = wrapper.instance() as FieldFeedbacks;
-  expect(fieldFeedbacks.computeFieldFeedbackKey()).toEqual(0.0);
-  expect(fieldFeedbacks.computeFieldFeedbackKey()).toEqual(0.1);
-  expect(fieldFeedbacks.computeFieldFeedbackKey()).toEqual(0.2);
-  expect(fieldFeedbacks.computeFieldFeedbackKey()).toEqual(0.3);
-  expect(fieldFeedbacks.computeFieldFeedbackKey()).toEqual(0.4);
-  expect(fieldFeedbacks.computeFieldFeedbackKey()).toEqual(0.5);
-  expect(fieldFeedbacks.computeFieldFeedbackKey()).toEqual(0.6);
-  expect(fieldFeedbacks.computeFieldFeedbackKey()).toEqual(0.7);
-  expect(fieldFeedbacks.computeFieldFeedbackKey()).toEqual(0.8);
-  expect(fieldFeedbacks.computeFieldFeedbackKey()).toEqual(0.9);
-  // Avoid 0.10 => 0.1 => bug
-  expect(fieldFeedbacks.computeFieldFeedbackKey()).toEqual(0.11);
+  expect(fieldFeedbacks.computeFieldFeedbackKey()).toEqual('0.0');
+  expect(fieldFeedbacks.computeFieldFeedbackKey()).toEqual('0.1');
+  expect(fieldFeedbacks.computeFieldFeedbackKey()).toEqual('0.2');
+  expect(fieldFeedbacks.computeFieldFeedbackKey()).toEqual('0.3');
+  expect(fieldFeedbacks.computeFieldFeedbackKey()).toEqual('0.4');
+  expect(fieldFeedbacks.computeFieldFeedbackKey()).toEqual('0.5');
+  expect(fieldFeedbacks.computeFieldFeedbackKey()).toEqual('0.6');
+  expect(fieldFeedbacks.computeFieldFeedbackKey()).toEqual('0.7');
+  expect(fieldFeedbacks.computeFieldFeedbackKey()).toEqual('0.8');
+  expect(fieldFeedbacks.computeFieldFeedbackKey()).toEqual('0.9');
+  expect(fieldFeedbacks.computeFieldFeedbackKey()).toEqual('0.10');
 });
 
 describe('componentWillMount()', () => {
@@ -80,10 +79,12 @@ describe('componentWillMount()', () => {
 });
 
 describe('validate()', () => {
-  test('known input name - emitValidateFieldEvent', async () => {
+  test.only('known input name - emitValidateFieldEvent', async () => {
     const form = new_FormWithConstraints({});
     const fieldFeedbacks = shallow(
-      <FieldFeedbacks for="username" />,
+      <FieldFeedbacks for="username">
+        <FieldFeedback when="*" />
+      </FieldFeedbacks>,
       {context: {form}}
     ).instance() as FieldFeedbacks;
     const emitValidateFieldEventSpy = jest.spyOn(fieldFeedbacks, 'emitValidateFieldEvent');
@@ -93,14 +94,13 @@ describe('validate()', () => {
     const fieldFeedbackValidations = await form.validateFields(input);
     expect(fieldFeedbackValidations).toEqual([{
       fieldName: 'username',
-      isValid: expect.any(Function),
       fieldFeedbackValidations: []
     }]);
     expect(emitValidateFieldEventSpy).toHaveBeenCalledTimes(1);
     expect(emitValidateFieldEventSpy).toHaveBeenLastCalledWith(input);
   });
 
-  test('known input name', async () => {
+  test.only('known input name', async () => {
     const form = new_FormWithConstraints({});
     mount(
       <FieldFeedbacks for="username">
@@ -112,25 +112,24 @@ describe('validate()', () => {
     const fieldFeedbackValidations = await form.validateFields(input);
     expect(fieldFeedbackValidations).toEqual([{
       fieldName: 'username',
-      isValid: expect.any(Function),
-      fieldFeedbackValidations: [{key: 0.0, show: true}]
+      fieldFeedbackValidations: [
+        {key: '0.0', type: FieldFeedbackType.Error, show: true}
+      ]
     }]);
 
     expect(form.fieldsStore.fields).toEqual({
       username: {
-        dirty: true,
-        errors: new Set([0]),
-        warnings: new Set(),
-        infos: new Set(),
-        validationMessage: 'Suffering from being missing'
+        validateEventEmitted: true
       }
     });
   });
 
-  test('unknown input name - emitValidateFieldEvent', async () => {
+  test.only('unknown input name', async () => {
     const form = new_FormWithConstraints({});
     const fieldFeedbacks = shallow(
-      <FieldFeedbacks for="username" />,
+      <FieldFeedbacks for="username">
+        <FieldFeedback when="*" />
+      </FieldFeedbacks>,
       {context: {form}}
     ).instance() as FieldFeedbacks;
     const emitValidateFieldEventSpy = jest.spyOn(fieldFeedbacks, 'emitValidateFieldEvent');
@@ -138,47 +137,16 @@ describe('validate()', () => {
     expect(emitValidateFieldEventSpy).toHaveBeenCalledTimes(0);
     const input = new InputMock('unknown', '', {valid: false, valueMissing: true}, 'Suffering from being missing');
     const fieldFeedbackValidations = await form.validateFields(input);
-    expect(fieldFeedbackValidations).toEqual([{
-      fieldName: 'unknown',
-      isValid: expect.any(Function),
-      fieldFeedbackValidations: []
-    }]);
+    expect(fieldFeedbackValidations).toEqual([]);
     expect(emitValidateFieldEventSpy).toHaveBeenCalledTimes(0);
-  });
-
-  test('unknown input name', async () => {
-    const form = new_FormWithConstraints({});
-    mount(
-      <FieldFeedbacks for="username">
-        <FieldFeedback when="*" />
-      </FieldFeedbacks>,
-      {context: {form}}
-    );
-    const input = new InputMock('unknown', '', {valid: false, valueMissing: true}, 'Suffering from being missing');
-    const fieldFeedbackValidations = await form.validateFields(input);
-    expect(fieldFeedbackValidations).toEqual([{
-      fieldName: 'unknown',
-      isValid: expect.any(Function),
-      fieldFeedbackValidations: []
-    }]);
 
     expect(form.fieldsStore.fields).toEqual({
       username: fieldWithoutFeedback
     });
   });
 
-  test('remove', async () => {
+  test.only('remove', async () => {
     const form = new_FormWithConstraints({});
-    form.fieldsStore.fields = {
-      username: {
-        validateEventEmitted: true,
-        errors: new Set([1.1, 0.0, 0.1]),
-        warnings: new Set([1.1, 0.0, 0.1]),
-        infos: new Set([1.1, 0.0, 0.1]),
-        validationMessage: 'Suffering from being missing'
-      }
-    };
-
     shallow(
       <FieldFeedbacks for="username" />,
       {context: {form}}
@@ -228,8 +196,10 @@ describe('render()', () => {
     const fieldFeedbackValidations = await form.validateFields(input);
     expect(fieldFeedbackValidations).toEqual([{
       fieldName: 'username',
-      isValid: expect.any(Function),
-      fieldFeedbackValidations: [{key: 0.0, show: true}]
+      fieldFeedbackValidations: [{
+        key: '0.0',
+        show: true
+      }]
     }]);
 
     expect(form.fieldsStore.fields).toEqual({
@@ -260,8 +230,10 @@ describe('render()', () => {
     const fieldFeedbackValidations = await form.validateFields(input);
     expect(fieldFeedbackValidations).toEqual([{
       fieldName: 'username',
-      isValid: expect.any(Function),
-      fieldFeedbackValidations: [{key: 0.0, show: true}]
+      fieldFeedbackValidations: [{
+        key: '0.0',
+        show: true
+      }]
     }]);
 
     expect(form.fieldsStore.fields).toEqual({
@@ -290,7 +262,6 @@ describe('render()', () => {
     const fieldFeedbackValidations = await form.validateFields(input);
     expect(fieldFeedbackValidations).toEqual([{
       fieldName: 'unknown',
-      isValid: expect.any(Function),
       fieldFeedbackValidations: []
     }]);
 
@@ -317,11 +288,10 @@ describe('render()', () => {
       const fieldFeedbackValidations = await form.validateFields(input);
       expect(fieldFeedbackValidations).toEqual([{
         fieldName: 'username',
-        isValid: expect.any(Function),
         fieldFeedbackValidations: [
-          {key: 0.0, show: true},
-          {key: 0.1, show: true},
-          {key: 0.2, show: true}
+          {key: '0.0', show: true},
+          {key: '0.1', show: true},
+          {key: '0.2', show: true}
         ]
       }]);
 
@@ -358,11 +328,10 @@ describe('render()', () => {
       const fieldFeedbackValidations = await form.validateFields(input);
       expect(fieldFeedbackValidations).toEqual([{
         fieldName: 'username',
-        isValid: expect.any(Function),
         fieldFeedbackValidations: [
-          {key: 0.0, show: true},
-          {key: 0.1, show: undefined},
-          {key: 0.2, show: undefined}
+          {key: '0.0', show: true},
+          {key: '0.1', show: undefined},
+          {key: '0.2', show: undefined}
         ]
       }]);
 
@@ -395,11 +364,10 @@ describe('render()', () => {
       const fieldFeedbackValidations = await form.validateFields(input);
       expect(fieldFeedbackValidations).toEqual([{
         fieldName: 'username',
-        isValid: expect.any(Function),
         fieldFeedbackValidations: [
-          {key: 0.0, show: false},
-          {key: 0.1, show: true},
-          {key: 0.2, show: undefined}
+          {key: '0.0', type: FieldFeedbackType.Error, show: false},
+          {key: '0.1', type: FieldFeedbackType.Error, show: true},
+          {key: '0.2', type: FieldFeedbackType.Error, show: undefined}
         ]
       }]);
 

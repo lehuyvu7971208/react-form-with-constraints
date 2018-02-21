@@ -95,9 +95,7 @@ export class FieldFeedbacks extends
   //   <FieldFeedback ...> key=1.1
   //   <FieldFeedback ...> key=1.2
   // </FieldFeedbacks>
-  //
-  // Public instead of private because of the unit tests
-  fieldFeedbackKeyCounter = 0;
+  private fieldFeedbackKeyCounter = 0;
   computeFieldFeedbackKey() {
     return `${this.key}.${this.fieldFeedbackKeyCounter++}`;
   }

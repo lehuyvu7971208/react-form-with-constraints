@@ -65,6 +65,7 @@ export interface FormWithConstraintsProps extends React.FormHTMLAttributes<HTMLF
     warning: string;
     info: string;
     valid: string;
+    [index: string]: string;
   };
 }
 
