@@ -12,7 +12,7 @@ export class FieldsStore extends EventEmitter {
   // Why Object.create(null) instead of just {}? See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map#Objects_and_maps_compared
   fields: Fields = Object.create(null);
 
-  reset() {
+  clear() {
     // tslint:disable-next-line:forin
     for (const fieldName in this.fields) {
       this.updateField(fieldName, {...fieldWithoutFeedback});

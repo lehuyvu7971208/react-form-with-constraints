@@ -23,7 +23,7 @@ test('reset()', () => {
   });
 
   const emitSpy = jest.spyOn(store, 'emit');
-  store.reset();
+  store.clear();
   expect(emitSpy).toHaveBeenCalledTimes(2);
   expect(emitSpy.mock.calls).toEqual([
     [FieldEvent.Updated, 'username'],

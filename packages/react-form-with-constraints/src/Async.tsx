@@ -45,7 +45,7 @@ export type AsyncComponentType = AsyncComponent<any>;
 // Cannot be inside a separated npm package since FieldFeedback needs to attach itself to Async
 export class AsyncComponent<T = any> extends React.Component<AsyncProps<T>, AsyncState<T>> {}
 export class Async<T> extends withResetEventEmitter(
-                                withValidateFieldEventEmitter<FieldFeedbackValidation, typeof AsyncComponent>(
+                                withValidateFieldEventEmitter<Promise<FieldFeedbackValidation>, typeof AsyncComponent>(
                                   AsyncComponent
                                 )
                               )
@@ -87,41 +87,40 @@ export class Async<T> extends withResetEventEmitter(
 
   validate(input: Input) {
     const { fieldFeedbacks } = this.context;
-    const { stop } = fieldFeedbacks.props;
 
-    let validationsPromise;
+    const validations = this._validate(input);
+    fieldFeedbacks.validations.addFieldFeedbacksValidation(validations);
+    return validations;
+  }
 
-    if (stop === 'first' && fieldFeedbacks.hasFeedbacks() ||
-        stop === 'first-error' && fieldFeedbacks.hasErrors ||
-        stop === 'first-warning' && fieldFeedbacks.hasWarnings ||
-        stop === 'first-info' && fieldFeedbacks.hasInfos) {
+  async _validate(input: Input) {
+    const { fieldFeedbacks } = this.context;
+
+    let validations;
+
+    if (fieldFeedbacks.props.stop === 'first' && await fieldFeedbacks.validations.hasFeedbacks() ||
+        fieldFeedbacks.props.stop === 'first-error' && await fieldFeedbacks.validations.hasErrors() ||
+        fieldFeedbacks.props.stop === 'first-warning' && await fieldFeedbacks.validations.hasWarnings() ||
+        fieldFeedbacks.props.stop === 'first-info' && await fieldFeedbacks.validations.hasInfos()) {
       // Do nothing
-      this.setState({status: Status.None});
     }
 
     else {
       this.setState({status: Status.Pending});
 
-      validationsPromise = this.props.promise(input.value)
-
+      const value = await this.props.promise(input.value);
+      try {
         // See Make setState return a promise https://github.com/facebook/react/issues/2642
-        .then(value =>
-                                                                                              // Instead of Promise<{}> given by TypeScript 2.6.2, verified inside vscode debugguer
-          new Promise(resolve => this.setState({status: Status.Resolved, value}, resolve)) as Promise<undefined>
-        )
-
-        // setState() wrapped inside a promise so validate() Promise is done when setState() is done
-        .catch(e =>
-                                                                                                  // Instead of Promise<{}> given by TypeScript 2.6.2, verified inside vscode debugguer
-          new Promise(resolve => this.setState({status: Status.Rejected, value: e}, resolve)) as Promise<undefined>
-        )
-
-        // See Promises: Execute something regardless of resolve/reject? https://stackoverflow.com/q/38830314
-        // Instead of componentDidUpdate()
-        .then(() => this.emitValidateFieldEvent(input));
+        // tslint:disable-next-line:no-unused-expression
+        await new Promise(resolve => this.setState({status: Status.Resolved, value}, resolve));
+      } catch (e) {
+        // tslint:disable-next-line:no-unused-expression
+        await new Promise(resolve => this.setState({status: Status.Rejected, value: e}, resolve));
+      }
+      validations = await Promise.all(this.emitValidateFieldEvent(input));
     }
 
-    return validationsPromise;
+    return validations;
   }
 
   reset() {

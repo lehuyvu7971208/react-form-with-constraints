@@ -115,17 +115,33 @@ export class FieldFeedback extends React.Component<FieldFeedbackProps, FieldFeed
   }
 
   validate(input: Input) {
+    const { fieldFeedbacks } = this.context;
+
+    console.log('==>', this.key, 'validate() begin');
+
+    const validation = this._validate(input);
+    fieldFeedbacks.validations.addFieldFeedbackValidation(validation);
+    return validation;
+  }
+
+  async _validate(input: Input) {
     const { when } = this.props;
     const { fieldFeedbacks } = this.context;
-    const { stop } = fieldFeedbacks.props;
+    console.log('==>', this.key, '_validate() begin');
 
     let show: boolean | undefined; // undefined means the FieldFeedback was not checked
 
-    if (stop === 'first' && fieldFeedbacks.hasFeedbacks() ||
-        stop === 'first-error' && fieldFeedbacks.hasErrors ||
-        stop === 'first-warning' && fieldFeedbacks.hasWarnings ||
-        stop === 'first-info' && fieldFeedbacks.hasInfos) {
+    const hasErrors = await fieldFeedbacks.validations.hasErrors();
+    console.log('==>', this.key, 'hasErrors=', hasErrors);
+    const hasFeedbacks = await fieldFeedbacks.validations.hasFeedbacks();
+    console.log('==>', this.key, 'hasFeedbacks=', hasFeedbacks);
+
+    if (fieldFeedbacks.props.stop === 'first' && await fieldFeedbacks.validations.hasFeedbacks() ||
+        fieldFeedbacks.props.stop === 'first-error' && await fieldFeedbacks.validations.hasErrors() ||
+        fieldFeedbacks.props.stop === 'first-warning' && await fieldFeedbacks.validations.hasWarnings() ||
+        fieldFeedbacks.props.stop === 'first-info' && await fieldFeedbacks.validations.hasInfos()) {
       // Do nothing
+      console.log('==>', this.key, '_validate() do nothing');
     }
 
     else {
@@ -171,15 +187,12 @@ export class FieldFeedback extends React.Component<FieldFeedbackProps, FieldFeed
     const validation = {...this.state.validation}; // Copy state so we don't modify it directly (use of setState() instead)
     validation.show = show;
 
-    fieldFeedbacks.hasErrors = fieldFeedbacks.hasErrors || (validation.type === FieldFeedbackType.Error && show === true);
-    fieldFeedbacks.hasWarnings = fieldFeedbacks.hasWarnings || (validation.type === FieldFeedbackType.Warning && show === true);
-    fieldFeedbacks.hasInfos = fieldFeedbacks.hasInfos || (validation.type === FieldFeedbackType.Info && show === true);
-
     this.setState({
       validation,
       validationMessage: input.validationMessage
     });
 
+    console.log('==>', this.key, '_validate() done', validation);
     return validation;
   }
 
@@ -203,7 +216,7 @@ export class FieldFeedback extends React.Component<FieldFeedbackProps, FieldFeed
 
     // Special case for when="valid": always displayed, then FieldFeedbackWhenValid decides what to do
     if (validation.type === FieldFeedbackType.WhenValid) {
-      return <FieldFeedbackWhenValid data-field-feedback-key={this.key} {...divProps}>{children}</FieldFeedbackWhenValid>;
+      return <FieldFeedbackWhenValid data-feedback={this.key} {...divProps}>{children}</FieldFeedbackWhenValid>;
     }
 
     let classes = this.className();
@@ -214,6 +227,6 @@ export class FieldFeedback extends React.Component<FieldFeedbackProps, FieldFeed
       feedback = children !== undefined ? children : validationMessage;
     }
 
-    return feedback !== null ? <div data-field-feedback-key={this.key} {...divProps} className={classes}>{feedback}</div> : null;
+    return feedback !== null ? <div data-feedback={this.key} {...divProps} className={classes}>{feedback}</div> : null;
   }
 }

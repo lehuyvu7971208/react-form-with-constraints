@@ -9,12 +9,6 @@ import { fieldWithoutFeedback, FieldFeedbacksProps } from 'react-form-with-const
 import { FormWithConstraints, FieldFeedbacks, FieldFeedback } from './index';
 import new_FormWithConstraints from './FormWithConstraintsEnzymeFix';
 
-function createFieldFeedbacks(props: FieldFeedbacksProps, form: FormWithConstraints, initialFieldFeedbackKeyCounter: number) {
-  const fieldFeedbacks = new FieldFeedbacks(props, {form} as any);
-  fieldFeedbacks.fieldFeedbackKeyCounter = initialFieldFeedbackKeyCounter;
-  return fieldFeedbacks;
-}
-
 // Taken and adapted from FormWithConstraints.test.tsx
 describe('FormWithConstraints', () => {
   describe('validate', () => {
@@ -54,17 +48,14 @@ describe('FormWithConstraints', () => {
         expect(fieldFeedbackValidations).toEqual([
           {
             fieldName: 'username',
-            isValid: expect.any(Function),
             fieldFeedbackValidations: []
           },
           {
             fieldName: 'password',
-            isValid: expect.any(Function),
             fieldFeedbackValidations: []
           },
           {
             fieldName: 'passwordConfirm',
-            isValid: expect.any(Function),
             fieldFeedbackValidations: []
           }
         ]);
@@ -83,17 +74,14 @@ describe('FormWithConstraints', () => {
         expect(fieldFeedbackValidations).toEqual([
           {
             fieldName: 'username',
-            isValid: expect.any(Function),
             fieldFeedbackValidations: []
           },
           {
             fieldName: 'password',
-            isValid: expect.any(Function),
             fieldFeedbackValidations: []
           },
           {
             fieldName: 'passwordConfirm',
-            isValid: expect.any(Function),
             fieldFeedbackValidations: []
           }
         ]);
@@ -112,17 +100,14 @@ describe('FormWithConstraints', () => {
         expect(fieldFeedbackValidations).toEqual([
           {
             fieldName: 'username',
-            isValid: expect.any(Function),
             fieldFeedbackValidations: []
           },
           {
             fieldName: 'password',
-            isValid: expect.any(Function),
             fieldFeedbackValidations: []
           },
           {
             fieldName: 'passwordConfirm',
-            isValid: expect.any(Function),
             fieldFeedbackValidations: []
           }
         ]);
@@ -141,17 +126,14 @@ describe('FormWithConstraints', () => {
         expect(fieldFeedbackValidations).toEqual([
           {
             fieldName: 'username',
-            isValid: expect.any(Function),
             fieldFeedbackValidations: []
           },
           {
             fieldName: 'password',
-            isValid: expect.any(Function),
             fieldFeedbackValidations: []
           },
           {
             fieldName: 'passwordConfirm',
-            isValid: expect.any(Function),
             fieldFeedbackValidations: []
           }
         ]);
@@ -178,17 +160,14 @@ describe('FormWithConstraints', () => {
         expect(fieldFeedbackValidations).toEqual([
           {
             fieldName: 'username',
-            isValid: expect.any(Function),
             fieldFeedbackValidations: []
           },
           {
             fieldName: 'password',
-            isValid: expect.any(Function),
             fieldFeedbackValidations: []
           },
           {
             fieldName: 'passwordConfirm',
-            isValid: expect.any(Function),
             fieldFeedbackValidations: []
           }
         ]);
@@ -370,7 +349,7 @@ describe('FieldFeedback', () => {
           validationMessage: ''
         }
       };
-      const fieldFeedbacks = createFieldFeedbacks({for: 'username', stop: 'no'}, form, initialFieldFeedbackKeyCounter);
+      const fieldFeedbacks = new FieldFeedbacks({for: 'username', stop: 'no'}, {form: form as any});
 
       const fieldFeedback = shallow(
         <FieldFeedback when={value => value.length === 0}>Cannot be empty</FieldFeedback>,
@@ -391,7 +370,7 @@ describe('FieldFeedback', () => {
           validationMessage: ''
         }
       };
-      const fieldFeedbacks = createFieldFeedbacks({for: 'username', stop: 'no'}, form, initialFieldFeedbackKeyCounter);
+      const fieldFeedbacks = new FieldFeedbacks({for: 'username', stop: 'no'}, {form: form as any});
 
       const fieldFeedback = shallow(
         <FieldFeedback when={value => value.length === 0}>Cannot be empty</FieldFeedback>,
@@ -416,7 +395,7 @@ describe('FieldFeedback', () => {
           validationMessage: ''
         }
       };
-      const fieldFeedbacks = createFieldFeedbacks({for: 'username', stop: 'no'}, form, initialFieldFeedbackKeyCounter);
+      const fieldFeedbacks = new FieldFeedbacks({for: 'username', stop: 'no'}, {form: form as any});
 
       const fieldFeedback = shallow(
         <FieldFeedback when={value => value.length === 0}>Cannot be empty</FieldFeedback>,
@@ -447,7 +426,7 @@ describe('FieldFeedback', () => {
           validationMessage: ''
         }
       };
-      const fieldFeedbacks = createFieldFeedbacks({for: 'username', stop: 'no'}, form, initialFieldFeedbackKeyCounter);
+      const fieldFeedbacks = new FieldFeedbacks({for: 'username', stop: 'no'}, {form: form as any});
 
       const fieldFeedback = shallow(
         <FieldFeedback when={value => value.length === 0}>Cannot be empty</FieldFeedback>,
@@ -473,7 +452,7 @@ describe('FieldFeedback', () => {
           validationMessage: ''
         }
       };
-      const fieldFeedbacks = createFieldFeedbacks({for: 'username', stop: 'no'}, form, initialFieldFeedbackKeyCounter);
+      const fieldFeedbacks = new FieldFeedbacks({for: 'username', stop: 'no'}, {form: form as any});
 
       const fieldFeedback = shallow(
         <FieldFeedback when="valid">Looks good!</FieldFeedback>,

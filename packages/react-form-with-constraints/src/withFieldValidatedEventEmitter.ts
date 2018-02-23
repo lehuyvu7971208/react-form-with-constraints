@@ -10,8 +10,8 @@ export default function withFieldValidatedEventEmitter<TBase extends Constructor
   return class FieldValidatedEventEmitter extends Base {
     fieldValidatedEventEmitter = new EventEmitter();
 
-    emitFieldValidatedEvent(input: Input, fieldValidationPromise: Promise<FieldValidation>) {
-      return this.fieldValidatedEventEmitter.emit(FieldValidatedEvent, input, fieldValidationPromise);
+    emitFieldValidatedEvent(input: Input, fieldValidation: FieldValidation) {
+      return this.fieldValidatedEventEmitter.emit(FieldValidatedEvent, input, fieldValidation);
     }
 
     addFieldValidatedEventListener(listener: Listener) {

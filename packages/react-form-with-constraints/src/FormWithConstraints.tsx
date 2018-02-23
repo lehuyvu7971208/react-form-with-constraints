@@ -4,13 +4,14 @@ import PropTypes from 'prop-types';
 import withValidateFieldEventEmitter from './withValidateFieldEventEmitter';
 import withFieldValidatedEventEmitter from './withFieldValidatedEventEmitter';
 import withResetEventEmitter from './withResetEventEmitter';
-import { FieldValidation, FieldFeedbackValidation } from './FieldValidation';
 // @ts-ignore
 // TS6133: 'EventEmitter' is declared but its value is never read.
 // FIXME See https://github.com/Microsoft/TypeScript/issues/9944#issuecomment-309903027
 import { EventEmitter } from './EventEmitter';
 import Input from './Input';
 import { FieldsStore } from './FieldsStore';
+import { FieldValidation, FieldFeedbackValidations, FieldFeedbackValidation } from './FieldValidation';
+import flatten from './flatten';
 
 // See Form data validation https://developer.mozilla.org/en-US/docs/Learn/HTML/Forms/Form_validation
 // See ReactJS Form Validation Approaches http://moduscreate.com/reactjs-form-validation-approaches/
@@ -75,8 +76,9 @@ export class FormWithConstraints
     withResetEventEmitter(
       withFieldValidatedEventEmitter(
         withValidateFieldEventEmitter<
-          // FieldFeedbacks returns Promise<FieldFeedbackValidation[]> | undefined and Async returns Promise<FieldFeedbackValidation[]> | undefined
-          Promise<FieldFeedbackValidation[]> | undefined,
+          // FieldFeedbacks returns Promise<FieldFeedbackValidation[] | undefined>
+          // Async returns Promise<FieldFeedbackValidation[] | undefined>
+          Promise<FieldFeedbackValidation[] | undefined>,
           typeof FormWithConstraintsComponent
         >(
           FormWithConstraintsComponent
@@ -126,11 +128,13 @@ export class FormWithConstraints
     return this._validateFields(false /* forceValidateFields */);
   }
 
-  validateField(forceValidateFields: boolean, input: Input) {
+  async validateField(forceValidateFields: boolean, input: Input) {
     const fieldName = input.name;
     const field = this.fieldsStore.fields[fieldName];
 
-    let fieldValidationPromise;
+    console.log('FormWithConstraints.validateField()', fieldName);
+
+    let fieldValidation;
 
     if (field === undefined) {
       // Means the field (<input name="username">) does not have a FieldFeedbacks
@@ -138,38 +142,32 @@ export class FormWithConstraints
     }
 
     else if (forceValidateFields || !field.validateEventEmitted) {
-      this.resetErrors();
-
       field.validateEventEmitted = true;
 
-      const fieldFeedbackValidationsPromises = this.emitValidateFieldEvent(input)
-        .filter(fieldFeedbackValidations => fieldFeedbackValidations !== undefined) // Remove undefined results
-        .map(fieldFeedbackValidations => fieldFeedbackValidations!);
+      const arrayOfArrays = await Promise.all(this.emitValidateFieldEvent(input));
+      // FIXME "TypeScript static analysis is unable to track this behavior", see https://codereview.stackexchange.com/a/138289/148847
+      const tmp = arrayOfArrays.filter(item => item !== undefined) as FieldFeedbackValidation[][];
+      const validations = flatten(tmp);
 
-      fieldValidationPromise = Promise.all(fieldFeedbackValidationsPromises)
-        .then(validations =>
-          // See Merge/flatten an array of arrays in JavaScript? https://stackoverflow.com/q/10865025/990356
-          validations.reduce((prev, curr) => prev.concat(curr), [])
-        )
-        .then(fieldFeedbackValidations => new FieldValidation(fieldName, fieldFeedbackValidations));
+      fieldValidation = new FieldValidation(fieldName, validations);
 
-      this.emitFieldValidatedEvent(input, fieldValidationPromise);
+      this.emitFieldValidatedEvent(input, fieldValidation);
     }
 
-    return fieldValidationPromise;
+    return fieldValidation;
   }
 
-  private _validateFields(forceValidateFields: boolean, ...inputsOrNames: Array<Input | string>) {
-    const fieldValidationPromises = new Array<Promise<FieldValidation>>();
+  private async _validateFields(forceValidateFields: boolean, ...inputsOrNames: Array<Input | string>) {
+    const fieldValidations = new Array<FieldValidation>();
 
     const inputs = this.normalizeInputs(...inputsOrNames);
 
-    inputs.forEach(input => {
-      const fieldValidationPromise = this.validateField(forceValidateFields, input);
-      if (fieldValidationPromise !== undefined) fieldValidationPromises.push(fieldValidationPromise);
-    });
+    for (const input of inputs) {
+      const fieldValidation = await this.validateField(forceValidateFields, input);
+      if (fieldValidation !== undefined) fieldValidations.push(fieldValidation);
+    }
 
-    return Promise.all(fieldValidationPromises);
+    return fieldValidations;
   }
 
   // If called without arguments, returns all fields ($('[name]'))
@@ -211,24 +209,16 @@ export class FormWithConstraints
     return inputs;
   }
 
-  hasErrors = false;
-  hasWarnings = false;
-  hasInfos = false;
-
-  private resetErrors() {
-    this.hasErrors = false;
-    this.hasWarnings = false;
-    this.hasInfos = false;
-  }
+  validations = new FieldFeedbackValidations();
 
   // Does not check if fields are dirty
   isValid() {
-    return !this.hasErrors;
+    return true;
   }
 
   reset() {
-    this.resetErrors();
-    this.fieldsStore.reset();
+    this.fieldsStore.clear();
+    this.validations.clear();
     this.emitResetEvent();
   }
 

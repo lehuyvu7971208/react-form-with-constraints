@@ -12,7 +12,7 @@ class FieldFeedbacksEnzymeFix extends FieldFeedbacks {
   //         Type 'null' is not assignable to type 'Element'.
   // src/FieldFeedbackWhenValid.test.tsx(27,3): error TS2322: Type 'FieldFeedbacks' is not assignable to type 'FieldFeedbacksEnzymeFix'.
   render(): {} | null {
-    return <div>{super.render()}</div>;
+    return <div data-feedbacks={this.key}>{super.render()}</div>;
   }
 }
 

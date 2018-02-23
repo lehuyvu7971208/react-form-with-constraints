@@ -123,7 +123,7 @@ describe('render()', () => {
         {key: '1.0', type: 'info', show: true}
       ]
     }]);
-    expect(wrapper.html()).toEqual(`<div><div data-field-feedback-key="1.0" class="info">Username 'jimmy' available</div></div>`);
+    expect(wrapper.html()).toEqual(`<div><div data-feedback="1.0" class="info">Username 'jimmy' available</div></div>`);
 
     input.value = 'john';
     fieldFeedbackValidationsPromise = form_username.validateFields(input);
@@ -136,7 +136,7 @@ describe('render()', () => {
         {key: '1.1', type: 'error', show: true}
       ]
     }]);
-    expect(wrapper.html()).toEqual(`<div><div data-field-feedback-key="1.1" class="error">Username 'john' already taken, choose another</div></div>`);
+    expect(wrapper.html()).toEqual(`<div><div data-feedback="1.1" class="error">Username 'john' already taken, choose another</div></div>`);
   });
 
   test('catch()', async () => {
@@ -164,7 +164,7 @@ describe('render()', () => {
         {key: '1.0', type: 'error', show: true}
       ]
     }]);
-    expect(wrapper.html()).toEqual(`<div><div data-field-feedback-key="1.0" class="error">Something wrong with username 'error'</div></div>`);
+    expect(wrapper.html()).toEqual(`<div><div data-feedback="1.0" class="error">Something wrong with username 'error'</div></div>`);
   });
 
   test('no catch()', async () => {

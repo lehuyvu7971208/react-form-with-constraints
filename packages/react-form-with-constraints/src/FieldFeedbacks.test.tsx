@@ -211,7 +211,7 @@ describe('render()', () => {
     }]);
 
     expect(wrapper.html()).toEqual(
-      '<div><div data-field-feedback-key="0.0" class="error">Suffering from being missing</div></div>'
+      '<div><div data-feedback="0.0" class="error">Suffering from being missing</div></div>'
     );
   });
 
@@ -234,7 +234,7 @@ describe('render()', () => {
     }]);
 
     expect(wrapper.html()).toEqual(
-      '<div><div><div data-field-feedback-key="0.0" class="error">Suffering from being missing</div></div></div>'
+      '<div><div><div data-feedback="0.0" class="error">Suffering from being missing</div></div></div>'
     );
   });
 
@@ -278,9 +278,9 @@ describe('render()', () => {
 
       expect(wrapper.html()).toEqual(
         '<div>' +
-        '<div data-field-feedback-key="0.0" class="error">Suffering from being missing</div>' +
-        '<div data-field-feedback-key="0.1" class="error">Suffering from being missing</div>' +
-        '<div data-field-feedback-key="0.2" class="error">Suffering from being missing</div>' +
+        '<div data-feedback="0.0" class="error">Suffering from being missing</div>' +
+        '<div data-feedback="0.1" class="error">Suffering from being missing</div>' +
+        '<div data-feedback="0.2" class="error">Suffering from being missing</div>' +
         '</div>'
       );
     });
@@ -306,7 +306,7 @@ describe('render()', () => {
       }]);
 
       expect(wrapper.html()).toEqual(
-        '<div><div data-field-feedback-key="0.0" class="error">Suffering from being missing</div></div>'
+        '<div><div data-feedback="0.0" class="error">Suffering from being missing</div></div>'
       );
     });
 
@@ -331,7 +331,7 @@ describe('render()', () => {
       }]);
 
       expect(wrapper.html()).toEqual(
-        '<div><div data-field-feedback-key="0.0" class="warning">Suffering from being missing</div><div data-field-feedback-key="0.1" class="error">Suffering from being missing</div></div>'
+        '<div><div data-feedback="0.0" class="warning">Suffering from being missing</div><div data-feedback="0.1" class="error">Suffering from being missing</div></div>'
       );
     });
   });

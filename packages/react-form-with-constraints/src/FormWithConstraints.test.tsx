@@ -1,8 +1,10 @@
 import React from 'react';
 import { mount } from 'enzyme';
+const pretty = require('pretty');
+const beautify = require('js-beautify').html;
 
-import { FormWithConstraints, fieldWithoutFeedback, FieldFeedback, Async } from './index';
-import checkUsernameAvailability from './checkUsernameAvailability';
+import { FormWithConstraints, fieldWithoutFeedback, FieldFeedback } from './index';
+import { SignUp } from './SignUp';
 import new_FormWithConstraints from './FormWithConstraintsEnzymeFix';
 import FieldFeedbacks from './FieldFeedbacksEnzymeFix';
 
@@ -27,53 +29,13 @@ test('computeFieldFeedbacksKey()', () => {
 });
 
 describe('validate', () => {
-  class SignUp extends React.Component {
-    form: FormWithConstraints | null | undefined;
-    username: HTMLInputElement | null | undefined;
-    password: HTMLInputElement | null | undefined;
-    passwordConfirm: HTMLInputElement | null | undefined;
-
-    render() {
-      return (
-        <FormWithConstraints ref={formWithConstraints => this.form = formWithConstraints}>
-          <input name="username" ref={username => this.username = username} />
-          <FieldFeedbacks for="username" stop="no">
-            <FieldFeedback when={value => value.length === 0}>Cannot be empty</FieldFeedback>
-            <FieldFeedback when={value => value.length < 3}>Should be at least 3 characters long</FieldFeedback>
-            <Async
-              promise={checkUsernameAvailability}
-              then={availability => availability.available ?
-                <FieldFeedback info>Username '{availability.value}' available</FieldFeedback> :
-                <FieldFeedback>Username '{availability.value}' already taken, choose another</FieldFeedback>
-              }
-              catch={e => <FieldFeedback>{e.message}</FieldFeedback>}
-            />
-            <FieldFeedback when="valid">Looks good!</FieldFeedback>
-          </FieldFeedbacks>
-
-          <input type="password" name="password" ref={password => this.password = password} />
-          <FieldFeedbacks for="password" stop="no">
-            <FieldFeedback when={value => value.length === 0}>Cannot be empty</FieldFeedback>
-            <FieldFeedback when={value => value.length < 5}>Should be at least 5 characters long</FieldFeedback>
-            <FieldFeedback when="valid">Looks good!</FieldFeedback>
-          </FieldFeedbacks>
-
-          <input type="password" name="passwordConfirm" ref={passwordConfirm => this.passwordConfirm = passwordConfirm} />
-          <FieldFeedbacks for="passwordConfirm">
-            <FieldFeedback when={value => value !== this.password!.value}>Not the same password</FieldFeedback>
-          </FieldFeedbacks>
-        </FormWithConstraints>
-      );
-    }
-  }
-
   describe('validateFields()', () => {
-    test('inputs', async () => {
+    test.only('inputs', async () => {
       const wrapper = mount(<SignUp />);
       const signUp = wrapper.instance() as SignUp;
       const emitValidateFieldEventSpy = jest.spyOn(signUp.form!, 'emitValidateFieldEvent');
       const fieldFeedbackValidations = await signUp.form!.validateFields(signUp.username!, signUp.password!, signUp.passwordConfirm!);
-      expect(fieldFeedbackValidations).toEqual([
+      /*expect(fieldFeedbackValidations).toEqual([
         {
           fieldName: 'username',
           fieldFeedbackValidations: [
@@ -97,31 +59,32 @@ describe('validate', () => {
             {key: '2.0', type: 'error', show: false}
           ]
         }
-      ]);
-      expect(emitValidateFieldEventSpy).toHaveBeenCalledTimes(3);
+      ]);*/
+      /*expect(emitValidateFieldEventSpy).toHaveBeenCalledTimes(3);
       expect(emitValidateFieldEventSpy.mock.calls).toEqual([
         [signUp.username],
         [signUp.password],
         [signUp.passwordConfirm]
-      ]);
-      expect(wrapper.html()).toEqual(`\
+      ]);*/
+      console.log(pretty(wrapper.html()));
+      /*expect(wrapper.html()).toEqual(`\
 <form>\
 <input name="username">\
 <div>\
-<div data-field-feedback-key="0.0" class="error">Cannot be empty</div>\
-<div data-field-feedback-key="0.1" class="error">Should be at least 3 characters long</div>\
-<div data-field-feedback-key="0.3" class="info">Username '' available</div>\
+<div data-feedback="0.0" class="error">Cannot be empty</div>\
+<div data-feedback="0.1" class="error">Should be at least 3 characters long</div>\
+<div data-feedback="0.3" class="info">Username '' available</div>\
 </div>\
 <input type="password" name="password">\
 <div>\
-<div data-field-feedback-key="1.0" class="error">Cannot be empty</div>\
-<div data-field-feedback-key="1.1" class="error">Should be at least 5 characters long</div>\
+<div data-feedback="1.0" class="error">Cannot be empty</div>\
+<div data-feedback="1.1" class="error">Should be at least 5 characters long</div>\
 </div>\
 <input type="password" name="passwordConfirm">\
 <div>\
 </div>\
 </form>`
-      );
+      );*/
     });
 
     test('field names', async () => {
@@ -319,16 +282,16 @@ describe('validate', () => {
 <form>\
 <input name="username">\
 <div>\
-<div data-field-feedback-key="0.4" class="info">Username 'jimmy' available</div>\
-<div data-field-feedback-key="0.2" class="valid">Looks good!</div>\
+<div data-feedback="0.4" class="info">Username 'jimmy' available</div>\
+<div data-feedback="0.2" class="valid">Looks good!</div>\
 </div>\
 <input type="password" name="password">\
 <div>\
-<div data-field-feedback-key="1.1" class="error">Should be at least 5 characters long</div>\
+<div data-feedback="1.1" class="error">Should be at least 5 characters long</div>\
 </div>\
 <input type="password" name="passwordConfirm">\
 <div>\
-<div data-field-feedback-key="2.0" class="error">Not the same password</div>\
+<div data-feedback="2.0" class="error">Not the same password</div>\
 </div>\
 </form>`
       );
@@ -370,11 +333,11 @@ describe('validate', () => {
       expect(wrapper.html()).toEqual(`\
 <form>\
 <input name="username">\
-<div><div data-field-feedback-key="0.3" class="error">Something wrong with username 'error'</div></div>\
+<div><div data-feedback="0.3" class="error">Something wrong with username 'error'</div></div>\
 <input type="password" name="password">\
-<div><div data-field-feedback-key="1.1" class="error">Should be at least 5 characters long</div></div>\
+<div><div data-feedback="1.1" class="error">Should be at least 5 characters long</div></div>\
 <input type="password" name="passwordConfirm">\
-<div><div data-field-feedback-key="2.0" class="error">Not the same password</div></div>\
+<div><div data-feedback="2.0" class="error">Not the same password</div></div>\
 </form>`
       );
     });

@@ -28,13 +28,13 @@ test('componentWillMount() componentWillUnmount()', () => {
     <DisplayFields />,
     {context: {form}}
   );
-  const reRender = (wrapper.instance() as DisplayFields).reRender;
+  const displayFields = wrapper.instance() as DisplayFields;
 
   expect(fieldsStoreAddListenerSpy).toHaveBeenCalledTimes(3);
   expect(fieldsStoreAddListenerSpy.mock.calls).toEqual([
-    [FieldEvent.Added, reRender],
-    [FieldEvent.Removed, reRender],
-    [FieldEvent.Updated, reRender]
+    [FieldEvent.Added, displayFields.fieldAdded],
+    [FieldEvent.Removed, displayFields.fieldRemoved],
+    [FieldEvent.Updated, displayFields.fieldUpdated]
   ]);
   expect(fieldsStoreRemoveListenerSpy).toHaveBeenCalledTimes(0);
 
@@ -42,43 +42,34 @@ test('componentWillMount() componentWillUnmount()', () => {
   expect(fieldsStoreAddListenerSpy).toHaveBeenCalledTimes(3);
   expect(fieldsStoreRemoveListenerSpy).toHaveBeenCalledTimes(3);
   expect(fieldsStoreRemoveListenerSpy.mock.calls).toEqual([
-    [FieldEvent.Added, reRender],
-    [FieldEvent.Removed, reRender],
-    [FieldEvent.Updated, reRender]
+    [FieldEvent.Added, displayFields.fieldAdded],
+    [FieldEvent.Removed, displayFields.fieldRemoved],
+    [FieldEvent.Updated, displayFields.fieldUpdated]
   ]);
 });
 
-test('render()', () => {
-  const wrapper = shallow(
-    <DisplayFields />,
-    {context: {form: form_username}}
-  );
+describe('render()', () => {
+  test('1 field', () => {
+    const wrapper = shallow(
+      <DisplayFields />,
+      {context: {form: form_username}}
+    );
 
-  expect(wrapper.text()).toEqual(
+    expect(wrapper.text()).toEqual(
 `react-form-with-constraints = {
-  "username": {
-    "dirty": false,
-    "errors": [],
-    "warnings": [],
-    "infos": [],
-    "validationMessage": ""
+  username: {
+    validateEventEmitted: false
   }
 }`);
 
-  expect(wrapper.html()).toEqual(
-`<pre>react-form-with-constraints = {
-  &quot;username&quot;: {
-    &quot;dirty&quot;: false,
-    &quot;errors&quot;: [],
-    &quot;warnings&quot;: [],
-    &quot;infos&quot;: [],
-    &quot;validationMessage&quot;: &quot;&quot;
+    expect(wrapper.html()).toEqual(
+`<pre style="font-size:small">react-form-with-constraints = {
+  username: {
+    validateEventEmitted: false
   }
-}</pre>`
-  );
-});
+}</pre>`);
+  });
 
-describe('reRender()', () => {
   test('adding field', () => {
     const wrapper = shallow(
       <DisplayFields />,
@@ -92,19 +83,11 @@ describe('reRender()', () => {
 
     expect(wrapper.text()).toEqual(
 `react-form-with-constraints = {
-  "username": {
-    "dirty": false,
-    "errors": [],
-    "warnings": [],
-    "infos": [],
-    "validationMessage": ""
+  username: {
+    validateEventEmitted: false
   },
-  "password": {
-    "dirty": false,
-    "errors": [],
-    "warnings": [],
-    "infos": [],
-    "validationMessage": ""
+  password: {
+    validateEventEmitted: false
   }
 }`);
   });
@@ -122,62 +105,42 @@ describe('reRender()', () => {
     expect(wrapper.text()).toEqual('react-form-with-constraints = {}');
   });
 
-  test('updating field', () => {
+  test('fieldValidated()', () => {
     const wrapper = shallow(
       <DisplayFields />,
       {context: {form: form_username}}
     );
 
-    const field = form_username.fieldsStore.cloneField('username');
-    field.dirty = true;
-    field.errors.add(1.0);
-    field.warnings.add(2.0);
-    field.infos.add(3.0);
-    field.validationMessage = "I'm a clone";
-    form_username.fieldsStore.updateField('username', field);
+    form_username.validateFields();
+
+    // See http://airbnb.io/enzyme/docs/guides/migration-from-2-to-3.html#for-mount-updates-are-sometimes-required-when-they-werent-before
+    wrapper.update();
+
+    expect(wrapper.text()).toEqual(
+`react-form-with-constraints = {
+  username: {
+    validateEventEmitted: false
+  },
+  password: {
+    validateEventEmitted: false
+  }
+}`);
+  });
+
+  test('reset()', () => {
+    const wrapper = shallow(
+      <DisplayFields />,
+      {context: {form: form_username}}
+    );
+
+    form_username.reset();
 
     wrapper.update();
 
     expect(wrapper.text()).toEqual(
 `react-form-with-constraints = {
-  "username": {
-    "dirty": true,
-    "errors": [
-      1
-    ],
-    "warnings": [
-      2
-    ],
-    "infos": [
-      3
-    ],
-    "validationMessage": "I'm a clone"
-  }
-}`);
-  });
-
-  test('updating unknown field', () => {
-    const wrapper = shallow(
-      <DisplayFields />,
-      {context: {form: form_username}}
-    );
-
-    const field = form_username.fieldsStore.cloneField('username');
-    field.dirty = true;
-    field.errors.add(1.0);
-    field.warnings.add(2.0);
-    field.infos.add(3.0);
-    field.validationMessage = "I'm a clone";
-    expect(() => form_username.fieldsStore.updateField('unknown', field)).toThrow("Unknown field 'unknown'");
-
-    expect(wrapper.text()).toEqual(
-`react-form-with-constraints = {
-  "username": {
-    "dirty": false,
-    "errors": [],
-    "warnings": [],
-    "infos": [],
-    "validationMessage": ""
+  username: {
+    validateEventEmitted: false
   }
 }`);
   });

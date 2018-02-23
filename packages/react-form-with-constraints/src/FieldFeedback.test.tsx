@@ -321,7 +321,7 @@ describe('validate()', () => {
       {key: '0.0', type: 'error', show: true}
     ]);
 
-    expect(wrapper.html()).toEqual('<div data-field-feedback-key="0.0" class="error">Suffering from being missing</div>');
+    expect(wrapper.html()).toEqual('<div data-feedback="0.0" class="error">Suffering from being missing</div>');
   });
 
   test('warning prop', () => {
@@ -360,7 +360,7 @@ describe('render()', () => {
     expect(validations).toEqual([
       {key: '0.0', type: 'error', show: true}
     ]);
-    expect(fieldFeedback.html()).toEqual('<div data-field-feedback-key="0.0" class="error">Suffering from being missing</div>');
+    expect(fieldFeedback.html()).toEqual('<div data-feedback="0.0" class="error">Suffering from being missing</div>');
   });
 
   test('warning', () => {
@@ -373,7 +373,7 @@ describe('render()', () => {
     expect(validations).toEqual([
       {key: '0.0', type: 'warning', show: true}
     ]);
-    expect(fieldFeedback.html()).toEqual('<div data-field-feedback-key="0.0" class="warning">Suffering from being missing</div>');
+    expect(fieldFeedback.html()).toEqual('<div data-feedback="0.0" class="warning">Suffering from being missing</div>');
   });
 
   test('info', () => {
@@ -386,7 +386,7 @@ describe('render()', () => {
     expect(validations).toEqual([
       {key: '0.0', type: 'info', show: true}
     ]);
-    expect(fieldFeedback.html()).toEqual('<div data-field-feedback-key="0.0" class="info">Suffering from being missing</div>');
+    expect(fieldFeedback.html()).toEqual('<div data-feedback="0.0" class="info">Suffering from being missing</div>');
   });
 
   test('no error', () => {
@@ -412,7 +412,7 @@ describe('render()', () => {
     expect(validations).toEqual([
       {key: '0.0', type: 'error', show: true}
     ]);
-    expect(fieldFeedback.html()).toEqual('<div data-field-feedback-key="0.0" class="error">message</div>');
+    expect(fieldFeedback.html()).toEqual('<div data-feedback="0.0" class="error">message</div>');
   });
 
   test('with already existing class', () => {
@@ -425,7 +425,7 @@ describe('render()', () => {
     expect(validations).toEqual([
       {key: '0.0', type: 'error', show: true}
     ]);
-    expect(fieldFeedback.html()).toEqual('<div data-field-feedback-key="0.0" class="alreadyExistingClassName error">Suffering from being missing</div>');
+    expect(fieldFeedback.html()).toEqual('<div data-feedback="0.0" class="alreadyExistingClassName error">Suffering from being missing</div>');
   });
 
   test('with div props', () => {
@@ -438,7 +438,7 @@ describe('render()', () => {
     expect(validations).toEqual([
       {key: '0.0', type: 'error', show: true}
     ]);
-    expect(fieldFeedback.html()).toEqual('<div data-field-feedback-key="0.0" style="color: yellow;" class="error">Suffering from being missing</div>');
+    expect(fieldFeedback.html()).toEqual('<div data-feedback="0.0" style="color: yellow;" class="error">Suffering from being missing</div>');
   });
 
   test('when="valid"', async () => {
@@ -450,6 +450,6 @@ describe('render()', () => {
     const fieldValidationsPromise: any = Promise.resolve({isValid: () => true});
     form_username.emitFieldValidatedEvent({name: 'username'} as any, fieldValidationsPromise);
     await fieldValidationsPromise;
-    expect(wrapper.html()).toEqual('<div data-field-feedback-key="0.0" class="valid">Looks good!</div>');
+    expect(wrapper.html()).toEqual('<div data-feedback="0.0" class="valid">Looks good!</div>');
   });
 });

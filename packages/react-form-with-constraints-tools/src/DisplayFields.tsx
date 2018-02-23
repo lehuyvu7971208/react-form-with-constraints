@@ -152,7 +152,7 @@ export class FieldFeedback extends _FieldFeedback {
 
   componentDidUpdate() {
     const rootDiv = ReactDOM.findDOMNode(this);
-    const fieldFeedbackDiv = rootDiv.querySelector('[data-field-feedback-key]');
+    const fieldFeedbackDiv = rootDiv.querySelector('[data-feedback]');
     if (fieldFeedbackDiv !== null) {
       (fieldFeedbackDiv as HTMLDivElement).style.display = 'inline';
     }
