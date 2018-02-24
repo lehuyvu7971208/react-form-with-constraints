@@ -10,6 +10,7 @@ import withResetEventEmitter from './withResetEventEmitter';
 import { EventEmitter } from './EventEmitter';
 import { FieldFeedbackValidation } from './FieldValidation';
 import Input from './Input';
+import setStatePromise from './setStatePromise';
 
 export enum Status {
   None,
@@ -44,11 +45,16 @@ export type AsyncComponentType = AsyncComponent<any>;
 // See How to render promises in React https://gist.github.com/hex13/6d46f8b54631871ea8bf87576b635c49
 // Cannot be inside a separated npm package since FieldFeedback needs to attach itself to Async
 export class AsyncComponent<T = any> extends React.Component<AsyncProps<T>, AsyncState<T>> {}
-export class Async<T> extends withResetEventEmitter(
-                                withValidateFieldEventEmitter<Promise<FieldFeedbackValidation>, typeof AsyncComponent>(
-                                  AsyncComponent
-                                )
-                              )
+export class Async<T> extends
+                        withResetEventEmitter(
+                          withValidateFieldEventEmitter<
+                            // FieldFeedback returns FieldFeedbackValidation
+                            FieldFeedbackValidation,
+                            typeof AsyncComponent
+                          >(
+                            AsyncComponent
+                          )
+                        )
                       implements React.ChildContextProvider<AsyncChildContext> {
   static contextTypes: React.ValidationMap<AsyncContext> = {
     fieldFeedbacks: PropTypes.object.isRequired
@@ -85,23 +91,15 @@ export class Async<T> extends withResetEventEmitter(
     this.context.fieldFeedbacks.removeResetEventListener(this.reset);
   }
 
-  validate(input: Input) {
-    const { fieldFeedbacks } = this.context;
-
-    const validations = this._validate(input);
-    fieldFeedbacks.validations.addFieldFeedbacksValidation(validations);
-    return validations;
-  }
-
-  async _validate(input: Input) {
+  async validate(input: Input) {
     const { fieldFeedbacks } = this.context;
 
     let validations;
 
-    if (fieldFeedbacks.props.stop === 'first' && await fieldFeedbacks.validations.hasFeedbacks() ||
-        fieldFeedbacks.props.stop === 'first-error' && await fieldFeedbacks.validations.hasErrors() ||
-        fieldFeedbacks.props.stop === 'first-warning' && await fieldFeedbacks.validations.hasWarnings() ||
-        fieldFeedbacks.props.stop === 'first-info' && await fieldFeedbacks.validations.hasInfos()) {
+    if (fieldFeedbacks.props.stop === 'first' && fieldFeedbacks.lastValidation.hasFeedbacks() ||
+        fieldFeedbacks.props.stop === 'first-error' && fieldFeedbacks.lastValidation.hasErrors() ||
+        fieldFeedbacks.props.stop === 'first-warning' && fieldFeedbacks.lastValidation.hasWarnings() ||
+        fieldFeedbacks.props.stop === 'first-info' && fieldFeedbacks.lastValidation.hasInfos()) {
       // Do nothing
     }
 
@@ -110,14 +108,14 @@ export class Async<T> extends withResetEventEmitter(
 
       const value = await this.props.promise(input.value);
       try {
-        // See Make setState return a promise https://github.com/facebook/react/issues/2642
-        // tslint:disable-next-line:no-unused-expression
-        await new Promise(resolve => this.setState({status: Status.Resolved, value}, resolve));
+        await setStatePromise(this, {status: Status.Resolved, value});
       } catch (e) {
-        // tslint:disable-next-line:no-unused-expression
-        await new Promise(resolve => this.setState({status: Status.Rejected, value: e}, resolve));
+        await setStatePromise(this, {status: Status.Rejected, value});
       }
-      validations = await Promise.all(this.emitValidateFieldEvent(input));
+
+      validations = await Promise.all(await this.emitValidateFieldEvent(input));
+
+      fieldFeedbacks.lastValidation.setFieldFeedbacksValidation(validations);
     }
 
     return validations;

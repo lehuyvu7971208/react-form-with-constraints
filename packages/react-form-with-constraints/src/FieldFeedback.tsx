@@ -115,52 +115,36 @@ export class FieldFeedback extends React.Component<FieldFeedbackProps, FieldFeed
   }
 
   validate(input: Input) {
-    const { fieldFeedbacks } = this.context;
-
-    console.log('==>', this.key, 'validate() begin');
-
-    const validation = this._validate(input);
-    fieldFeedbacks.validations.addFieldFeedbackValidation(validation);
-    return validation;
-  }
-
-  async _validate(input: Input) {
     const { when } = this.props;
     const { fieldFeedbacks } = this.context;
-    console.log('==>', this.key, '_validate() begin');
 
-    let show: boolean | undefined; // undefined means the FieldFeedback was not checked
+    const validation = {...this.state.validation}; // Copy state so we don't modify it directly (use of setState() instead)
 
-    const hasErrors = await fieldFeedbacks.validations.hasErrors();
-    console.log('==>', this.key, 'hasErrors=', hasErrors);
-    const hasFeedbacks = await fieldFeedbacks.validations.hasFeedbacks();
-    console.log('==>', this.key, 'hasFeedbacks=', hasFeedbacks);
-
-    if (fieldFeedbacks.props.stop === 'first' && await fieldFeedbacks.validations.hasFeedbacks() ||
-        fieldFeedbacks.props.stop === 'first-error' && await fieldFeedbacks.validations.hasErrors() ||
-        fieldFeedbacks.props.stop === 'first-warning' && await fieldFeedbacks.validations.hasWarnings() ||
-        fieldFeedbacks.props.stop === 'first-info' && await fieldFeedbacks.validations.hasInfos()) {
+    if (fieldFeedbacks.props.stop === 'first' && fieldFeedbacks.lastValidation.hasFeedbacks() ||
+        fieldFeedbacks.props.stop === 'first-error' && fieldFeedbacks.lastValidation.hasErrors() ||
+        fieldFeedbacks.props.stop === 'first-warning' && fieldFeedbacks.lastValidation.hasWarnings() ||
+        fieldFeedbacks.props.stop === 'first-info' && fieldFeedbacks.lastValidation.hasInfos()) {
       // Do nothing
-      console.log('==>', this.key, '_validate() do nothing');
+      validation.show = undefined; // undefined means the FieldFeedback was not checked
     }
 
     else {
-      show = false;
+      validation.show = false;
 
       if (typeof when === 'function') {
-        show = when(input.value);
+        validation.show = when(input.value);
       }
 
       else if (typeof when === 'string') {
         if (when === 'valid') {
           // undefined => special case for when="valid": always displayed, then FieldFeedbackWhenValid decides what to do
-          show = undefined;
+          validation.show = undefined;
         } else {
           const validity = input.validity;
 
           if (!validity.valid) {
             if (when === '*') {
-              show = true;
+              validation.show = true;
             }
             else if (
               validity.badInput && when === 'badInput' ||
@@ -173,7 +157,7 @@ export class FieldFeedback extends React.Component<FieldFeedbackProps, FieldFeed
               validity.typeMismatch && when === 'typeMismatch' ||
               validity.valueMissing && when === 'valueMissing') {
 
-              show = true;
+              validation.show = true;
             }
           }
         }
@@ -182,17 +166,15 @@ export class FieldFeedback extends React.Component<FieldFeedbackProps, FieldFeed
       else {
         throw new TypeError(`Invalid FieldFeedback 'when' type: ${typeof when}`);
       }
-    }
 
-    const validation = {...this.state.validation}; // Copy state so we don't modify it directly (use of setState() instead)
-    validation.show = show;
+      fieldFeedbacks.lastValidation.setFieldFeedbackValidation(validation);
+    }
 
     this.setState({
       validation,
       validationMessage: input.validationMessage
     });
 
-    console.log('==>', this.key, '_validate() done', validation);
     return validation;
   }
 

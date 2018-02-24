@@ -143,9 +143,9 @@ class MyForm extends React.Component {
     const target = e.currentTarget;
 
     // Validates only the given field and returns the related FieldValidation structures
-    const fieldFeedbacksValidations = await this.form.validateFields(target);
+    const fields = await this.form.validateFields(target);
 
-    const fieldIsValid = fieldFeedbacksValidations.every(field => field.isValid());
+    const fieldIsValid = fields.every(field => field.isValid());
     if (fieldIsValid) console.log(`Field '${target.name}' is valid`);
     else console.log(`Field '${target.name}' is invalid`);
 
@@ -157,10 +157,10 @@ class MyForm extends React.Component {
     e.preventDefault();
 
     // Validates the non-dirty fields and returns the related FieldValidation structures
-    const fieldFeedbacksValidations = await this.form.validateForm();
+    const fields = await this.form.validateForm();
 
     // or simply this.form.isValid();
-    const formIsValid = fieldFeedbacksValidations.every(field => field.isValid());
+    const formIsValid = fields.every(field => field.isValid());
 
     if (formIsValid) console.log('The form is valid');
     else console.log('The form is invalid');
@@ -277,3 +277,29 @@ If you support older browsers (<IE11) you will need a global polyfill such as [c
 
 - A [`readonly`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input#attr-readonly) or `disabled` input won't trigger any HTML5 form constraint like [`required`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input#attr-required).
 - With `<input type="number">` it's better to use `onInput` instead of `onChange`, see https://github.com/facebook/react/issues/11142
+
+TODO
+
+- remove beforeEach, see https://twitter.com/thejameskyle/status/954906997169664000
+
+- use className() npm package for Bootstrap.tsx
+
+- Remove HttpStatusCode example
+
+- switch to scoped npm packages, see https://babeljs.io/blog/2017/09/12/planning-for-7.0#using-npm-scoped-packages
+
+
+
+https://discuss.reactjs.org/t/if-typescript-is-so-great-how-come-all-notable-reactjs-projects-use-babel/4887
+
+As of feb 2018, React + TypeScript is more and more popular.
+
+Check the npm downloads for `@types/react` (the npm package that contains the TypeScript definitions for React): http://www.npmtrends.com/@angular/core-vs-react-vs-vue-vs-@types/react
+
+![screenshot](https://image.ibb.co/jE95dH/Screen_Shot_2018_02_22_at_13_32_04.png)
+
+![04|690x389](upload://k0YIDAQrWJonlq8EW0wNYg0yzo9.png)
+
+`@types/react` is even more popular than Angular 2+ and Vue.js and the trend is very good.
+
+I'm using React with TypeScript and it's been a joy, example with this library: https://github.com/tkrotoff/react-form-with-constraints

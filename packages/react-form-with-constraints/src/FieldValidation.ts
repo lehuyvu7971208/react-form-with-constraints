@@ -1,55 +1,50 @@
 import { FieldFeedbackType } from './FieldFeedback';
-import flatten from './flatten';
-import clearArray from './clearArray';
 
-export class FieldFeedbackValidations {
+export class LastValidation {
   // FieldFeedback returns Promise<FieldFeedbackValidation>
-  private validationsFromFieldFeedback: Promise<FieldFeedbackValidation>[] = [];
+  private validationFromFieldFeedback: FieldFeedbackValidation | undefined;
 
   // FieldFeedbacks returns Promise<FieldFeedbackValidation[] | undefined>
   // Async returns Promise<FieldFeedbackValidation[] | undefined>
-  private validationsFromFieldFeedbacks: Promise<FieldFeedbackValidation[] | undefined>[] = [];
+  private validationFromFieldFeedbacks: FieldFeedbackValidation[] | undefined;
 
-  addFieldFeedbackValidation(validation: Promise<FieldFeedbackValidation>) {
-    this.validationsFromFieldFeedback.push(validation);
+  setFieldFeedbackValidation(validation: FieldFeedbackValidation) {
+    this.validationFromFieldFeedback = validation;
   }
 
-  addFieldFeedbacksValidation(validation: Promise<FieldFeedbackValidation[] | undefined>) {
-    this.validationsFromFieldFeedbacks.push(validation);
+  setFieldFeedbacksValidation(validation: FieldFeedbackValidation[] | undefined) {
+    this.validationFromFieldFeedbacks = validation;
   }
 
   clear() {
-    clearArray(this.validationsFromFieldFeedback);
-    clearArray(this.validationsFromFieldFeedbacks);
+    this.validationFromFieldFeedback = undefined;
+    this.validationFromFieldFeedbacks = undefined;
   }
 
-  private async getValidations() {
-    await Promise.all([]);
-    console.log('getValidations()', this.validationsFromFieldFeedback);
-    const _validationsFromFieldFeedback = await Promise.all(this.validationsFromFieldFeedback);
+  private getValidations() {
+    const validations = [];
 
-    console.log('_validationsFromFieldFeedback', _validationsFromFieldFeedback);
-    const tmp = await Promise.all(this.validationsFromFieldFeedbacks);
-    // Remove undefined results
-    // FIXME See Filtering undefined elements out of an array https://codereview.stackexchange.com/a/138289/148847
-    const _validations = tmp.filter(validation => validation !== undefined) as FieldFeedbackValidation[][];
-    const _validationsFromFieldFeedbacks = flatten(_validations);
+    const _validation = this.validationFromFieldFeedback;
+    if (_validation !== undefined) validations.push(_validation);
 
-    return [..._validationsFromFieldFeedback, ..._validationsFromFieldFeedbacks];
+    const _validations = this.validationFromFieldFeedbacks;
+    if (_validations !== undefined) validations.push(..._validations);
+
+    return validations;
   }
 
-  async hasErrors() {
-    const validations = await this.getValidations();
+  hasErrors() {
+    const validations = this.getValidations();
     return validations.some(fieldFeedback => fieldFeedback.type === FieldFeedbackType.Error && fieldFeedback.show === true);
   }
 
-  async hasWarnings() {
-    const validations = await this.getValidations();
+  hasWarnings() {
+    const validations = this.getValidations();
     return validations.some(fieldFeedback => fieldFeedback.type === FieldFeedbackType.Warning && fieldFeedback.show === true);
   }
 
-  async hasInfos() {
-    const validations = await this.getValidations();
+  hasInfos() {
+    const validations = this.getValidations();
     return validations.some(fieldFeedback => fieldFeedback.type === FieldFeedbackType.Info && fieldFeedback.show === true);
   }
 
@@ -81,12 +76,11 @@ export class FieldValidation {
   }
 }
 
-// FIXME Merge with FieldValidation?
 export interface FieldFeedbackValidation {
   readonly key: string;
   readonly type: FieldFeedbackType;
 
   // undefined => means the FieldFeedback was not checked
-  // or special case for when="valid": always displayed, then FieldFeedbackWhenValid decides what to do
+  // undefined => special case for when="valid": always displayed, then FieldFeedbackWhenValid decides what to do
   show: boolean | undefined;
 }

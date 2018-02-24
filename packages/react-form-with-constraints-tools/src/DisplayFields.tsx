@@ -101,26 +101,63 @@ export class DisplayFields extends React.Component<DisplayFieldsProps, DisplayFi
     // tslint:disable-next-line:forin
     for (const fieldName in fieldsStore.fields) {
       merged[fieldName] = {...fieldsStore.fields[fieldName], ...fields[fieldName]};
-      delete (merged[fieldName] as any).fieldName;
+      //delete (merged[fieldName] as any).fieldName;
+    }
+
+    if (merged !== undefined) {
+      // tslint:disable-next-line:forin
+      for (const fieldName in merged) {
+        const field = merged[fieldName]!;
+        if (field.fieldFeedbackValidations !== undefined) {
+          const validations: string[] = [];
+          for (const fieldFeedbackValidation of field.fieldFeedbackValidations) {
+            const fieldFeedbackValidationStr = `${stringifyWithUndefinedAndWithoutPropertyQuotes(fieldFeedbackValidation, 1)}`;
+            validations.push(fieldFeedbackValidationStr);
+          }
+          (field as any).fieldFeedbackValidations = validations;
+        }
+      }
     }
 
     let str = JSON.stringify(merged, null, 2);
+    // => "{\n key: \"0.0\",\n type: \"error\",\n show: false\n}"
 
-    // See JSON.stringify without quotes on properties? https://stackoverflow.com/q/11233498
-    str = str.replace(/\"([^(\")"]+)\":/g, '$1:');
+    str = str.replace(/\\\"/g, '"');
+    // => "{\n key: "0.0",\n type: "error",\n show: false\n}"
+
+    str = str.replace(/"{/g, '{');
+    // => {\n key: "0.0",\n type: "error",\n show: false\n}"
+
+    str = str.replace(/\\n}"/g, ' }');
+    // => {\n key: "0.0",\n type: "error",\n show: false }
+
+    str = str.replace(/\\n/g, '');
+    // => { key: "0.0", type: "error", show: false }
 
     return <pre style={{fontSize: 'small'}}>react-form-with-constraints = {str}</pre>;
   }
 }
 
+// See Preserving undefined that JSON.stringify otherwise removes https://stackoverflow.com/q/26540706
+// See JSON.stringify without quotes on properties? https://stackoverflow.com/q/11233498
+function stringifyWithUndefinedAndWithoutPropertyQuotes(obj: object, space?: string | number) {
+  let str = JSON.stringify(obj, (_key, value) => value === undefined ? '__undefined__' : value, space);
+  str = str.replace(/\"__undefined__\"/g, 'undefined');
+  str = str.replace(/\"([^(\")"]+)\":/g, '$1:');
+  return str;
+}
+
 export class FieldFeedbacks extends _FieldFeedbacks {
   render() {
-    const style = {
-    };
+    const { for: fieldName, stop } = this.props;
+
+    let attr = '';
+    if (fieldName) attr += `for="${fieldName}" `;
+    attr += `stop="${stop}"`;
 
     return (
       <>
-        <li style={style}>{this.key}</li>
+        <li>key="{this.key}" {attr}</li>
         <ul>
           {super.render()}
         </ul>
@@ -133,18 +170,19 @@ export class FieldFeedback extends _FieldFeedback {
   render() {
     const { key, type, show } = this.state.validation;
 
-    const style = {
-      textDecoration: 'none'
-    };
-    if (show === false) {
-      style.textDecoration = 'line-through';
-    } else if (show === undefined) {
-      style.textDecoration = 'line-through dotted';
+    let textDecoration = '';
+    switch (show) {
+      case false:
+        textDecoration = 'line-through';
+        break;
+      case undefined:
+        textDecoration = 'line-through dotted';
+        break;
     }
 
     return (
       <li>
-        <span style={style}>{key} ({type})</span>{' '}
+        <span style={{textDecoration}}>key="{key}" type="{type}"</span>{' '}
         {super.render()}
       </li>
     );

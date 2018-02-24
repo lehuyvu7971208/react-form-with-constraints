@@ -9,7 +9,7 @@ import withResetEventEmitter from './withResetEventEmitter';
 // FIXME See https://github.com/Microsoft/TypeScript/issues/9944#issuecomment-309903027
 import { EventEmitter } from './EventEmitter';
 import Input from './Input';
-import { FieldFeedbackValidations, FieldFeedbackValidation } from './FieldValidation';
+import { LastValidation, FieldFeedbackValidation } from './FieldValidation';
 import flatten from './flatten';
 
 export interface FieldFeedbacksProps {
@@ -32,11 +32,11 @@ export class FieldFeedbacksComponent extends React.Component<FieldFeedbacksProps
 export class FieldFeedbacks extends
                               withResetEventEmitter(
                                 withValidateFieldEventEmitter<
-                                  // FieldFeedback returns Promise<FieldFeedbackValidation>
-                                  // FieldFeedbacks returns Promise<FieldFeedbackValidation[]> | undefined
+                                  // FieldFeedback returns FieldFeedbackValidation
+                                  // FieldFeedbacks returns Promise<FieldFeedbackValidation[] | undefined>
+                                  //                        (Promise<FieldFeedbackValidation[] | undefined>)[]
                                   // Async returns Promise<FieldFeedbackValidation[] | undefined>
-                                  //Promise<FieldFeedbackValidation> | Promise<FieldFeedbackValidation[] | undefined>,
-                                  Promise<FieldFeedbackValidation | FieldFeedbackValidation[] | undefined>,
+                                  FieldFeedbackValidation | Promise<FieldFeedbackValidation[] | undefined>,
                                   typeof FieldFeedbacksComponent
                                 >(
                                   FieldFeedbacksComponent
@@ -95,11 +95,11 @@ export class FieldFeedbacks extends
     this.context.form.fieldsStore.addField(this.fieldName);
 
     if (this.context.fieldFeedbacks) {
-      this.context.fieldFeedbacks.addValidateFieldEventListener(this.validate);
+      this.context.fieldFeedbacks.addValidateFieldEventListener(this.validate as any);
       this.context.fieldFeedbacks.addResetEventListener(this.reset);
     }
     else {
-      this.context.form.addValidateFieldEventListener(this.validate);
+      this.context.form.addValidateFieldEventListener(this.validate as any);
       this.context.form.addResetEventListener(this.reset);
     }
   }
@@ -109,32 +109,22 @@ export class FieldFeedbacks extends
     this.context.form.fieldsStore.removeField(this.fieldName);
 
     if (this.context.fieldFeedbacks) {
-      this.context.fieldFeedbacks.removeValidateFieldEventListener(this.validate);
+      this.context.fieldFeedbacks.removeValidateFieldEventListener(this.validate as any);
       this.context.fieldFeedbacks.removeResetEventListener(this.reset);
     }
     else {
-      this.context.form.removeValidateFieldEventListener(this.validate);
+      this.context.form.removeValidateFieldEventListener(this.validate as any);
       this.context.form.removeResetEventListener(this.reset);
     }
   }
 
-  validations = new FieldFeedbackValidations();
+  lastValidation = new LastValidation();
 
   async validate(input: Input) {
-    const { form, fieldFeedbacks: fieldFeedbacksParent } = this.context;
-
     let validations;
 
     if (input.name === this.fieldName) { // Ignore the event if it's not for us
-      console.log(this.key, 'validate() begin');
-
-      this.validations.clear();
-      validations = this._validate(input);
-
-      const parent = fieldFeedbacksParent !== undefined ? fieldFeedbacksParent : form;
-      parent.validations.addFieldFeedbacksValidation(validations);
-
-      console.log(this.key, 'validate() end');
+      validations = await this._validate(input);
     }
 
     return validations;
@@ -142,45 +132,52 @@ export class FieldFeedbacks extends
 
   async _validate(input: Input) {
     const { fieldFeedbacks: fieldFeedbacksParent } = this.context;
-    console.log('=>', this.key, '_validate() begin');
+
+    this.lastValidation.clear();
 
     let validations;
 
     if (fieldFeedbacksParent !== undefined && (
-        fieldFeedbacksParent.props.stop === 'first' && await fieldFeedbacksParent.validations.hasFeedbacks() ||
-        fieldFeedbacksParent.props.stop === 'first-error' && await fieldFeedbacksParent.validations.hasErrors() ||
-        fieldFeedbacksParent.props.stop === 'first-warning' && await fieldFeedbacksParent.validations.hasWarnings() ||
-        fieldFeedbacksParent.props.stop === 'first-info' && await fieldFeedbacksParent.validations.hasInfos())) {
+        fieldFeedbacksParent.props.stop === 'first' && fieldFeedbacksParent.lastValidation.hasFeedbacks() ||
+        fieldFeedbacksParent.props.stop === 'first-error' && fieldFeedbacksParent.lastValidation.hasErrors() ||
+        fieldFeedbacksParent.props.stop === 'first-warning' && fieldFeedbacksParent.lastValidation.hasWarnings() ||
+        fieldFeedbacksParent.props.stop === 'first-info' && fieldFeedbacksParent.lastValidation.hasInfos())) {
       // Do nothing
-      console.log('=>', this.key, '_validate() do nothing');
     }
 
     else {
-      console.log('=>', this.key, '_validate() wait');
-      const arrayOfArrays = await Promise.all(this.emitValidateFieldEvent(input));
+      const arrayOfValidations = await this.emitValidateFieldEvent(input);
+      console.log(this.key, 'this.emitValidateFieldEvent=', arrayOfValidations);
 
-      const tmp = arrayOfArrays
-        .filter(item => item !== undefined)
-        .map(item => {
-          if (item instanceof Array) {
-            return item;
+      const arrayOfPromises = arrayOfValidations
+        .filter(_validations => _validations !== undefined)
+        .map(_validations => {
+          if (_validations instanceof Promise) {
+            return _validations;
           } else {
             // FIXME There is a ! because "TypeScript static analysis is unable to track this behavior", see https://codereview.stackexchange.com/a/138289/148847
-            return [item!];
+            return Promise.resolve([_validations!]);
           }
         });
 
-      validations = flatten(tmp);
+      const arrayOfArrays = await Promise.all(arrayOfPromises);
 
-      console.log('=>', this.key, '_validate() done', validations);
+      // FIXME "TypeScript static analysis is unable to track this behavior", see https://codereview.stackexchange.com/a/138289/148847
+      const tmp = arrayOfArrays.filter(item => item !== undefined) as FieldFeedbackValidation[][];
+      console.log(this.key, 'before flatten=', tmp);
+      validations = flatten(tmp);
+      console.log(this.key, 'after flatten=', validations);
+
+      if (fieldFeedbacksParent !== undefined) {
+        fieldFeedbacksParent.lastValidation.setFieldFeedbacksValidation(validations as any);
+      }
     }
-    console.log('=>', this.key, '_validate() end');
 
     return validations;
   }
 
   reset() {
-    this.validations.clear();
+    this.lastValidation.clear();
     this.emitResetEvent();
   }
 

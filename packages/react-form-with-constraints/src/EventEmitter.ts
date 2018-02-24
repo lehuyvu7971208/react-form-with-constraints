@@ -8,7 +8,7 @@ export type Listener<ListenerReturnType = void> = (...args: Args) => ListenerRet
 export class EventEmitter<ListenerReturnType = void> {
   listeners = new Map<string, Listener<ListenerReturnType>[]>();
 
-  emit(eventName: string, ...args: Args) {
+  async emit(eventName: string, ...args: Args) {
     const listeners = this.listeners.get(eventName)!;
 
     // Assert disabled: mess with the unit tests
@@ -18,10 +18,15 @@ export class EventEmitter<ListenerReturnType = void> {
 
     if (listeners !== undefined) {
       console.assert(listeners.length > 0, `No listener for event '${eventName}'`);
-      listeners.forEach(listener =>
-        // Concat the results
-        ret.push(listener(...args))
-      );
+      for (const listener of listeners) {
+        // Why await? Two cases:
+        // - listener does not return a Promise:
+        //   => await changes nothing: the next listener call happens when the current one is done
+        // - listener returns a Promise:
+        //   => wait for the listener call to finish (e.g listeners are executed in sequence),
+        //      without we would call each listener without waiting for their results
+        ret.push(await listener(...args));
+      }
     }
 
     return ret;

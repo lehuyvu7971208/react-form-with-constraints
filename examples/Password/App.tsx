@@ -43,9 +43,9 @@ class Form extends React.Component<Props, State> {
     });
 
     // Validates only the given field and returns the related FieldValidation structures
-    const fieldFeedbacksValidations = await this.form!.validateFields(target);
+    const fields = await this.form!.validateFields(target);
 
-    const fieldIsValid = fieldFeedbacksValidations.every(fieldFeedbacksValidation => fieldFeedbacksValidation.isValid());
+    const fieldIsValid = fields.every(fieldFeedbacksValidation => fieldFeedbacksValidation.isValid());
     if (fieldIsValid) console.log(`Field '${target.name}' is valid`);
     else console.log(`Field '${target.name}' is invalid`);
 
@@ -62,9 +62,9 @@ class Form extends React.Component<Props, State> {
       [target.name as any]: target.value
     });
 
-    const fieldFeedbacksValidations = await this.form!.validateFields(target, 'passwordConfirm');
+    const fields = await this.form!.validateFields(target, 'passwordConfirm');
 
-    const fieldsAreValid = fieldFeedbacksValidations.every(fieldFeedbacksValidation => fieldFeedbacksValidation.isValid());
+    const fieldsAreValid = fields.every(field => field.isValid());
     if (fieldsAreValid) console.log(`Fields '${target.name}' and 'passwordConfirm' are valid`);
     else console.log(`Fields '${target.name}' and/or 'passwordConfirm' are invalid`);
 
@@ -75,10 +75,10 @@ class Form extends React.Component<Props, State> {
     e.preventDefault();
 
     // Validates the non-dirty fields and returns the related FieldValidation structures
-    const fieldFeedbacksValidations = await this.form!.validateForm();
+    const fields = await this.form!.validateForm();
 
     // or simply this.form.isValid();
-    const formIsValid = fieldFeedbacksValidations.every(fieldFeedbacksValidation => fieldFeedbacksValidation.isValid());
+    const formIsValid = fields.every(field => field.isValid());
 
     if (formIsValid) console.log('The form is valid');
     else console.log('The form is invalid');
