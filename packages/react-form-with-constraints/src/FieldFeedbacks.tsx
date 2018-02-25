@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import { FormWithConstraintsChildContext } from './FormWithConstraints';
-import { withValidateFieldEventEmitter } from './withValidateFieldEventEmitter';
+import withValidateFieldEventEmitter from './withValidateFieldEventEmitter';
 import withResetEventEmitter from './withResetEventEmitter';
 // @ts-ignore
 // TS6133: 'EventEmitter' is declared but its value is never read.
@@ -34,10 +34,9 @@ export class FieldFeedbacks extends
                               withResetEventEmitter(
                                 withValidateFieldEventEmitter<
                                   // FieldFeedback returns FieldFeedbackValidation
-                                  // FieldFeedbacks returns FieldFeedbackValidation[] | undefined
-                                  //                        Promise<(FieldFeedbackValidation | undefined)[] | undefined>
                                   // Async returns FieldFeedbackValidation[] | undefined
-                                  FieldFeedbackValidation | (FieldFeedbackValidation[] | undefined),
+                                  // FieldFeedbacks returns (FieldFeedbackValidation | undefined)[] | undefined
+                                  FieldFeedbackValidation | (FieldFeedbackValidation | undefined)[] | undefined,
                                   typeof FieldFeedbacksComponent
                                 >(
                                   FieldFeedbacksComponent
@@ -96,11 +95,11 @@ export class FieldFeedbacks extends
     this.context.form.fieldsStore.addField(this.fieldName);
 
     if (this.context.fieldFeedbacks) {
-      this.context.fieldFeedbacks.addValidateFieldEventListener(this.validate as any);
+      this.context.fieldFeedbacks.addValidateFieldEventListener(this.validate);
       this.context.fieldFeedbacks.addResetEventListener(this.reset);
     }
     else {
-      this.context.form.addValidateFieldEventListener(this.validate as any);
+      this.context.form.addValidateFieldEventListener(this.validate);
       this.context.form.addResetEventListener(this.reset);
     }
   }
@@ -110,11 +109,11 @@ export class FieldFeedbacks extends
     this.context.form.fieldsStore.removeField(this.fieldName);
 
     if (this.context.fieldFeedbacks) {
-      this.context.fieldFeedbacks.removeValidateFieldEventListener(this.validate as any);
+      this.context.fieldFeedbacks.removeValidateFieldEventListener(this.validate);
       this.context.fieldFeedbacks.removeResetEventListener(this.reset);
     }
     else {
-      this.context.form.removeValidateFieldEventListener(this.validate as any);
+      this.context.form.removeValidateFieldEventListener(this.validate);
       this.context.form.removeResetEventListener(this.reset);
     }
   }
@@ -122,52 +121,38 @@ export class FieldFeedbacks extends
   lastValidation = new LastValidation();
 
   async validate(input: Input) {
+    const { fieldFeedbacks: fieldFeedbacksParent } = this.context;
+
     let validations;
 
-    // FIXME test this
     if (input.name === this.fieldName) { // Ignore the event if it's not for us
-      console.log(this.key, 'validate() BEGIN');
-      validations = await this._validate(input);
+      if (fieldFeedbacksParent !== undefined && (
+          fieldFeedbacksParent.props.stop === 'first' && fieldFeedbacksParent.lastValidation.hasFeedbacks() ||
+          fieldFeedbacksParent.props.stop === 'first-error' && fieldFeedbacksParent.lastValidation.hasErrors() ||
+          fieldFeedbacksParent.props.stop === 'first-warning' && fieldFeedbacksParent.lastValidation.hasWarnings() ||
+          fieldFeedbacksParent.props.stop === 'first-info' && fieldFeedbacksParent.lastValidation.hasInfos())) {
+        // Do nothing
+      }
+      else {
+        this.lastValidation.clear();
+
+        validations = await this._validate(input);
+
+        if (fieldFeedbacksParent !== undefined) {
+          fieldFeedbacksParent.lastValidation.setFieldFeedbacks(validations);
+        }
+      }
     }
 
-    console.log(this.key, 'validate() END validations=', validations);
     return validations;
   }
 
   async _validate(input: Input) {
-    const { fieldFeedbacks: fieldFeedbacksParent } = this.context;
-
-    this.reset();
-
     let validations;
 
-    if (fieldFeedbacksParent !== undefined) {
-      console.log(this.key, 'parent=', fieldFeedbacksParent.key, 'stop=', fieldFeedbacksParent.props.stop);
-      console.log(this.key, 'parent=', fieldFeedbacksParent.key, 'hasFeedbacks()=', fieldFeedbacksParent.lastValidation.hasFeedbacks());
-      console.log(this.key, 'parent=', fieldFeedbacksParent.key, 'hasErrors()=', fieldFeedbacksParent.lastValidation.hasErrors());
-    }
+    const arrayOfArrays = await this.emitValidateFieldEvent(input);
+    validations = _.flattenDeep<FieldFeedbackValidation | undefined>(arrayOfArrays);
 
-    if (fieldFeedbacksParent !== undefined && (
-        fieldFeedbacksParent.props.stop === 'first' && fieldFeedbacksParent.lastValidation.hasFeedbacks() ||
-        fieldFeedbacksParent.props.stop === 'first-error' && fieldFeedbacksParent.lastValidation.hasErrors() ||
-        fieldFeedbacksParent.props.stop === 'first-warning' && fieldFeedbacksParent.lastValidation.hasWarnings() ||
-        fieldFeedbacksParent.props.stop === 'first-info' && fieldFeedbacksParent.lastValidation.hasInfos())) {
-          console.log(this.key, 'Do nothing');
-      // Do nothing
-    }
-
-    else {
-      const arrayOfValidations = await this.emitValidateFieldEvent(input);
-      console.log(this.key, 'emitValidateFieldEvent=', arrayOfValidations);
-
-      validations = _.flattenDeep<FieldFeedbackValidation | undefined>(arrayOfValidations);
-
-      if (fieldFeedbacksParent !== undefined) {
-        fieldFeedbacksParent.lastValidation.setFieldFeedbacksValidation(validations);
-      }
-    }
-
-    console.log(this.key, '_validate() DONE validations=', validations);
     return validations;
   }
 

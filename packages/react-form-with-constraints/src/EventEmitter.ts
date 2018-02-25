@@ -3,9 +3,7 @@
 // See Proposal: Variadic Kinds -- Give specific types to variadic functions https://github.com/Microsoft/TypeScript/issues/5453
 export type Args = any[];
 
-export type Listener<ListenerReturnType = void> = (...args: Args) => ListenerReturnType;
-
-let i = 0;
+export type Listener<ListenerReturnType = void> = (...args: Args) => ListenerReturnType | Promise<ListenerReturnType>;
 
 export class EventEmitter<ListenerReturnType = void> {
   listeners = new Map<string, Listener<ListenerReturnType>[]>();
@@ -27,12 +25,7 @@ export class EventEmitter<ListenerReturnType = void> {
         // - listener returns a Promise:
         //   => wait for the listener call to finish (e.g listeners are executed in sequence),
         //      without we would call each listener without waiting for their results
-        const result = listener(...args);
-        i++;
-        console.log('emit', i, 'result=', result);
-        const promise = await result;
-        console.log('emit', i, 'promise=', promise);
-        ret.push(promise);
+        ret.push(await listener(...args));
       }
     }
 

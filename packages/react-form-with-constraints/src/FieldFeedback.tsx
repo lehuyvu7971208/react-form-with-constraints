@@ -114,7 +114,7 @@ export class FieldFeedback extends React.Component<FieldFeedbackProps, FieldFeed
     }
   }
 
-  validate(input: Input) {
+  async validate(input: Input) {
     const { when } = this.props;
     const { fieldFeedbacks } = this.context;
 
@@ -126,7 +126,6 @@ export class FieldFeedback extends React.Component<FieldFeedbackProps, FieldFeed
         fieldFeedbacks.props.stop === 'first-info' && fieldFeedbacks.lastValidation.hasInfos()) {
       // Do nothing
       validation.show = undefined; // undefined means the FieldFeedback was not checked
-      console.log(this.key, 'Do nothing');
     }
 
     else {
@@ -168,7 +167,7 @@ export class FieldFeedback extends React.Component<FieldFeedbackProps, FieldFeed
         throw new TypeError(`Invalid FieldFeedback 'when' type: ${typeof when}`);
       }
 
-      fieldFeedbacks.lastValidation.setFieldFeedbackValidation(validation);
+      fieldFeedbacks.lastValidation.setFieldFeedback(validation);
     }
 
     this.setState({

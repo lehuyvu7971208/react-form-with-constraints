@@ -138,10 +138,8 @@ class Form extends React.Component<Props, State> {
                  ref={password => this.password = password}
                  value={this.state.password} onChange={this.handlePasswordChange}
                  required pattern=".{5,}" />
-          <FieldFeedbacks for="password" stop="no">
-            <FieldFeedbacks />
-
-            <FieldFeedbacks stop="no">
+          <FieldFeedbacks for="password">
+            <FieldFeedbacks>
               <FieldFeedback when="valueMissing" />
               <FieldFeedback when="patternMismatch">Should be at least 5 characters long</FieldFeedback>
             </FieldFeedbacks>
@@ -155,29 +153,11 @@ class Form extends React.Component<Props, State> {
                 promise={isACommonPassword}
                 pending="..."
                 then={commonPassword => commonPassword ?
-                  <>
-                    <FieldFeedback warning>Too common</FieldFeedback>
-                    <FieldFeedback warning>Too common 2</FieldFeedback>
-                    <FieldFeedback warning>Too common 3</FieldFeedback>
-                  </> : null
+                  <FieldFeedback warning>Too common</FieldFeedback> : null
                 }
               />
             </FieldFeedbacks>
 
-            <FieldFeedback when={() => true} info>Hello1</FieldFeedback>
-
-            <FieldFeedbacks stop="no">
-              <FieldFeedback when={() => true} info>Hello2</FieldFeedback>
-            </FieldFeedbacks>
-          </FieldFeedbacks>
-
-          <FieldFeedbacks for="password">
-            <FieldFeedback when="valueMissing" />
-            <FieldFeedback when="patternMismatch">Should be at least 5 characters long</FieldFeedback>
-            <FieldFeedback when={value => !/\d/.test(value)} warning>Should contain numbers</FieldFeedback>
-            <FieldFeedback when={value => !/[a-z]/.test(value)} warning>Should contain small letters</FieldFeedback>
-            <FieldFeedback when={value => !/[A-Z]/.test(value)} warning>Should contain capital letters</FieldFeedback>
-            <FieldFeedback when={value => !/\W/.test(value)} warning>Should contain special characters</FieldFeedback>
             <FieldFeedback when="valid">Looks good!</FieldFeedback>
           </FieldFeedbacks>
         </div>

@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import { withValidateFieldEventEmitter } from './withValidateFieldEventEmitter';
+import withValidateFieldEventEmitter from './withValidateFieldEventEmitter';
 import withFieldValidatedEventEmitter from './withFieldValidatedEventEmitter';
 import withResetEventEmitter from './withResetEventEmitter';
 // @ts-ignore
@@ -13,6 +13,7 @@ import { FieldsStore } from './FieldsStore';
 import { FieldValidation, FieldFeedbackValidation } from './FieldValidation';
 //import flattenDeep from './flattenDeep';
 import * as _ from 'lodash';
+import notUndefined from './notUndefined';
 
 // See Form data validation https://developer.mozilla.org/en-US/docs/Learn/HTML/Forms/Form_validation
 // See ReactJS Form Validation Approaches http://moduscreate.com/reactjs-form-validation-approaches/
@@ -72,9 +73,9 @@ export class FormWithConstraints
       withFieldValidatedEventEmitter(
         withValidateFieldEventEmitter<
           // FieldFeedback returns FieldFeedbackValidation
-          // FieldFeedbacks returns FieldFeedbackValidation[] | undefined
           // Async returns FieldFeedbackValidation[] | undefined
-          FieldFeedbackValidation[] | undefined,
+          // FieldFeedbacks returns (FieldFeedbackValidation | undefined)[] | undefined
+          FieldFeedbackValidation | (FieldFeedbackValidation | undefined)[] | undefined,
           typeof FormWithConstraintsComponent
         >(
           FormWithConstraintsComponent
@@ -139,8 +140,8 @@ export class FormWithConstraints
       field.validateEventEmitted = true;
 
       const arrayOfArrays = await this.emitValidateFieldEvent(input);
-      console.log('form emitValidateFieldEvent=', arrayOfArrays);
-      const validations = _.flattenDeep(arrayOfArrays).filter(notUndefined);
+      const tmp = _.flattenDeep<FieldFeedbackValidation | undefined>(arrayOfArrays);
+      const validations = tmp.filter(notUndefined);
 
       fieldValidation = new FieldValidation(fieldName, validations);
 
@@ -207,19 +208,13 @@ export class FormWithConstraints
     return true;
   }
 
-  reset() {
+  async reset() {
     this.fieldsStore.clear();
-    this.emitResetEvent();
+    await this.emitResetEvent();
   }
 
   render() {
     const { children, fieldFeedbackClassNames, ...formProps } = this.props;
     return <form ref={form => this.form = form} {...formProps}>{children}</form>;
   }
-}
-
-// See "TypeScript static analysis is unable to track this behavior" https://codereview.stackexchange.com/a/138289/148847
-// See TypeScript filter out nulls from an array https://stackoverflow.com/q/43118692
-function notUndefined<T>(value: T | undefined): value is T {
-  return value !== undefined;
 }
