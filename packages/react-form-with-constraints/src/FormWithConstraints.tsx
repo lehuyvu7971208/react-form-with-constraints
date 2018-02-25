@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import withValidateFieldEventEmitter from './withValidateFieldEventEmitter';
+import { withValidateFieldEventEmitter } from './withValidateFieldEventEmitter';
 import withFieldValidatedEventEmitter from './withFieldValidatedEventEmitter';
 import withResetEventEmitter from './withResetEventEmitter';
 // @ts-ignore
@@ -10,8 +10,9 @@ import withResetEventEmitter from './withResetEventEmitter';
 import { EventEmitter } from './EventEmitter';
 import Input from './Input';
 import { FieldsStore } from './FieldsStore';
-import { FieldValidation, FieldFeedbackValidations, FieldFeedbackValidation } from './FieldValidation';
-import flatten from './flatten';
+import { FieldValidation, FieldFeedbackValidation } from './FieldValidation';
+//import flattenDeep from './flattenDeep';
+import * as _ from 'lodash';
 
 // See Form data validation https://developer.mozilla.org/en-US/docs/Learn/HTML/Forms/Form_validation
 // See ReactJS Form Validation Approaches http://moduscreate.com/reactjs-form-validation-approaches/
@@ -33,16 +34,10 @@ FormWithConstraints
 FormWithConstraints contains the FieldsStore:
 {
   username: {
-    dirty: true,
-    errors: [0.0], // List of FieldFeedback keys
-    warnings: [0.2, 1.1],
-    infos: []
+    validateEventEmitted: true
   },
   password: {
-    dirty: false,
-    errors: [],
-    warnings: [],
-    infos: []
+    validateEventEmitted: true
   }
 }
 FieldsStore is passed to FieldFeedbacks and FieldFeedback thanks to React context.
@@ -76,9 +71,10 @@ export class FormWithConstraints
     withResetEventEmitter(
       withFieldValidatedEventEmitter(
         withValidateFieldEventEmitter<
-          // FieldFeedbacks returns Promise<FieldFeedbackValidation[] | undefined>
-          // Async returns Promise<FieldFeedbackValidation[] | undefined>
-          Promise<FieldFeedbackValidation[] | undefined>,
+          // FieldFeedback returns FieldFeedbackValidation
+          // FieldFeedbacks returns FieldFeedbackValidation[] | undefined
+          // Async returns FieldFeedbackValidation[] | undefined
+          FieldFeedbackValidation[] | undefined,
           typeof FormWithConstraintsComponent
         >(
           FormWithConstraintsComponent
@@ -132,8 +128,6 @@ export class FormWithConstraints
     const fieldName = input.name;
     const field = this.fieldsStore.fields[fieldName];
 
-    console.log('FormWithConstraints.validateField()', fieldName);
-
     let fieldValidation;
 
     if (field === undefined) {
@@ -144,10 +138,9 @@ export class FormWithConstraints
     else if (forceValidateFields || !field.validateEventEmitted) {
       field.validateEventEmitted = true;
 
-      const arrayOfArrays = await Promise.all(this.emitValidateFieldEvent(input));
-      // FIXME "TypeScript static analysis is unable to track this behavior", see https://codereview.stackexchange.com/a/138289/148847
-      const tmp = arrayOfArrays.filter(item => item !== undefined) as FieldFeedbackValidation[][];
-      const validations = flatten(tmp);
+      const arrayOfArrays = await this.emitValidateFieldEvent(input);
+      console.log('form emitValidateFieldEvent=', arrayOfArrays);
+      const validations = _.flattenDeep(arrayOfArrays).filter(notUndefined);
 
       fieldValidation = new FieldValidation(fieldName, validations);
 
@@ -209,8 +202,6 @@ export class FormWithConstraints
     return inputs;
   }
 
-  validations = new FieldFeedbackValidations();
-
   // Does not check if fields are dirty
   isValid() {
     return true;
@@ -218,7 +209,6 @@ export class FormWithConstraints
 
   reset() {
     this.fieldsStore.clear();
-    this.validations.clear();
     this.emitResetEvent();
   }
 
@@ -226,4 +216,10 @@ export class FormWithConstraints
     const { children, fieldFeedbackClassNames, ...formProps } = this.props;
     return <form ref={form => this.form = form} {...formProps}>{children}</form>;
   }
+}
+
+// See "TypeScript static analysis is unable to track this behavior" https://codereview.stackexchange.com/a/138289/148847
+// See TypeScript filter out nulls from an array https://stackoverflow.com/q/43118692
+function notUndefined<T>(value: T | undefined): value is T {
+  return value !== undefined;
 }

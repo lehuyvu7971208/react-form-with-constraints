@@ -126,6 +126,7 @@ export class FieldFeedback extends React.Component<FieldFeedbackProps, FieldFeed
         fieldFeedbacks.props.stop === 'first-info' && fieldFeedbacks.lastValidation.hasInfos()) {
       // Do nothing
       validation.show = undefined; // undefined means the FieldFeedback was not checked
+      console.log(this.key, 'Do nothing');
     }
 
     else {

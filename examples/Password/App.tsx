@@ -2,10 +2,37 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import { FormWithConstraints } from 'react-form-with-constraints';
-import { DisplayFields, FieldFeedbacks, FieldFeedback } from 'react-form-with-constraints-tools';
+import { DisplayFields, Async, FieldFeedbacks, FieldFeedback } from 'react-form-with-constraints-tools';
 
 import './index.html';
 import './style.css';
+
+function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// See https://en.wikipedia.org/wiki/List_of_the_most_common_passwords
+async function isACommonPassword(password: string) {
+  console.log('checkPasswordHasBeenUsed');
+  await sleep(1000);
+  return [
+    '123456',
+    'password',
+    '12345678',
+    'qwerty',
+    '12345',
+    '123456789',
+    'letmein',
+    '1234567',
+    'football',
+    'iloveyou',
+    'admin',
+    'welcome',
+    'monkey',
+    'login',
+    'abc123'
+  ].includes(password.toLowerCase());
+}
 
 interface Props {}
 
@@ -111,7 +138,9 @@ class Form extends React.Component<Props, State> {
                  ref={password => this.password = password}
                  value={this.state.password} onChange={this.handlePasswordChange}
                  required pattern=".{5,}" />
-          <FieldFeedbacks for="password" stop="first">
+          <FieldFeedbacks for="password" stop="no">
+            <FieldFeedbacks />
+
             <FieldFeedbacks stop="no">
               <FieldFeedback when="valueMissing" />
               <FieldFeedback when="patternMismatch">Should be at least 5 characters long</FieldFeedback>
@@ -122,12 +151,26 @@ class Form extends React.Component<Props, State> {
               <FieldFeedback when={value => !/[a-z]/.test(value)} warning>Should contain small letters</FieldFeedback>
               <FieldFeedback when={value => !/[A-Z]/.test(value)} warning>Should contain capital letters</FieldFeedback>
               <FieldFeedback when={value => !/\W/.test(value)} warning>Should contain special characters</FieldFeedback>
+              <Async
+                promise={isACommonPassword}
+                pending="..."
+                then={commonPassword => commonPassword ?
+                  <>
+                    <FieldFeedback warning>Too common</FieldFeedback>
+                    <FieldFeedback warning>Too common 2</FieldFeedback>
+                    <FieldFeedback warning>Too common 3</FieldFeedback>
+                  </> : null
+                }
+              />
             </FieldFeedbacks>
 
-            <FieldFeedback when="valid">Looks good!</FieldFeedback>
+            <FieldFeedback when={() => true} info>Hello1</FieldFeedback>
+
+            <FieldFeedbacks stop="no">
+              <FieldFeedback when={() => true} info>Hello2</FieldFeedback>
+            </FieldFeedbacks>
           </FieldFeedbacks>
 
-          {/*
           <FieldFeedbacks for="password">
             <FieldFeedback when="valueMissing" />
             <FieldFeedback when="patternMismatch">Should be at least 5 characters long</FieldFeedback>
@@ -137,7 +180,6 @@ class Form extends React.Component<Props, State> {
             <FieldFeedback when={value => !/\W/.test(value)} warning>Should contain special characters</FieldFeedback>
             <FieldFeedback when="valid">Looks good!</FieldFeedback>
           </FieldFeedbacks>
-          */}
         </div>
 
         <div>

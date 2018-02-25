@@ -1,19 +1,21 @@
 import { FieldFeedbackType } from './FieldFeedback';
 
 export class LastValidation {
-  // FieldFeedback returns Promise<FieldFeedbackValidation>
-  private validationFromFieldFeedback: FieldFeedbackValidation | undefined;
+  // FieldFeedback returns FieldFeedbackValidation
+  private validationFromFieldFeedback?: FieldFeedbackValidation;
 
-  // FieldFeedbacks returns Promise<FieldFeedbackValidation[] | undefined>
-  // Async returns Promise<FieldFeedbackValidation[] | undefined>
-  private validationFromFieldFeedbacks: FieldFeedbackValidation[] | undefined;
+  // FieldFeedbacks returns FieldFeedbackValidation[] | undefined
+  // Async returns FieldFeedbackValidation[] | undefined
+  private validationFromFieldFeedbacks?: (FieldFeedbackValidation | undefined)[];
 
   setFieldFeedbackValidation(validation: FieldFeedbackValidation) {
     this.validationFromFieldFeedback = validation;
+    console.log('setFieldFeedbackValidation', validation);
   }
 
-  setFieldFeedbacksValidation(validation: FieldFeedbackValidation[] | undefined) {
+  setFieldFeedbacksValidation(validation: (FieldFeedbackValidation | undefined)[]) {
     this.validationFromFieldFeedbacks = validation;
+    console.log('setFieldFeedbacksValidation', validation);
   }
 
   clear() {
@@ -35,17 +37,17 @@ export class LastValidation {
 
   hasErrors() {
     const validations = this.getValidations();
-    return validations.some(fieldFeedback => fieldFeedback.type === FieldFeedbackType.Error && fieldFeedback.show === true);
+    return validations.some(fieldFeedback => fieldFeedback!.type === FieldFeedbackType.Error && fieldFeedback!.show === true);
   }
 
   hasWarnings() {
     const validations = this.getValidations();
-    return validations.some(fieldFeedback => fieldFeedback.type === FieldFeedbackType.Warning && fieldFeedback.show === true);
+    return validations.some(fieldFeedback => fieldFeedback!.type === FieldFeedbackType.Warning && fieldFeedback!.show === true);
   }
 
   hasInfos() {
     const validations = this.getValidations();
-    return validations.some(fieldFeedback => fieldFeedback.type === FieldFeedbackType.Info && fieldFeedback.show === true);
+    return validations.some(fieldFeedback => fieldFeedback!.type === FieldFeedbackType.Info && fieldFeedback!.show === true);
   }
 
   hasFeedbacks() {

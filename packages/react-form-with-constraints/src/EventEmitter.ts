@@ -5,13 +5,15 @@ export type Args = any[];
 
 export type Listener<ListenerReturnType = void> = (...args: Args) => ListenerReturnType;
 
+let i = 0;
+
 export class EventEmitter<ListenerReturnType = void> {
   listeners = new Map<string, Listener<ListenerReturnType>[]>();
 
   async emit(eventName: string, ...args: Args) {
     const listeners = this.listeners.get(eventName)!;
 
-    // Assert disabled: mess with the unit tests
+    // Assert disabled: an even can be emitted even without listeners
     //console.assert(listeners !== undefined, `Unknown event '${eventName}'`);
 
     const ret = new Array<ListenerReturnType>();
@@ -25,7 +27,12 @@ export class EventEmitter<ListenerReturnType = void> {
         // - listener returns a Promise:
         //   => wait for the listener call to finish (e.g listeners are executed in sequence),
         //      without we would call each listener without waiting for their results
-        ret.push(await listener(...args));
+        const result = listener(...args);
+        i++;
+        console.log('emit', i, 'result=', result);
+        const promise = await result;
+        console.log('emit', i, 'promise=', promise);
+        ret.push(promise);
       }
     }
 

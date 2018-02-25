@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import { FieldFeedbacksChildContext } from './FieldFeedbacks';
-import withValidateFieldEventEmitter from './withValidateFieldEventEmitter';
+import { withValidateFieldEventEmitter } from './withValidateFieldEventEmitter';
 import withResetEventEmitter from './withResetEventEmitter';
 // @ts-ignore
 // TS6133: 'EventEmitter' is declared but its value is never read.
@@ -82,12 +82,12 @@ export class Async<T> extends
   }
 
   componentWillMount() {
-    this.context.fieldFeedbacks.addValidateFieldEventListener(this.validate);
+    this.context.fieldFeedbacks.addValidateFieldEventListener(this.validate as any);
     this.context.fieldFeedbacks.addResetEventListener(this.reset);
   }
 
   componentWillUnmount() {
-    this.context.fieldFeedbacks.removeValidateFieldEventListener(this.validate);
+    this.context.fieldFeedbacks.removeValidateFieldEventListener(this.validate as any);
     this.context.fieldFeedbacks.removeResetEventListener(this.reset);
   }
 
@@ -101,6 +101,7 @@ export class Async<T> extends
         fieldFeedbacks.props.stop === 'first-warning' && fieldFeedbacks.lastValidation.hasWarnings() ||
         fieldFeedbacks.props.stop === 'first-info' && fieldFeedbacks.lastValidation.hasInfos()) {
       // Do nothing
+      console.log('Async Do nothing');
     }
 
     else {
@@ -113,9 +114,18 @@ export class Async<T> extends
         await setStatePromise(this, {status: Status.Rejected, value});
       }
 
-      validations = await Promise.all(await this.emitValidateFieldEvent(input));
+      validations = await this.emitValidateFieldEvent(input);
 
       fieldFeedbacks.lastValidation.setFieldFeedbacksValidation(validations);
+
+      /*
+      validations = this.props.promise(input.value)
+        .then(value => setStatePromise(this, {status: Status.Resolved, value}))
+        .catch(e => setStatePromise(this, {status: Status.Rejected, value: e}))
+        .then(() => this.emitValidateFieldEvent(input));
+
+      fieldFeedbacks.validations.addFieldFeedbacksValidation(validations);
+      */
     }
 
     return validations;
