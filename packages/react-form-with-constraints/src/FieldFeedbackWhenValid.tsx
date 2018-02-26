@@ -4,7 +4,6 @@ import PropTypes from 'prop-types';
 import { FormWithConstraintsChildContext } from './FormWithConstraints';
 import { FieldFeedbacksChildContext } from './FieldFeedbacks';
 import { FieldValidation } from './FieldValidation';
-import Input from './Input';
 
 export interface FieldFeedbackWhenValidProps extends React.HTMLAttributes<HTMLDivElement> {
 }
@@ -43,11 +42,10 @@ export class FieldFeedbackWhenValid extends React.Component<FieldFeedbackWhenVal
     this.context.form.removeResetEventListener(this.reset);
   }
 
-  async fieldValidated(input: Input, fieldValidationsPromise: Promise<FieldValidation>) {
-    if (input.name === this.context.fieldFeedbacks.fieldName) { // Ignore the event if it's not for us
+  async fieldValidated(fieldName: string, field: Promise<FieldValidation>) {
+    if (fieldName === this.context.fieldFeedbacks.fieldName) { // Ignore the event if it's not for us
       this.setState({fieldIsValid: undefined});
-      const fieldValidations = await fieldValidationsPromise;
-      this.setState({fieldIsValid: fieldValidations.isValid()});
+      this.setState({fieldIsValid: (await field).isValid()});
     }
   }
 

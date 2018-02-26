@@ -1,6 +1,7 @@
 import { Fields, Field } from './Fields';
 import { EventEmitter } from './EventEmitter';
 import fieldWithoutFeedback from './fieldWithoutFeedback';
+import { FieldFeedbackType } from './FieldFeedback';
 
 export enum FieldEvent {
   Added = 'FIELD_ADDED',
@@ -37,5 +38,20 @@ export class FieldsStore extends EventEmitter {
     console.assert(this.fields[fieldName] !== undefined, `Unknown field '${fieldName}'`);
     delete this.fields[fieldName];
     this.emit(FieldEvent.Removed, fieldName);
+  }
+
+  isValid() {
+    let _isValid = true;
+
+    // tslint:disable-next-line:forin
+    for (const fieldName in this.fields) {
+      const field = this.fields[fieldName]!;
+      if (field.validations !== undefined) {
+        const hasErrors = field.validations.some(fieldFeedback => fieldFeedback.type === FieldFeedbackType.Error && fieldFeedback.show === true);
+        _isValid = !hasErrors;
+      }
+    }
+
+    return _isValid;
   }
 }

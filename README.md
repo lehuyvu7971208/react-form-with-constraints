@@ -233,9 +233,9 @@ class MyForm extends React.Component {
   - `FieldValidation` =>
     ```TypeScript
     {
-      fieldName: string;
+      name: string;
       isValid: () => boolean;
-      fieldFeedbackValidations: {
+      validations: {
         key: number;
         show: boolean | undefined;
       }[]; // FieldFeedbackValidation[]

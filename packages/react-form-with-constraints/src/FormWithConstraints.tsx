@@ -125,7 +125,7 @@ export class FormWithConstraints
     return this._validateFields(false /* forceValidateFields */);
   }
 
-  async validateField(forceValidateFields: boolean, input: Input) {
+  validateField(forceValidateFields: boolean, input: Input) {
     const fieldName = input.name;
     const field = this.fieldsStore.fields[fieldName];
 
@@ -139,29 +139,27 @@ export class FormWithConstraints
     else if (forceValidateFields || !field.validateEventEmitted) {
       field.validateEventEmitted = true;
 
-      const arrayOfArrays = await this.emitValidateFieldEvent(input);
-      const tmp = _.flattenDeep<FieldFeedbackValidation | undefined>(arrayOfArrays);
-      const validations = tmp.filter(notUndefined);
+      const validations = this.emitValidateFieldEvent(input)
+        .then(arrayOfArrays => _.flattenDeep<FieldFeedbackValidation | undefined>(arrayOfArrays).filter(notUndefined))
+        .then(_validations => field.validations = _validations);
 
-      fieldValidation = new FieldValidation(fieldName, validations);
-
-      this.emitFieldValidatedEvent(input, fieldValidation);
+      fieldValidation = validations.then(_validations => new FieldValidation(fieldName, _validations));
+      this.emitFieldValidatedEvent(fieldName, fieldValidation);
     }
 
     return fieldValidation;
   }
 
   private async _validateFields(forceValidateFields: boolean, ...inputsOrNames: Array<Input | string>) {
-    const fieldValidations = new Array<FieldValidation>();
+    const fields = new Array<FieldValidation>();
 
     const inputs = this.normalizeInputs(...inputsOrNames);
-
     for (const input of inputs) {
-      const fieldValidation = await this.validateField(forceValidateFields, input);
-      if (fieldValidation !== undefined) fieldValidations.push(fieldValidation);
+      const field = await this.validateField(forceValidateFields, input);
+      if (field !== undefined) fields.push(field);
     }
 
-    return fieldValidations;
+    return fields;
   }
 
   // If called without arguments, returns all fields ($('[name]'))
@@ -205,7 +203,7 @@ export class FormWithConstraints
 
   // Does not check if fields are dirty
   isValid() {
-    return true;
+    return this.fieldsStore.isValid();
   }
 
   async reset() {

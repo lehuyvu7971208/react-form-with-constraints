@@ -7,13 +7,13 @@ import {
   FieldFeedback as _FieldFeedback,
   FieldFeedbacks as _FieldFeedbacks,
   Async as _Async,
-  Input, FieldValidation, FieldEvent, FieldFeedbackValidation, Field
+  FieldValidation, FieldEvent, FieldFeedbackValidation, Field
 } from 'react-form-with-constraints';
 
 export interface DisplayFieldsProps {}
 
 export interface Field2 extends Partial<Field> {
-  fieldFeedbackValidations?: FieldFeedbackValidation[];
+  validations?: FieldFeedbackValidation[];
 }
 
 export interface Fields2 {
@@ -75,11 +75,10 @@ export class DisplayFields extends React.Component<DisplayFieldsProps, DisplayFi
     this.forceUpdate();
   }
 
-  async fieldValidated(_input: Input, fieldValidationPromise: Promise<FieldValidation>) {
-    const fieldValidation = await fieldValidationPromise;
-
+  async fieldValidated(fieldName: string, _field: Promise<FieldValidation>) {
+    const field = await _field;
     this.setState(prevState => ({
-      fields: {...prevState.fields, ...{[fieldValidation.fieldName]: fieldValidation}}
+      fields: {...prevState.fields, ...{[fieldName]: field}}
     }));
   }
 
@@ -108,13 +107,13 @@ export class DisplayFields extends React.Component<DisplayFieldsProps, DisplayFi
       // tslint:disable-next-line:forin
       for (const fieldName in merged) {
         const field = merged[fieldName]!;
-        if (field.fieldFeedbackValidations !== undefined) {
+        if (field.validations !== undefined) {
           const validations: string[] = [];
-          for (const fieldFeedbackValidation of field.fieldFeedbackValidations) {
+          for (const fieldFeedbackValidation of field.validations) {
             const fieldFeedbackValidationStr = `${stringifyWithUndefinedAndWithoutPropertyQuotes(fieldFeedbackValidation, 1)}`;
             validations.push(fieldFeedbackValidationStr);
           }
-          (field as any).fieldFeedbackValidations = validations;
+          (field as any).validations = validations;
         }
       }
     }

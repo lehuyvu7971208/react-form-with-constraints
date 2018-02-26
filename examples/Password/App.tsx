@@ -95,6 +95,9 @@ class Form extends React.Component<Props, State> {
     if (fieldsAreValid) console.log(`Fields '${target.name}' and 'passwordConfirm' are valid`);
     else console.log(`Fields '${target.name}' and/or 'passwordConfirm' are invalid`);
 
+    if (this.form!.isValid()) console.log('The form is valid');
+    else console.log('The form is invalid');
+
     this.setState({submitButtonDisabled: !this.form!.isValid()});
   }
 

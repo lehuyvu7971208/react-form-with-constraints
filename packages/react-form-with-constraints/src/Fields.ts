@@ -1,6 +1,9 @@
+import { FieldFeedbackValidation } from './FieldValidation';
+
 // Field is a better name than Input, see Django Form fields https://docs.djangoproject.com/en/1.11/ref/forms/fields/
 export interface Field {
   validateEventEmitted: boolean;
+  validations: FieldFeedbackValidation[] | undefined;
 }
 
 export interface Fields {
