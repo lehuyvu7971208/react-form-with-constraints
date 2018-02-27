@@ -1,15 +1,22 @@
-import { FieldFeedbackValidation } from './FieldValidation';
+import { FieldFeedbackValidation, FieldValidation } from './FieldValidation';
+import { FieldFeedbackType } from './FieldFeedback';
+import clearArray from './clearArray';
 
 // Field is a better name than Input, see Django Form fields https://docs.djangoproject.com/en/1.11/ref/forms/fields/
-export interface Field {
-  validateEventEmitted: boolean;
-  validations: FieldFeedbackValidation[] | undefined;
-}
+export class Field extends FieldValidation {
+  addValidation(validation: FieldFeedbackValidation) {
+    this.validations.push(validation);
+  }
 
-export interface Fields {
-  // Could be also Map<string, Field>
-  [fieldName: string]:
-    Field |
-    undefined // undefined means the field (<input name="username">) is not associated with a FieldFeedbacks
-    ;
+  clear() {
+    clearArray(this.validations);
+  }
+
+  hasInfos() {
+    return this.validations.some(fieldFeedback => fieldFeedback.type === FieldFeedbackType.Info && fieldFeedback.show === true);
+  }
+
+  hasFeedbacks() {
+    return this.hasErrors() || this.hasWarnings() || this.hasInfos();
+  }
 }

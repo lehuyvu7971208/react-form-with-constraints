@@ -9,9 +9,10 @@ import withResetEventEmitter from './withResetEventEmitter';
 // FIXME See https://github.com/Microsoft/TypeScript/issues/9944#issuecomment-309903027
 import { EventEmitter } from './EventEmitter';
 import Input from './Input';
-import { LastValidation, FieldFeedbackValidation } from './FieldValidation';
+import { FieldFeedbackValidation } from './FieldValidation';
 //import flattenDeep from './flattenDeep';
 import * as _ from 'lodash';
+//import notUndefined from './notUndefined';
 
 export interface FieldFeedbacksProps {
   for?: string;
@@ -35,7 +36,7 @@ export class FieldFeedbacks extends
                                 withValidateFieldEventEmitter<
                                   // FieldFeedback returns FieldFeedbackValidation
                                   // Async returns FieldFeedbackValidation[] | undefined
-                                  // FieldFeedbacks returns (FieldFeedbackValidation | undefined)[] | undefined
+                                  // FieldFeedbacks returns (FieldFeedbackValidation | undefined)[]
                                   FieldFeedbackValidation | (FieldFeedbackValidation | undefined)[] | undefined,
                                   typeof FieldFeedbacksComponent
                                 >(
@@ -118,29 +119,24 @@ export class FieldFeedbacks extends
     }
   }
 
-  lastValidation = new LastValidation();
-
   async validate(input: Input) {
-    const { fieldFeedbacks: fieldFeedbacksParent } = this.context;
+    const { form, fieldFeedbacks: fieldFeedbacksParent } = this.context;
 
     let validations;
 
+    const field = form.fieldsStore.getField(this.fieldName);
+
     if (input.name === this.fieldName) { // Ignore the event if it's not for us
       if (fieldFeedbacksParent !== undefined && (
-          fieldFeedbacksParent.props.stop === 'first' && fieldFeedbacksParent.lastValidation.hasFeedbacks() ||
-          fieldFeedbacksParent.props.stop === 'first-error' && fieldFeedbacksParent.lastValidation.hasErrors() ||
-          fieldFeedbacksParent.props.stop === 'first-warning' && fieldFeedbacksParent.lastValidation.hasWarnings() ||
-          fieldFeedbacksParent.props.stop === 'first-info' && fieldFeedbacksParent.lastValidation.hasInfos())) {
+          fieldFeedbacksParent.props.stop === 'first' && field.hasFeedbacks() ||
+          fieldFeedbacksParent.props.stop === 'first-error' && field.hasErrors() ||
+          fieldFeedbacksParent.props.stop === 'first-warning' && field.hasWarnings() ||
+          fieldFeedbacksParent.props.stop === 'first-info' && field.hasInfos())) {
         // Do nothing
       }
       else {
-        this.lastValidation.clear();
-
+        field.clear();
         validations = await this._validate(input);
-
-        if (fieldFeedbacksParent !== undefined) {
-          fieldFeedbacksParent.lastValidation.setFieldFeedbacks(validations);
-        }
       }
     }
 
@@ -151,13 +147,13 @@ export class FieldFeedbacks extends
     let validations;
 
     const arrayOfArrays = await this.emitValidateFieldEvent(input);
-    validations = _.flattenDeep<FieldFeedbackValidation | undefined>(arrayOfArrays);
+    validations = _.flattenDeep<FieldFeedbackValidation | undefined>(arrayOfArrays)/*FIXME .filter(notUndefined)*/;
 
     return validations;
   }
 
   reset() {
-    this.lastValidation.clear();
+    this.context.form.fieldsStore.clear();
     this.emitResetEvent();
   }
 

@@ -4,27 +4,15 @@ import PropTypes from 'prop-types';
 
 import {
   FormWithConstraintsChildContext,
-  FieldFeedback as _FieldFeedback,
+  FieldFeedback as _FieldFeedback, FieldFeedbackType,
   FieldFeedbacks as _FieldFeedbacks,
   Async as _Async,
-  FieldValidation, FieldEvent, FieldFeedbackValidation, Field
+  FieldEvent
 } from 'react-form-with-constraints';
 
 export interface DisplayFieldsProps {}
 
-export interface Field2 extends Partial<Field> {
-  validations?: FieldFeedbackValidation[];
-}
-
-export interface Fields2 {
-  [fieldName: string]: Field2 | undefined;
-}
-
-export interface DisplayFieldsState {
-  fields: Fields2;
-}
-
-export class DisplayFields extends React.Component<DisplayFieldsProps, DisplayFieldsState> {
+export class DisplayFields extends React.Component<DisplayFieldsProps> {
   static contextTypes: React.ValidationMap<FormWithConstraintsChildContext> = {
     form: PropTypes.object.isRequired
   };
@@ -33,105 +21,44 @@ export class DisplayFields extends React.Component<DisplayFieldsProps, DisplayFi
   constructor(props: DisplayFieldsProps) {
     super(props);
 
-    this.state = {
-      // Why Object.create(null) instead of just {}? See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map#Objects_and_maps_compared
-      fields: Object.create(null)
-    };
-
-    this.fieldValidated = this.fieldValidated.bind(this);
-    this.reset = this.reset.bind(this);
     this.fieldAdded = this.fieldAdded.bind(this);
     this.fieldRemoved = this.fieldRemoved.bind(this);
-    this.fieldUpdated = this.fieldUpdated.bind(this);
   }
 
   componentWillMount() {
-    this.context.form.addFieldValidatedEventListener(this.fieldValidated);
-    this.context.form.addResetEventListener(this.reset);
-
     this.context.form.fieldsStore.addListener(FieldEvent.Added, this.fieldAdded);
     this.context.form.fieldsStore.addListener(FieldEvent.Removed, this.fieldRemoved);
-    this.context.form.fieldsStore.addListener(FieldEvent.Updated, this.fieldUpdated);
   }
 
   componentWillUnmount() {
-    this.context.form.removeFieldValidatedEventListener(this.fieldValidated);
-    this.context.form.removeResetEventListener(this.reset);
-
     this.context.form.fieldsStore.removeListener(FieldEvent.Added, this.fieldAdded);
     this.context.form.fieldsStore.removeListener(FieldEvent.Removed, this.fieldRemoved);
-    this.context.form.fieldsStore.removeListener(FieldEvent.Updated, this.fieldUpdated);
   }
 
   fieldAdded() {
-    this.forceUpdate();
+    //this.forceUpdate();
   }
 
   fieldRemoved() {
-    this.forceUpdate();
-  }
-
-  fieldUpdated() {
-    this.forceUpdate();
-  }
-
-  async fieldValidated(fieldName: string, _field: Promise<FieldValidation>) {
-    const field = await _field;
-    this.setState(prevState => ({
-      fields: {...prevState.fields, ...{[fieldName]: field}}
-    }));
-  }
-
-  reset() {
-    const { fieldsStore } = this.context.form;
-
-    this.setState({
-      fields: fieldsStore.fields
-    });
+    //this.forceUpdate();
   }
 
   render() {
-    const { fields } = this.state;
-    const { fieldsStore } = this.context.form;
+    let str = stringifyWithUndefinedAndWithoutPropertyQuotes(this.context.form.fieldsStore, 2);
+    //let str = JSON.stringify(this.context.form.fieldsStore, null, 2);
 
-    // Why Object.create(null) instead of just {}? See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map#Objects_and_maps_compared
-    const merged: Fields2 = Object.create(null);
-
-    // tslint:disable-next-line:forin
-    for (const fieldName in fieldsStore.fields) {
-      merged[fieldName] = {...fieldsStore.fields[fieldName], ...fields[fieldName]};
-      //delete (merged[fieldName] as any).fieldName;
-    }
-
-    if (merged !== undefined) {
-      // tslint:disable-next-line:forin
-      for (const fieldName in merged) {
-        const field = merged[fieldName]!;
-        if (field.validations !== undefined) {
-          const validations: string[] = [];
-          for (const fieldFeedbackValidation of field.validations) {
-            const fieldFeedbackValidationStr = `${stringifyWithUndefinedAndWithoutPropertyQuotes(fieldFeedbackValidation, 1)}`;
-            validations.push(fieldFeedbackValidationStr);
-          }
-          (field as any).validations = validations;
-        }
-      }
-    }
-
-    let str = JSON.stringify(merged, null, 2);
-    // => "{\n key: \"0.0\",\n type: \"error\",\n show: false\n}"
-
-    str = str.replace(/\\\"/g, '"');
-    // => "{\n key: "0.0",\n type: "error",\n show: false\n}"
-
-    str = str.replace(/"{/g, '{');
-    // => {\n key: "0.0",\n type: "error",\n show: false\n}"
-
-    str = str.replace(/\\n}"/g, ' }');
-    // => {\n key: "0.0",\n type: "error",\n show: false }
-
-    str = str.replace(/\\n/g, '');
-    // => { key: "0.0", type: "error", show: false }
+    // Cosmetic: improve formatting
+    //
+    // Replace this string:
+    // {
+    //   key: "1.0",
+    //   type: "error",
+    //   show: true
+    // }
+    // with this:
+    // { key: "1.0", type: "error", show: true }
+    str = str.replace(/{\s+key: (.*),\s+type: (.*),\s+show: (.*)\s+}/g, '{ key: $1, type: $2, show: $3 }');
+    //str = str + '1';
 
     return <pre style={{fontSize: 'small'}}>react-form-with-constraints = {str}</pre>;
   }
@@ -141,8 +68,8 @@ export class DisplayFields extends React.Component<DisplayFieldsProps, DisplayFi
 // See JSON.stringify without quotes on properties? https://stackoverflow.com/q/11233498
 function stringifyWithUndefinedAndWithoutPropertyQuotes(obj: object, space?: string | number) {
   let str = JSON.stringify(obj, (_key, value) => value === undefined ? '__undefined__' : value, space);
-  str = str.replace(/\"__undefined__\"/g, 'undefined');
-  str = str.replace(/\"([^(\")"]+)\":/g, '$1:');
+  str = str.replace(/"__undefined__"/g, 'undefined');
+  str = str.replace(/"([^"]+)":/g, '$1:');
   return str;
 }
 
@@ -175,7 +102,9 @@ export class FieldFeedback extends _FieldFeedback {
         textDecoration = 'line-through';
         break;
       case undefined:
-        textDecoration = 'line-through dotted';
+        if (type !== FieldFeedbackType.WhenValid) {
+          textDecoration = 'line-through dotted';
+        }
         break;
     }
 
@@ -188,9 +117,13 @@ export class FieldFeedback extends _FieldFeedback {
   }
 
   componentDidUpdate() {
+    // Hack: make FieldFeedback div 'display: inline' because FieldFeedback is prefixed with a <span>
+    // and we want both on the same line.
+    // Also make Bootstrap 4 happy because it sets 'display: none', see https://github.com/twbs/bootstrap/blob/v4.0.0/scss/mixins/_forms.scss#L31
+    // => d'une pierre, deux coups :-)
     const rootDiv = ReactDOM.findDOMNode(this);
-    const fieldFeedbackDiv = rootDiv.querySelector('[data-feedback]');
-    if (fieldFeedbackDiv !== null) {
+    const fieldFeedbackDivs = rootDiv.querySelectorAll('[data-feedback]');
+    for (const fieldFeedbackDiv of fieldFeedbackDivs) {
       (fieldFeedbackDiv as HTMLDivElement).style.display = 'inline';
     }
   }

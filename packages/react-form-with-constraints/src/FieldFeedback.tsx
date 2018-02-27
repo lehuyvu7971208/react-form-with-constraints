@@ -118,12 +118,14 @@ export class FieldFeedback extends React.Component<FieldFeedbackProps, FieldFeed
     const { when } = this.props;
     const { fieldFeedbacks } = this.context;
 
+    const field = this.context.form.fieldsStore.getField(input.name);
+
     const validation = {...this.state.validation}; // Copy state so we don't modify it directly (use of setState() instead)
 
-    if (fieldFeedbacks.props.stop === 'first' && fieldFeedbacks.lastValidation.hasFeedbacks() ||
-        fieldFeedbacks.props.stop === 'first-error' && fieldFeedbacks.lastValidation.hasErrors() ||
-        fieldFeedbacks.props.stop === 'first-warning' && fieldFeedbacks.lastValidation.hasWarnings() ||
-        fieldFeedbacks.props.stop === 'first-info' && fieldFeedbacks.lastValidation.hasInfos()) {
+    if (fieldFeedbacks.props.stop === 'first' && field.hasFeedbacks() ||
+        fieldFeedbacks.props.stop === 'first-error' && field.hasErrors() ||
+        fieldFeedbacks.props.stop === 'first-warning' && field.hasWarnings() ||
+        fieldFeedbacks.props.stop === 'first-info' && field.hasInfos()) {
       // Do nothing
       validation.show = undefined; // undefined means the FieldFeedback was not checked
     }
@@ -167,7 +169,7 @@ export class FieldFeedback extends React.Component<FieldFeedbackProps, FieldFeed
         throw new TypeError(`Invalid FieldFeedback 'when' type: ${typeof when}`);
       }
 
-      fieldFeedbacks.lastValidation.setFieldFeedback(validation);
+      field.addValidation(validation);
     }
 
     this.setState({

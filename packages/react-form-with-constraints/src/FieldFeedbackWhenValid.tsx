@@ -14,6 +14,7 @@ export interface FieldFeedbackWhenValidState {
 
 export type FieldFeedbackWhenValidContext = FormWithConstraintsChildContext & FieldFeedbacksChildContext;
 
+// FIXME AsynWithFormValidity?
 export class FieldFeedbackWhenValid extends React.Component<FieldFeedbackWhenValidProps, FieldFeedbackWhenValidState> {
   static contextTypes: React.ValidationMap<FieldFeedbackWhenValidContext> = {
     form: PropTypes.object.isRequired,
@@ -28,24 +29,25 @@ export class FieldFeedbackWhenValid extends React.Component<FieldFeedbackWhenVal
       fieldIsValid: undefined
     };
 
-    this.fieldValidated = this.fieldValidated.bind(this);
+    this.fieldWillValidate = this.fieldWillValidate.bind(this);
     this.reset = this.reset.bind(this);
   }
 
   componentWillMount() {
-    this.context.form.addFieldValidatedEventListener(this.fieldValidated);
+    this.context.form.addFieldWillValidateEventListener(this.fieldWillValidate);
     this.context.form.addResetEventListener(this.reset);
   }
 
   componentWillUnmount() {
-    this.context.form.removeFieldValidatedEventListener(this.fieldValidated);
+    this.context.form.removeFieldWillValidateEventListener(this.fieldWillValidate);
     this.context.form.removeResetEventListener(this.reset);
   }
 
-  async fieldValidated(fieldName: string, field: Promise<FieldValidation>) {
+  async fieldWillValidate(fieldName: string, _field: Promise<FieldValidation>) {
     if (fieldName === this.context.fieldFeedbacks.fieldName) { // Ignore the event if it's not for us
       this.setState({fieldIsValid: undefined});
-      this.setState({fieldIsValid: (await field).isValid()});
+      const field = await _field;
+      this.setState({fieldIsValid: field.isValid()});
     }
   }
 
@@ -54,13 +56,13 @@ export class FieldFeedbackWhenValid extends React.Component<FieldFeedbackWhenVal
   }
 
   render() {
-    const { className, children, ...otherProps } = this.props;
+    const { className, ...otherProps } = this.props;
     const { fieldIsValid } = this.state;
     const { form } = this.context;
 
     let classes = form.props.fieldFeedbackClassNames!.valid;
     classes = className !== undefined ? `${className} ${classes}` : classes;
 
-    return fieldIsValid ? <div {...otherProps} className={classes}>{children}</div> : null;
+    return fieldIsValid ? <div {...otherProps} className={classes} /> : null;
   }
 }

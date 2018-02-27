@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import withValidateFieldEventEmitter from './withValidateFieldEventEmitter';
-import withFieldValidatedEventEmitter from './withFieldValidatedEventEmitter';
+import withFieldWillValidateEventEmitter from './withFieldWillValidateEventEmitter';
 import withResetEventEmitter from './withResetEventEmitter';
 // @ts-ignore
 // TS6133: 'EventEmitter' is declared but its value is never read.
@@ -32,6 +32,7 @@ FormWithConstraints
     - ...
   - ...
 
+   FIXME
 FormWithConstraints contains the FieldsStore:
 {
   username: {
@@ -70,7 +71,7 @@ export class FormWithConstraintsComponent extends React.Component<FormWithConstr
 export class FormWithConstraints
   extends
     withResetEventEmitter(
-      withFieldValidatedEventEmitter(
+      withFieldWillValidateEventEmitter(
         withValidateFieldEventEmitter<
           // FieldFeedback returns FieldFeedbackValidation
           // Async returns FieldFeedbackValidation[] | undefined
@@ -127,7 +128,7 @@ export class FormWithConstraints
 
   validateField(forceValidateFields: boolean, input: Input) {
     const fieldName = input.name;
-    const field = this.fieldsStore.fields[fieldName];
+    const field = this.fieldsStore.getField(fieldName);
 
     let fieldValidation;
 
@@ -136,15 +137,13 @@ export class FormWithConstraints
       // so let's ignore this field
     }
 
-    else if (forceValidateFields || !field.validateEventEmitted) {
-      field.validateEventEmitted = true;
-
+    else if (forceValidateFields || !field.hasFeedbacks()) {
       const validations = this.emitValidateFieldEvent(input)
         .then(arrayOfArrays => _.flattenDeep<FieldFeedbackValidation | undefined>(arrayOfArrays).filter(notUndefined))
-        .then(_validations => field.validations = _validations);
+        /* FIXME Not needed? .then(_validations => field.validations = _validations)*/;
 
       fieldValidation = validations.then(_validations => new FieldValidation(fieldName, _validations));
-      this.emitFieldValidatedEvent(fieldName, fieldValidation);
+      this.emitFieldWillValidateEvent(fieldName, fieldValidation);
     }
 
     return fieldValidation;
@@ -212,7 +211,7 @@ export class FormWithConstraints
   }
 
   render() {
-    const { children, fieldFeedbackClassNames, ...formProps } = this.props;
-    return <form ref={form => this.form = form} {...formProps}>{children}</form>;
+    const { fieldFeedbackClassNames, ...otherProps } = this.props;
+    return <form ref={form => this.form = form} {...otherProps} />;
   }
 }

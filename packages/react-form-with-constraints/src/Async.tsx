@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
+import { FormWithConstraintsChildContext } from './FormWithConstraints';
 import { FieldFeedbacksChildContext } from './FieldFeedbacks';
 import withValidateFieldEventEmitter from './withValidateFieldEventEmitter';
 import withResetEventEmitter from './withResetEventEmitter';
@@ -35,7 +36,7 @@ export interface AsyncChildContext {
   async: Async<any>;
 }
 
-export type AsyncContext = FieldFeedbacksChildContext;
+export type AsyncContext = FormWithConstraintsChildContext & FieldFeedbacksChildContext;
 
 export type AsyncComponentType = AsyncComponent<any>;
 
@@ -57,6 +58,7 @@ export class Async<T> extends
                         )
                       implements React.ChildContextProvider<AsyncChildContext> {
   static contextTypes: React.ValidationMap<AsyncContext> = {
+    form: PropTypes.object.isRequired,
     fieldFeedbacks: PropTypes.object.isRequired
   };
   context!: AsyncContext;
@@ -92,19 +94,20 @@ export class Async<T> extends
   }
 
   async validate(input: Input) {
-    const { fieldFeedbacks } = this.context;
+    const { form, fieldFeedbacks } = this.context;
 
     let validations;
 
-    if (fieldFeedbacks.props.stop === 'first' && fieldFeedbacks.lastValidation.hasFeedbacks() ||
-        fieldFeedbacks.props.stop === 'first-error' && fieldFeedbacks.lastValidation.hasErrors() ||
-        fieldFeedbacks.props.stop === 'first-warning' && fieldFeedbacks.lastValidation.hasWarnings() ||
-        fieldFeedbacks.props.stop === 'first-info' && fieldFeedbacks.lastValidation.hasInfos()) {
+    const field = form.fieldsStore.getField(input.name);
+
+    if (fieldFeedbacks.props.stop === 'first' && field.hasFeedbacks() ||
+        fieldFeedbacks.props.stop === 'first-error' && field.hasErrors() ||
+        fieldFeedbacks.props.stop === 'first-warning' && field.hasWarnings() ||
+        fieldFeedbacks.props.stop === 'first-info' && field.hasInfos()) {
       // Do nothing
     }
     else {
       validations = await this._validate(input);
-      fieldFeedbacks.lastValidation.setFieldFeedbacks(validations);
     }
 
     return validations;
@@ -120,8 +123,7 @@ export class Async<T> extends
       await setStatePromise(this, {status: Status.Rejected, value: e});
     }
 
-    const validations = await this.emitValidateFieldEvent(input);
-    return validations;
+    return this.emitValidateFieldEvent(input);
   }
 
   reset() {

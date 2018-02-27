@@ -29,21 +29,21 @@ export class FormControlInput extends React.Component<FormControlInputProps, For
       field: undefined
     };
 
-    this.fieldValidated = this.fieldValidated.bind(this);
+    this.fieldWillValidate = this.fieldWillValidate.bind(this);
     this.reset = this.reset.bind(this);
   }
 
   componentWillMount() {
-    this.context.form.addFieldValidatedEventListener(this.fieldValidated);
+    this.context.form.addFieldWillValidateEventListener(this.fieldWillValidate);
     this.context.form.addResetEventListener(this.reset);
   }
 
   componentWillUnmount() {
-    this.context.form.removeFieldValidatedEventListener(this.fieldValidated);
+    this.context.form.removeFieldWillValidateEventListener(this.fieldWillValidate);
     this.context.form.removeResetEventListener(this.reset);
   }
 
-  async fieldValidated(fieldName: string, field: Promise<FieldValidation>) {
+  async fieldWillValidate(fieldName: string, field: Promise<FieldValidation>) {
     if (fieldName === this.props.name) { // Ignore the event if it's not for us
       this.setState({field: undefined});
       this.setState({field: await field});

@@ -1,7 +1,6 @@
-import { Fields, Field } from './Fields';
+import { Field } from './Fields';
 import { EventEmitter } from './EventEmitter';
-import fieldWithoutFeedback from './fieldWithoutFeedback';
-import { FieldFeedbackType } from './FieldFeedback';
+import clearArray from './clearArray';
 
 export enum FieldEvent {
   Added = 'FIELD_ADDED',
@@ -10,48 +9,37 @@ export enum FieldEvent {
 }
 
 export class FieldsStore extends EventEmitter {
-  // Why Object.create(null) instead of just {}? See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map#Objects_and_maps_compared
-  fields: Fields = Object.create(null);
+  fields = new Array<Field>();
 
   clear() {
-    // tslint:disable-next-line:forin
-    for (const fieldName in this.fields) {
-      this.updateField(fieldName, {...fieldWithoutFeedback});
-    }
+    clearArray(this.fields);
   }
 
-  private updateField(fieldName: string, field: Field) {
-    console.assert(this.fields[fieldName] !== undefined, `Unknown field '${fieldName}'`);
-    this.fields[fieldName] = field;
-    this.emit(FieldEvent.Updated, fieldName);
+  getField(fieldName: string): Readonly<Field> {
+    const fields = this.fields.filter(_field => _field.name === fieldName);
+    console.assert(fields.length === 1, `FIXME PROBLEME avec le field '${fieldName}'`);
+    return fields[0];
   }
 
   addField(fieldName: string) {
-    if (this.fields[fieldName] === undefined) { // Check if exists already
-      const newField = {...fieldWithoutFeedback};
-      this.fields[fieldName] = newField;
+    const fields = this.fields.filter(_field => _field.name === fieldName);
+    console.assert(fields.length === 0 || fields.length === 1, `FIXME PROBLEME avec le field '${fieldName}'`);
+    if (fields.length === 0) { // Check if exists already
+      const newField = new Field(fieldName, []);
+      this.fields.push(newField);
       this.emit(FieldEvent.Added, fieldName, newField);
     }
   }
 
   removeField(fieldName: string) {
-    console.assert(this.fields[fieldName] !== undefined, `Unknown field '${fieldName}'`);
-    delete this.fields[fieldName];
+    const fields = this.fields.filter(_field => _field.name === fieldName);
+    console.assert(fields.length === 1, `Unknown field '${fieldName}'`);
+    const index = this.fields.indexOf(fields[0]);
+    this.fields.splice(index, 1);
     this.emit(FieldEvent.Removed, fieldName);
   }
 
   isValid() {
-    let _isValid = true;
-
-    // tslint:disable-next-line:forin
-    for (const fieldName in this.fields) {
-      const field = this.fields[fieldName]!;
-      if (field.validations !== undefined) {
-        const hasErrors = field.validations.some(fieldFeedback => fieldFeedback.type === FieldFeedbackType.Error && fieldFeedback.show === true);
-        _isValid = !hasErrors;
-      }
-    }
-
-    return _isValid;
+    return this.fields.every(field => field.isValid());
   }
 }

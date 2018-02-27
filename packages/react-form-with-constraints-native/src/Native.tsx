@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, TextProperties as TextProps, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { TextInput } from './react-native-TextInput-fix'; // Specific to TypeScript
 
 import {
@@ -106,7 +106,7 @@ export class FormWithConstraints extends _FormWithConstraints {
 
   render() {
     // FIXME See Support for Fragments in react native instead of view https://react-native.canny.io/feature-requests/p/support-for-fragments-in-react-native-instead-of-view
-    return <View>{this.props.children}</View>;
+    return <View {...this.props as any} />;
   }
 }
 
@@ -114,14 +114,13 @@ export class FormWithConstraints extends _FormWithConstraints {
 // FIXME See Support for Fragments in react native instead of view https://react-native.canny.io/feature-requests/p/support-for-fragments-in-react-native-instead-of-view
 export class FieldFeedbacks extends _FieldFeedbacks {
   render() {
-    return <View>{this.props.children}</View>;
+    return <View {...this.props as any} />;
   }
 }
 
 
 class FieldFeedbackWhenValid extends _FieldFeedbackWhenValid {
   render() {
-    const { children, ...textProps } = this.props;
     const { fieldIsValid } = this.state;
     const { form } = this.context;
                       // React Native implementation needs to access props thus the cast
@@ -130,7 +129,7 @@ class FieldFeedbackWhenValid extends _FieldFeedbackWhenValid {
     const className = form.props.fieldFeedbackClassNames!.valid;
     const tmp = style !== undefined ? style[className] : undefined;
 
-    return fieldIsValid ? <Text style={tmp} {...textProps as TextProps}>{children}</Text> : null;
+    return fieldIsValid ? <Text style={tmp} {...this.props} /> : null;
   }
 }
 
@@ -143,7 +142,7 @@ export class FieldFeedback extends _FieldFeedback {
 
     // Special case for when="valid"
     if (when === 'valid') {
-      return <FieldFeedbackWhenValid>{children}</FieldFeedbackWhenValid>;
+      return <FieldFeedbackWhenValid data-feedback={this.key} {...textProps}>{children}</FieldFeedbackWhenValid>;
     }
 
     const className = this.className();
@@ -153,7 +152,7 @@ export class FieldFeedback extends _FieldFeedback {
       const tmp = style !== undefined ? style[className] : undefined;
 
       // The last style property is the one applied
-      feedback = children !== undefined ? <Text style={tmp} {...textProps as TextProps}>{children}</Text> : null;
+      feedback = children !== undefined ? <Text style={tmp} {...textProps}>{children}</Text> : null;
     }
 
     return feedback;
