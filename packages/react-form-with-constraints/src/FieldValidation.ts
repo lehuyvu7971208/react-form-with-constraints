@@ -11,6 +11,14 @@ export class FieldValidation {
     return this.validations.some(fieldFeedback => fieldFeedback.type === FieldFeedbackType.Warning && fieldFeedback.show === true);
   }
 
+  hasInfos() {
+    return this.validations.some(fieldFeedback => fieldFeedback.type === FieldFeedbackType.Info && fieldFeedback.show === true);
+  }
+
+  hasFeedbacks() {
+    return this.hasErrors() || this.hasWarnings() || this.hasInfos();
+  }
+
   isValid() {
     return !this.hasErrors();
   }
