@@ -5,7 +5,7 @@ import { FormWithConstraintsChildContext } from './FormWithConstraints';
 import { FieldFeedbacksChildContext } from './FieldFeedbacks';
 import { AsyncChildContext } from './Async';
 import Input from './Input';
-import { FieldFeedbackValidation } from './FieldValidation';
+import FieldFeedbackValidation from './FieldFeedbackValidation';
 import { FieldFeedbackWhenValid } from './FieldFeedbackWhenValid';
 
 export enum FieldFeedbackType {
@@ -93,25 +93,15 @@ export class FieldFeedback extends React.Component<FieldFeedbackProps, FieldFeed
   }
 
   componentWillMount() {
-    if (this.context.async) {
-      this.context.async.addValidateFieldEventListener(this.validate);
-      this.context.async.addResetEventListener(this.reset);
-    }
-    else {
-      this.context.fieldFeedbacks.addValidateFieldEventListener(this.validate);
-      this.context.fieldFeedbacks.addResetEventListener(this.reset);
-    }
+    if (this.context.async) this.context.async.addValidateFieldEventListener(this.validate);
+    else this.context.fieldFeedbacks.addValidateFieldEventListener(this.validate);
+    this.context.fieldFeedbacks.addResetEventListener(this.reset);
   }
 
   componentWillUnmount() {
-    if (this.context.async) {
-      this.context.async.removeValidateFieldEventListener(this.validate);
-      this.context.async.removeResetEventListener(this.reset);
-    }
-    else {
-      this.context.fieldFeedbacks.removeValidateFieldEventListener(this.validate);
-      this.context.fieldFeedbacks.removeResetEventListener(this.reset);
-    }
+    if (this.context.async) this.context.async.removeValidateFieldEventListener(this.validate);
+    else this.context.fieldFeedbacks.removeValidateFieldEventListener(this.validate);
+    this.context.fieldFeedbacks.removeResetEventListener(this.reset);
   }
 
   async validate(input: Input) {
@@ -122,10 +112,10 @@ export class FieldFeedback extends React.Component<FieldFeedbackProps, FieldFeed
 
     const validation = {...this.state.validation}; // Copy state so we don't modify it directly (use of setState() instead)
 
-    if (fieldFeedbacks.props.stop === 'first' && field.hasFeedbacks() ||
-        fieldFeedbacks.props.stop === 'first-error' && field.hasErrors() ||
-        fieldFeedbacks.props.stop === 'first-warning' && field.hasWarnings() ||
-        fieldFeedbacks.props.stop === 'first-info' && field.hasInfos()) {
+    if (fieldFeedbacks.props.stop === 'first' && field.hasFeedbacks(this.key) ||
+        fieldFeedbacks.props.stop === 'first-error' && field.hasErrors(this.key) ||
+        fieldFeedbacks.props.stop === 'first-warning' && field.hasWarnings(this.key) ||
+        fieldFeedbacks.props.stop === 'first-info' && field.hasInfos(this.key)) {
       // Do nothing
       validation.show = undefined; // undefined means the FieldFeedback was not checked
     }
@@ -168,9 +158,9 @@ export class FieldFeedback extends React.Component<FieldFeedbackProps, FieldFeed
       else {
         throw new TypeError(`Invalid FieldFeedback 'when' type: ${typeof when}`);
       }
-
-      field.addValidation(validation);
     }
+
+    field.addOrReplaceValidation(validation);
 
     this.setState({
       validation,

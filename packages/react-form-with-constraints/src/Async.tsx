@@ -4,14 +4,12 @@ import PropTypes from 'prop-types';
 import { FormWithConstraintsChildContext } from './FormWithConstraints';
 import { FieldFeedbacksChildContext } from './FieldFeedbacks';
 import withValidateFieldEventEmitter from './withValidateFieldEventEmitter';
-import withResetEventEmitter from './withResetEventEmitter';
 // @ts-ignore
 // TS6133: 'EventEmitter' is declared but its value is never read.
 // FIXME See https://github.com/Microsoft/TypeScript/issues/9944#issuecomment-309903027
 import { EventEmitter } from './EventEmitter';
-import { FieldFeedbackValidation } from './FieldValidation';
+import FieldFeedbackValidation from './FieldFeedbackValidation';
 import Input from './Input';
-import setStatePromise from './setStatePromise';
 
 export enum Status {
   None,
@@ -47,14 +45,12 @@ export type AsyncComponentType = AsyncComponent<any>;
 // Cannot be inside a separated npm package since FieldFeedback needs to attach itself to Async
 export class AsyncComponent<T = any> extends React.Component<AsyncProps<T>, AsyncState<T>> {}
 export class Async<T> extends
-                        withResetEventEmitter(
-                          withValidateFieldEventEmitter<
-                            // FieldFeedback returns FieldFeedbackValidation
-                            FieldFeedbackValidation,
-                            typeof AsyncComponent
-                          >(
-                            AsyncComponent
-                          )
+                        withValidateFieldEventEmitter<
+                          // FieldFeedback returns FieldFeedbackValidation
+                          FieldFeedbackValidation,
+                          typeof AsyncComponent
+                        >(
+                          AsyncComponent
                         )
                       implements React.ChildContextProvider<AsyncChildContext> {
   static contextTypes: React.ValidationMap<AsyncContext> = {
@@ -80,20 +76,17 @@ export class Async<T> extends
     };
 
     this.validate = this.validate.bind(this);
-    this.reset = this.reset.bind(this);
   }
 
   componentWillMount() {
     this.context.fieldFeedbacks.addValidateFieldEventListener(this.validate);
-    this.context.fieldFeedbacks.addResetEventListener(this.reset);
   }
 
   componentWillUnmount() {
     this.context.fieldFeedbacks.removeValidateFieldEventListener(this.validate);
-    this.context.fieldFeedbacks.removeResetEventListener(this.reset);
   }
 
-  async validate(input: Input) {
+  validate(input: Input) {
     const { form, fieldFeedbacks } = this.context;
 
     let validations;
@@ -107,7 +100,7 @@ export class Async<T> extends
       // Do nothing
     }
     else {
-      validations = await this._validate(input);
+      validations = this._validate(input);
     }
 
     return validations;
@@ -115,19 +108,14 @@ export class Async<T> extends
 
   async _validate(input: Input) {
     this.setState({status: Status.Pending});
-
-    const value = await this.props.promise(input.value);
     try {
-      await setStatePromise(this, {status: Status.Resolved, value});
+      const value = await this.props.promise(input.value);
+      this.setState({status: Status.Resolved, value});
     } catch (e) {
-      await setStatePromise(this, {status: Status.Rejected, value: e});
+      this.setState({status: Status.Rejected, value: e});
     }
 
     return this.emitValidateFieldEvent(input);
-  }
-
-  reset() {
-    this.emitResetEvent();
   }
 
   render() {

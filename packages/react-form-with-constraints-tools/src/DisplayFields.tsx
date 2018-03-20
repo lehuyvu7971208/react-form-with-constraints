@@ -21,31 +21,29 @@ export class DisplayFields extends React.Component<DisplayFieldsProps> {
   constructor(props: DisplayFieldsProps) {
     super(props);
 
-    this.fieldAdded = this.fieldAdded.bind(this);
-    this.fieldRemoved = this.fieldRemoved.bind(this);
+    this.reRender = this.reRender.bind(this);
   }
 
   componentWillMount() {
-    this.context.form.fieldsStore.addListener(FieldEvent.Added, this.fieldAdded);
-    this.context.form.fieldsStore.addListener(FieldEvent.Removed, this.fieldRemoved);
+    this.context.form.fieldsStore.addListener(FieldEvent.Added, this.reRender);
+    this.context.form.fieldsStore.addListener(FieldEvent.Removed, this.reRender);
+    this.context.form.addFieldWillValidateEventListener(this.reRender);
+    this.context.form.addFieldDidValidateEventListener(this.reRender);
   }
 
   componentWillUnmount() {
-    this.context.form.fieldsStore.removeListener(FieldEvent.Added, this.fieldAdded);
-    this.context.form.fieldsStore.removeListener(FieldEvent.Removed, this.fieldRemoved);
+    this.context.form.fieldsStore.removeListener(FieldEvent.Added, this.reRender);
+    this.context.form.fieldsStore.removeListener(FieldEvent.Removed, this.reRender);
+    this.context.form.removeFieldWillValidateEventListener(this.reRender);
+    this.context.form.removeFieldDidValidateEventListener(this.reRender);
   }
 
-  fieldAdded() {
-    //this.forceUpdate();
-  }
-
-  fieldRemoved() {
-    //this.forceUpdate();
+  reRender() {
+    this.forceUpdate();
   }
 
   render() {
     let str = stringifyWithUndefinedAndWithoutPropertyQuotes(this.context.form.fieldsStore, 2);
-    //let str = JSON.stringify(this.context.form.fieldsStore, null, 2);
 
     // Cosmetic: improve formatting
     //
@@ -58,7 +56,6 @@ export class DisplayFields extends React.Component<DisplayFieldsProps> {
     // with this:
     // { key: "1.0", type: "error", show: true }
     str = str.replace(/{\s+key: (.*),\s+type: (.*),\s+show: (.*)\s+}/g, '{ key: $1, type: $2, show: $3 }');
-    //str = str + '1';
 
     return <pre style={{fontSize: 'small'}}>react-form-with-constraints = {str}</pre>;
   }

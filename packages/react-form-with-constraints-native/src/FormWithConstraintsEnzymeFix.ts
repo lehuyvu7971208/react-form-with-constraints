@@ -3,7 +3,7 @@ import { FormWithConstraintsProps } from 'react-form-with-constraints';
 import { FormWithConstraints } from './index';
 
 // See https://github.com/airbnb/enzyme/issues/384#issuecomment-363830335
-function new_FormWithConstraints(props: FormWithConstraintsProps) {
+export default function new_FormWithConstraints(props: FormWithConstraintsProps) {
   const defaultProps = {
     fieldFeedbackClassNames: {
       error: 'error',
@@ -14,5 +14,3 @@ function new_FormWithConstraints(props: FormWithConstraintsProps) {
   };
   return new FormWithConstraints({...defaultProps, ...props});
 }
-
-export default new_FormWithConstraints;

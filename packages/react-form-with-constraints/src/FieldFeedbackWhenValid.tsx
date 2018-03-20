@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 import { FormWithConstraintsChildContext } from './FormWithConstraints';
 import { FieldFeedbacksChildContext } from './FieldFeedbacks';
-import { FieldValidation } from './FieldValidation';
+import Field from './Field';
 
 export interface FieldFeedbackWhenValidProps extends React.HTMLAttributes<HTMLDivElement> {
 }
@@ -30,23 +30,30 @@ export class FieldFeedbackWhenValid extends React.Component<FieldFeedbackWhenVal
     };
 
     this.fieldWillValidate = this.fieldWillValidate.bind(this);
+    this.fieldDidValidate = this.fieldDidValidate.bind(this);
     this.reset = this.reset.bind(this);
   }
 
   componentWillMount() {
     this.context.form.addFieldWillValidateEventListener(this.fieldWillValidate);
+    this.context.form.addFieldDidValidateEventListener(this.fieldDidValidate);
     this.context.form.addResetEventListener(this.reset);
   }
 
   componentWillUnmount() {
     this.context.form.removeFieldWillValidateEventListener(this.fieldWillValidate);
+    this.context.form.removeFieldDidValidateEventListener(this.fieldDidValidate);
     this.context.form.removeResetEventListener(this.reset);
   }
 
-  async fieldWillValidate(fieldName: string, _field: Promise<FieldValidation>) {
+  fieldWillValidate(fieldName: string) {
     if (fieldName === this.context.fieldFeedbacks.fieldName) { // Ignore the event if it's not for us
       this.setState({fieldIsValid: undefined});
-      const field = await _field;
+    }
+  }
+
+  fieldDidValidate(fieldName: string, field: Field) {
+    if (fieldName === this.context.fieldFeedbacks.fieldName) { // Ignore the event if it's not for us
       this.setState({fieldIsValid: field.isValid()});
     }
   }

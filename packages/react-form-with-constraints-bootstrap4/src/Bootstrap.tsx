@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 import {
   FormWithConstraints as _FormWithConstraints, FormWithConstraintsProps, FormWithConstraintsChildContext,
-  FieldValidation
+  Field
 } from 'react-form-with-constraints';
 
 export interface FormControlInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -11,7 +11,7 @@ export interface FormControlInputProps extends React.InputHTMLAttributes<HTMLInp
 }
 
 export interface FormControlInputState {
-  field: FieldValidation | undefined; /* undefined means pending + do not show anything */
+  field: Field | undefined;
 }
 
 export type FormControlInputContext = FormWithConstraintsChildContext;
@@ -30,23 +30,31 @@ export class FormControlInput extends React.Component<FormControlInputProps, For
     };
 
     this.fieldWillValidate = this.fieldWillValidate.bind(this);
+    this.fieldDidValidate = this.fieldDidValidate.bind(this);
     this.reset = this.reset.bind(this);
   }
 
   componentWillMount() {
     this.context.form.addFieldWillValidateEventListener(this.fieldWillValidate);
+    this.context.form.addFieldDidValidateEventListener(this.fieldDidValidate);
     this.context.form.addResetEventListener(this.reset);
   }
 
   componentWillUnmount() {
     this.context.form.removeFieldWillValidateEventListener(this.fieldWillValidate);
+    this.context.form.removeFieldDidValidateEventListener(this.fieldDidValidate);
     this.context.form.removeResetEventListener(this.reset);
   }
 
-  async fieldWillValidate(fieldName: string, field: Promise<FieldValidation>) {
+  fieldWillValidate(fieldName: string) {
     if (fieldName === this.props.name) { // Ignore the event if it's not for us
       this.setState({field: undefined});
-      this.setState({field: await field});
+    }
+  }
+
+  fieldDidValidate(fieldName: string, field: Field) {
+    if (fieldName === this.props.name) { // Ignore the event if it's not for us
+      this.setState({field});
     }
   }
 

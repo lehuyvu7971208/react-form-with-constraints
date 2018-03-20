@@ -1,4 +1,4 @@
-import { Field } from './Fields';
+import Field from './Field';
 import { EventEmitter } from './EventEmitter';
 import clearArray from './clearArray';
 
@@ -25,7 +25,7 @@ export class FieldsStore extends EventEmitter {
     const fields = this.fields.filter(_field => _field.name === fieldName);
     console.assert(fields.length === 0 || fields.length === 1, `FIXME PROBLEME avec le field '${fieldName}'`);
     if (fields.length === 0) { // Check if exists already
-      const newField = new Field(fieldName, []);
+      const newField = new Field(fieldName);
       this.fields.push(newField);
       this.emit(FieldEvent.Added, fieldName, newField);
     }

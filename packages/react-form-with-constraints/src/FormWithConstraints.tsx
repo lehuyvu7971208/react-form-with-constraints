@@ -3,14 +3,19 @@ import PropTypes from 'prop-types';
 
 import withValidateFieldEventEmitter from './withValidateFieldEventEmitter';
 import withFieldWillValidateEventEmitter from './withFieldWillValidateEventEmitter';
+import withFieldDidValidateEventEmitter from './withFieldDidValidateEventEmitter';
 import withResetEventEmitter from './withResetEventEmitter';
 // @ts-ignore
 // TS6133: 'EventEmitter' is declared but its value is never read.
 // FIXME See https://github.com/Microsoft/TypeScript/issues/9944#issuecomment-309903027
 import { EventEmitter } from './EventEmitter';
+// @ts-ignore
+// TS6133: 'Field' is declared but its value is never read.
+// FIXME See https://github.com/Microsoft/TypeScript/issues/9944#issuecomment-309903027
+import Field from './Field';
 import Input from './Input';
 import { FieldsStore } from './FieldsStore';
-import { FieldValidation, FieldFeedbackValidation } from './FieldValidation';
+import FieldFeedbackValidation from './FieldFeedbackValidation';
 //import flattenDeep from './flattenDeep';
 import * as _ from 'lodash';
 import notUndefined from './notUndefined';
@@ -72,14 +77,16 @@ export class FormWithConstraints
   extends
     withResetEventEmitter(
       withFieldWillValidateEventEmitter(
-        withValidateFieldEventEmitter<
-          // FieldFeedback returns FieldFeedbackValidation
-          // Async returns FieldFeedbackValidation[] | undefined
-          // FieldFeedbacks returns (FieldFeedbackValidation | undefined)[] | undefined
-          FieldFeedbackValidation | (FieldFeedbackValidation | undefined)[] | undefined,
-          typeof FormWithConstraintsComponent
-        >(
-          FormWithConstraintsComponent
+        withFieldDidValidateEventEmitter(
+          withValidateFieldEventEmitter<
+            // FieldFeedback returns FieldFeedbackValidation
+            // Async returns FieldFeedbackValidation[] | undefined
+            // FieldFeedbacks returns (FieldFeedbackValidation | undefined)[] | undefined
+            FieldFeedbackValidation | (FieldFeedbackValidation | undefined)[] | undefined,
+            typeof FormWithConstraintsComponent
+          >(
+            FormWithConstraintsComponent
+          )
         )
       )
     )
@@ -126,11 +133,9 @@ export class FormWithConstraints
     return this._validateFields(false /* forceValidateFields */);
   }
 
-  validateField(forceValidateFields: boolean, input: Input) {
+  async validateField(forceValidateFields: boolean, input: Input) {
     const fieldName = input.name;
     const field = this.fieldsStore.getField(fieldName);
-
-    let fieldValidation;
 
     if (field === undefined) {
       // Means the field (<input name="username">) does not have a FieldFeedbacks
@@ -138,19 +143,28 @@ export class FormWithConstraints
     }
 
     else if (forceValidateFields || !field.hasFeedbacks()) {
-      const validations = this.emitValidateFieldEvent(input)
-        .then(arrayOfArrays => _.flattenDeep<FieldFeedbackValidation | undefined>(arrayOfArrays).filter(notUndefined))
-        /* FIXME Not needed? .then(_validations => field.validations = _validations)*/;
+      this.emitFieldWillValidateEvent(fieldName);
 
-      fieldValidation = validations.then(_validations => new FieldValidation(fieldName, _validations));
-      this.emitFieldWillValidateEvent(fieldName, fieldValidation);
+      const arrayOfArrays = await this.emitValidateFieldEvent(input);
+      // Internal check that everything is OK
+      // Can be temporary out of sync if the user rapidly change the input, in this case:
+      // emitFieldWillValidateEvent() returns the result the first change while the store already contains the final validations
+      const validations = _.flattenDeep<FieldFeedbackValidation | undefined>(arrayOfArrays).filter(notUndefined);
+      const validationsFromEmitValidateFieldEvent = JSON.stringify(validations);
+      const validationsFromStore = JSON.stringify(field.validations);
+      console.assert(
+        validationsFromEmitValidateFieldEvent === validationsFromStore,
+        `The store '${validationsFromStore}' does not match emitValidateFieldEvent() result '${validationsFromEmitValidateFieldEvent}'`
+      );
+
+      this.emitFieldDidValidateEvent(fieldName, field);
     }
 
-    return fieldValidation;
+    return field;
   }
 
   private async _validateFields(forceValidateFields: boolean, ...inputsOrNames: Array<Input | string>) {
-    const fields = new Array<FieldValidation>();
+    const fields = new Array<Readonly<Field>>();
 
     const inputs = this.normalizeInputs(...inputsOrNames);
     for (const input of inputs) {

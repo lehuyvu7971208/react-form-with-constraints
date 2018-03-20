@@ -7,7 +7,7 @@ import {
   FieldFeedback as _FieldFeedback,
   FieldFeedbackWhenValid as _FieldFeedbackWhenValid,
   FieldFeedbacks as _FieldFeedbacks,
-  FieldValidation
+  Field
 } from 'react-form-with-constraints';
 
 // Recursive React.Children.forEach()
@@ -38,12 +38,12 @@ export class FormWithConstraints extends _FormWithConstraints {
     return this._validateFields(true /* forceValidateFields */, ...inputsOrNames);
   }
 
-  private _validateFields(forceValidateFields: boolean, ...inputsOrNames: Array<TextInput | string>) {
-    const fieldValidationPromises = new Array<Promise<FieldValidation>>();
+  private async _validateFields(forceValidateFields: boolean, ...inputsOrNames: Array<TextInput | string>) {
+    const fields = new Array<Readonly<Field>>();
 
     const inputs = this.normalizeInputs(...inputsOrNames);
 
-    inputs.forEach(input => {
+    for (const input of inputs) {
       const fieldName = input.props.name;
 
       const _input = {
@@ -54,11 +54,11 @@ export class FormWithConstraints extends _FormWithConstraints {
         validationMessage: undefined as any
       };
 
-      const fieldValidationPromise = this.validateField(forceValidateFields, _input);
-      if (fieldValidationPromise !== undefined) fieldValidationPromises.push(fieldValidationPromise);
-    });
+      const field = await this.validateField(forceValidateFields, _input);
+      if (field !== undefined) fields.push(field);
+    }
 
-    return Promise.all(fieldValidationPromises);
+    return fields;
   }
 
   // If called without arguments, returns all fields

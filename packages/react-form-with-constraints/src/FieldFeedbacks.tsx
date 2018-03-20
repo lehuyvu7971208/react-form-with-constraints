@@ -9,7 +9,7 @@ import withResetEventEmitter from './withResetEventEmitter';
 // FIXME See https://github.com/Microsoft/TypeScript/issues/9944#issuecomment-309903027
 import { EventEmitter } from './EventEmitter';
 import Input from './Input';
-import { FieldFeedbackValidation } from './FieldValidation';
+import FieldFeedbackValidation from './FieldFeedbackValidation';
 //import flattenDeep from './flattenDeep';
 import * as _ from 'lodash';
 //import notUndefined from './notUndefined';
