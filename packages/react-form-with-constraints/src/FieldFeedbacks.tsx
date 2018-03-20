@@ -135,7 +135,6 @@ export class FieldFeedbacks extends
         // Do nothing
       }
       else {
-        field.clear();
         validations = await this._validate(input);
       }
     }

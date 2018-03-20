@@ -143,12 +143,14 @@ export class FormWithConstraints
     }
 
     else if (forceValidateFields || !field.hasFeedbacks()) {
+      field.clear();
+
       this.emitFieldWillValidateEvent(fieldName);
 
       const arrayOfArrays = await this.emitValidateFieldEvent(input);
       // Internal check that everything is OK
       // Can be temporary out of sync if the user rapidly change the input, in this case:
-      // emitFieldWillValidateEvent() returns the result the first change while the store already contains the final validations
+      // emitFieldWillValidateEvent() returns the result of the first change while the store already contains the final validations
       const validations = _.flattenDeep<FieldFeedbackValidation | undefined>(arrayOfArrays).filter(notUndefined);
       const validationsFromEmitValidateFieldEvent = JSON.stringify(validations);
       const validationsFromStore = JSON.stringify(field.validations);
