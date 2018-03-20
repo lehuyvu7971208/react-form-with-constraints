@@ -16,8 +16,7 @@ import Field from './Field';
 import Input from './Input';
 import { FieldsStore } from './FieldsStore';
 import FieldFeedbackValidation from './FieldFeedbackValidation';
-//import flattenDeep from './flattenDeep';
-import * as _ from 'lodash';
+import flattenDeep from './flattenDeep';
 import notUndefined from './notUndefined';
 
 // See Form data validation https://developer.mozilla.org/en-US/docs/Learn/HTML/Forms/Form_validation
@@ -151,7 +150,7 @@ export class FormWithConstraints
       // Internal check that everything is OK
       // Can be temporary out of sync if the user rapidly change the input, in this case:
       // emitFieldWillValidateEvent() returns the result of the first change while the store already contains the final validations
-      const validations = _.flattenDeep<FieldFeedbackValidation | undefined>(arrayOfArrays).filter(notUndefined);
+      const validations = flattenDeep<FieldFeedbackValidation | undefined>(arrayOfArrays).filter(notUndefined);
       const validationsFromEmitValidateFieldEvent = JSON.stringify(validations);
       const validationsFromStore = JSON.stringify(field.validations);
       console.assert(

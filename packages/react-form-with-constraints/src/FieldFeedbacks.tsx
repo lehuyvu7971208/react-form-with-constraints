@@ -10,9 +10,7 @@ import withResetEventEmitter from './withResetEventEmitter';
 import { EventEmitter } from './EventEmitter';
 import Input from './Input';
 import FieldFeedbackValidation from './FieldFeedbackValidation';
-//import flattenDeep from './flattenDeep';
-import * as _ from 'lodash';
-//import notUndefined from './notUndefined';
+import flattenDeep from './flattenDeep';
 
 export interface FieldFeedbacksProps {
   for?: string;
@@ -146,7 +144,7 @@ export class FieldFeedbacks extends
     let validations;
 
     const arrayOfArrays = await this.emitValidateFieldEvent(input);
-    validations = _.flattenDeep<FieldFeedbackValidation | undefined>(arrayOfArrays)/*FIXME .filter(notUndefined)*/;
+    validations = flattenDeep<FieldFeedbackValidation | undefined>(arrayOfArrays);
 
     return validations;
   }
