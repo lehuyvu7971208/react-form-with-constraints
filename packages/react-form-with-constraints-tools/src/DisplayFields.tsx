@@ -43,7 +43,7 @@ export class DisplayFields extends React.Component<DisplayFieldsProps> {
   }
 
   render() {
-    let str = stringifyWithUndefinedAndWithoutPropertyQuotes(this.context.form.fieldsStore, 2);
+    let str = stringifyWithUndefinedAndWithoutPropertyQuotes(this.context.form.fieldsStore.fields, 2);
 
     // Cosmetic: improve formatting
     //
@@ -90,8 +90,8 @@ export class FieldFeedbacks extends _FieldFeedbacks {
 }
 
 export class FieldFeedback extends _FieldFeedback {
-  render() {
-    const { key, type, show } = this.state.validation;
+  private getTextDecoration() {
+    const { type, show } = this.state.validation;
 
     let textDecoration = '';
     switch (show) {
@@ -99,46 +99,77 @@ export class FieldFeedback extends _FieldFeedback {
         textDecoration = 'line-through';
         break;
       case undefined:
-        if (type !== FieldFeedbackType.WhenValid) {
-          textDecoration = 'line-through dotted';
+        textDecoration = 'line-through dotted';
+        if (type === FieldFeedbackType.WhenValid) {
+          textDecoration = 'line-through';
         }
         break;
     }
 
+    return textDecoration;
+  }
+
+  render() {
+    const { key, type } = this.state.validation;
+
     return (
       <li>
-        <span style={{textDecoration}}>key="{key}" type="{type}"</span>{' '}
+        <span style={{textDecoration: this.getTextDecoration()}}>key="{key}" type="{type}"</span>{' '}
         {super.render()}
       </li>
     );
   }
 
   componentDidUpdate() {
+    const el = ReactDOM.findDOMNode(this) as HTMLLIElement;
+
     // Hack: make FieldFeedback div 'display: inline' because FieldFeedback is prefixed with a <span>
     // and we want both on the same line.
     // Also make Bootstrap 4 happy because it sets 'display: none', see https://github.com/twbs/bootstrap/blob/v4.0.0/scss/mixins/_forms.scss#L31
     // => d'une pierre, deux coups :-)
-    const rootDiv = ReactDOM.findDOMNode(this);
-    const fieldFeedbackDivs = rootDiv.querySelectorAll('[data-feedback]');
+    const fieldFeedbackDivs = el.querySelectorAll<HTMLDivElement>('[data-feedback]');
     for (const fieldFeedbackDiv of fieldFeedbackDivs) {
-      (fieldFeedbackDiv as HTMLDivElement).style.display = 'inline';
+      fieldFeedbackDiv.style.display = 'inline';
+    }
+
+    // Change Async parent style if any
+    const li = el.closest('li.async');
+    if (li !== null) {
+      const async = li.querySelector<HTMLSpanElement>('span[style]');
+      async!.style.textDecoration = this.getTextDecoration();
+    }
+
+    // Change whenValid style if any
+    const { type } = this.state.validation;
+    if (type === FieldFeedbackType.WhenValid) {
+      const span = el.querySelector<HTMLSpanElement>('span[style]');
+      const whenValid = el.querySelector<HTMLSpanElement>('div.valid-feedback');
+      span!.style.textDecoration = whenValid !== null ? '' : this.getTextDecoration();
     }
   }
 }
 
 export class Async<T> extends _Async<T> {
-  render() {
-    const style = {
-      textDecoration: 'line-through dotted'
-    };
+  private getTextDecoration() {
+    return 'line-through dotted';
+  }
 
+  render() {
     return (
-      <li>
-        <span style={style}>Async</span>
+      <li className="async">
+        <span style={{textDecoration: this.getTextDecoration()}}>Async</span>
         <ul>
           {super.render()}
         </ul>
       </li>
     );
+  }
+
+  componentWillUpdate() {
+    const el = ReactDOM.findDOMNode(this) as HTMLLIElement;
+
+    // Reset style
+    const async = el.querySelector<HTMLSpanElement>('span[style]');
+    async!.style.textDecoration = this.getTextDecoration();
   }
 }
