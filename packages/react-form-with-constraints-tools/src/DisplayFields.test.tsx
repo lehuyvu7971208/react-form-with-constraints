@@ -56,14 +56,14 @@ describe('render()', () => {
     );
 
     expect(wrapper.text()).toEqual(
-`react-form-with-constraints = {
+`Fields = {
   username: {
     validateEventEmitted: false
   }
 }`);
 
     expect(wrapper.html()).toEqual(
-`<pre style="font-size:small">react-form-with-constraints = {
+`<pre style="font-size:small">Fields = {
   username: {
     validateEventEmitted: false
   }
@@ -82,7 +82,7 @@ describe('render()', () => {
     wrapper.update();
 
     expect(wrapper.text()).toEqual(
-`react-form-with-constraints = {
+`Fields = {
   username: {
     validateEventEmitted: false
   },
@@ -102,7 +102,7 @@ describe('render()', () => {
 
     wrapper.update();
 
-    expect(wrapper.text()).toEqual('react-form-with-constraints = {}');
+    expect(wrapper.text()).toEqual('Fields = {}');
   });
 
   test('fieldValidated()', () => {
@@ -117,7 +117,7 @@ describe('render()', () => {
     wrapper.update();
 
     expect(wrapper.text()).toEqual(
-`react-form-with-constraints = {
+`Fields = {
   username: {
     validateEventEmitted: false
   },
@@ -138,7 +138,7 @@ describe('render()', () => {
     wrapper.update();
 
     expect(wrapper.text()).toEqual(
-`react-form-with-constraints = {
+`Fields = {
   username: {
     validateEventEmitted: false
   }

@@ -14,7 +14,6 @@ export interface FieldFeedbackWhenValidState {
 
 export type FieldFeedbackWhenValidContext = FormWithConstraintsChildContext & FieldFeedbacksChildContext;
 
-// FIXME AsynWithFormValidity?
 export class FieldFeedbackWhenValid extends React.Component<FieldFeedbackWhenValidProps, FieldFeedbackWhenValidState> {
   static contextTypes: React.ValidationMap<FieldFeedbackWhenValidContext> = {
     form: PropTypes.object.isRequired,

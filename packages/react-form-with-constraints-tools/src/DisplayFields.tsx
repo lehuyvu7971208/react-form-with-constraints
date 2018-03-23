@@ -57,7 +57,7 @@ export class DisplayFields extends React.Component<DisplayFieldsProps> {
     // { key: "1.0", type: "error", show: true }
     str = str.replace(/{\s+key: (.*),\s+type: (.*),\s+show: (.*)\s+}/g, '{ key: $1, type: $2, show: $3 }');
 
-    return <pre style={{fontSize: 'small'}}>react-form-with-constraints = {str}</pre>;
+    return <pre style={{fontSize: 'small'}}>Fields = {str}</pre>;
   }
 }
 
@@ -91,7 +91,7 @@ export class FieldFeedbacks extends _FieldFeedbacks {
 
 export class FieldFeedback extends _FieldFeedback {
   private getTextDecoration() {
-    const { type, show } = this.state.validation;
+    const { show } = this.state.validation;
 
     let textDecoration = '';
     switch (show) {
@@ -100,9 +100,6 @@ export class FieldFeedback extends _FieldFeedback {
         break;
       case undefined:
         textDecoration = 'line-through dotted';
-        if (type === FieldFeedbackType.WhenValid) {
-          textDecoration = 'line-through';
-        }
         break;
     }
 
@@ -132,19 +129,19 @@ export class FieldFeedback extends _FieldFeedback {
       fieldFeedbackDiv.style.display = 'inline';
     }
 
-    // Change Async parent style if any
+    // Change Async parent style
     const li = el.closest('li.async');
     if (li !== null) {
       const async = li.querySelector<HTMLSpanElement>('span[style]');
       async!.style.textDecoration = this.getTextDecoration();
     }
 
-    // Change whenValid style if any
+    // Change whenValid style
     const { type } = this.state.validation;
     if (type === FieldFeedbackType.WhenValid) {
       const span = el.querySelector<HTMLSpanElement>('span[style]');
-      const whenValid = el.querySelector<HTMLSpanElement>('div.valid-feedback');
-      span!.style.textDecoration = whenValid !== null ? '' : this.getTextDecoration();
+      const whenValid = el.querySelector<HTMLSpanElement>(`div.${this.context.form.props.fieldFeedbackClassNames!.valid}`);
+      span!.style.textDecoration = whenValid !== null ? '' : 'line-through';
     }
   }
 }
@@ -152,6 +149,14 @@ export class FieldFeedback extends _FieldFeedback {
 export class Async<T> extends _Async<T> {
   private getTextDecoration() {
     return 'line-through dotted';
+  }
+
+  componentWillUpdate() {
+    const el = ReactDOM.findDOMNode(this) as HTMLLIElement;
+
+    // Reset style
+    const async = el.querySelector<HTMLSpanElement>('span[style]');
+    async!.style.textDecoration = this.getTextDecoration();
   }
 
   render() {
@@ -163,13 +168,5 @@ export class Async<T> extends _Async<T> {
         </ul>
       </li>
     );
-  }
-
-  componentWillUpdate() {
-    const el = ReactDOM.findDOMNode(this) as HTMLLIElement;
-
-    // Reset style
-    const async = el.querySelector<HTMLSpanElement>('span[style]');
-    async!.style.textDecoration = this.getTextDecoration();
   }
 }
