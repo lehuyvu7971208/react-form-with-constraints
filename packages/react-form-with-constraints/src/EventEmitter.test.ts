@@ -1,15 +1,9 @@
 import { EventEmitter } from './index';
+import clearArray from './clearArray';
 
 // See How to convert a plain object into an ES6 Map? https://stackoverflow.com/questions/36644438
 function toMap(object: object) {
   return new Map(Object.entries(object));
-}
-
-// See How do I empty an array in JavaScript? https://stackoverflow.com/a/17306971/990356
-function clearArray(array: any[]) {
-  while (array.length) {
-    array.pop();
-  }
 }
 
 test('addListener', () => {

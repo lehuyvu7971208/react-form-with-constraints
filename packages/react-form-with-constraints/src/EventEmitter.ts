@@ -6,7 +6,7 @@ export type Args = any[];
 export type Listener<ListenerReturnType = void> = (...args: Args) => ListenerReturnType | Promise<ListenerReturnType>;
 
 export class EventEmitter<ListenerReturnType = void> {
-  private listeners = new Map<string, Listener<ListenerReturnType>[]>();
+  listeners = new Map<string, Listener<ListenerReturnType>[]>();
 
   async emit(eventName: string, ...args: Args) {
     const listeners = this.listeners.get(eventName)!;
