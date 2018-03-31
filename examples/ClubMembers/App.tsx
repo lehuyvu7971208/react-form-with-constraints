@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { useStrict, observable, action, computed } from 'mobx';
+import { configure, observable, action, computed } from 'mobx';
 import { observer } from 'mobx-react';
 import DevTools from 'mobx-react-devtools';
 
@@ -10,7 +10,7 @@ import { DisplayFields, FieldFeedbacks, FieldFeedback } from 'react-form-with-co
 import './index.html';
 import './style.css';
 
-useStrict(true);
+configure({enforceActions: true});
 
 type Hobby = string;
 

@@ -24,7 +24,7 @@
     "sass-loader": "latest",
     "extract-text-webpack-plugin": "latest",
 
-    "webpack": "latest",
+    "webpack": "^3",
     "babel-loader": "latest",
     "babel-core": "latest",
     "babel-preset-react": "latest",
