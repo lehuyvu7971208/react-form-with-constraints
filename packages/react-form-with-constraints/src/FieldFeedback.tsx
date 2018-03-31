@@ -60,7 +60,7 @@ export class FieldFeedback extends React.Component<FieldFeedbackProps, FieldFeed
   };
   context!: FieldFeedbackContext;
 
-  readonly key: string; // Example: key="0.1"
+  readonly key: string; // "0.1", "1.0", "3.5"...
 
   constructor(props: FieldFeedbackProps, context: FieldFeedbackContext) {
     super(props, context);
@@ -112,10 +112,10 @@ export class FieldFeedback extends React.Component<FieldFeedbackProps, FieldFeed
 
     const validation = {...this.state.validation}; // Copy state so we don't modify it directly (use of setState() instead)
 
-    if (fieldFeedbacks.props.stop === 'first' && field.hasFeedbacks(this.key) ||
-        fieldFeedbacks.props.stop === 'first-error' && field.hasErrors(this.key) ||
-        fieldFeedbacks.props.stop === 'first-warning' && field.hasWarnings(this.key) ||
-        fieldFeedbacks.props.stop === 'first-info' && field.hasInfos(this.key)) {
+    if (fieldFeedbacks.props.stop === 'first' && field.hasAnyFeedbacks(fieldFeedbacks.key, this.key) ||
+        fieldFeedbacks.props.stop === 'first-error' && field.hasErrors(fieldFeedbacks.key, this.key) ||
+        fieldFeedbacks.props.stop === 'first-warning' && field.hasWarnings(fieldFeedbacks.key, this.key) ||
+        fieldFeedbacks.props.stop === 'first-info' && field.hasInfos(fieldFeedbacks.key, this.key)) {
       // Do nothing
       validation.show = undefined; // undefined means the FieldFeedback was not checked
     }

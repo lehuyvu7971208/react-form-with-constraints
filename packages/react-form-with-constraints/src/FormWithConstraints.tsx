@@ -141,7 +141,7 @@ export class FormWithConstraints
       // so let's ignore this field
     }
 
-    else if (forceValidateFields || !field.hasFeedbacks()) {
+    else if (forceValidateFields || !field.hasAnyFeedbacks()) {
       field.clear();
 
       this.emitFieldWillValidateEvent(fieldName);

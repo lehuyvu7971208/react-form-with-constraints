@@ -93,10 +93,10 @@ export class Async<T> extends
 
     const field = form.fieldsStore.getField(input.name);
 
-    if (fieldFeedbacks.props.stop === 'first' && field.hasFeedbacks() ||
-        fieldFeedbacks.props.stop === 'first-error' && field.hasErrors() ||
-        fieldFeedbacks.props.stop === 'first-warning' && field.hasWarnings() ||
-        fieldFeedbacks.props.stop === 'first-info' && field.hasInfos()) {
+    if (fieldFeedbacks.props.stop === 'first' && field.hasAnyFeedbacks(fieldFeedbacks.key) ||
+        fieldFeedbacks.props.stop === 'first-error' && field.hasErrors(fieldFeedbacks.key) ||
+        fieldFeedbacks.props.stop === 'first-warning' && field.hasWarnings(fieldFeedbacks.key) ||
+        fieldFeedbacks.props.stop === 'first-info' && field.hasInfos(fieldFeedbacks.key)) {
       // Do nothing
     }
     else {

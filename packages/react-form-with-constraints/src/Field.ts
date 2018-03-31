@@ -21,29 +21,30 @@ export default class Field {
     clearArray(this.validations);
   }
 
-  hasErrors(excludeKey?: string) {
+  hasFeedbacksOfType(type: FieldFeedbackType, fieldFeedbacksKey?: number, excludeKey?: string) {
     return this.validations.some(fieldFeedback =>
+      (fieldFeedbacksKey === undefined || fieldFeedback.key.startsWith(`${fieldFeedbacksKey}.`)) &&
       (excludeKey === undefined || fieldFeedback.key !== excludeKey) &&
-      fieldFeedback.type === FieldFeedbackType.Error && fieldFeedback.show === true
+      fieldFeedback.type === type && fieldFeedback.show === true
     );
   }
 
-  hasWarnings(excludeKey?: string) {
-    return this.validations.some(fieldFeedback =>
-      (excludeKey === undefined || fieldFeedback.key !== excludeKey) &&
-      fieldFeedback.type === FieldFeedbackType.Warning && fieldFeedback.show === true
-    );
+  hasErrors(fieldFeedbacksKey?: number, excludeFieldFeedbackKey?: string) {
+    return this.hasFeedbacksOfType(FieldFeedbackType.Error, fieldFeedbacksKey, excludeFieldFeedbackKey);
   }
 
-  hasInfos(excludeKey?: string) {
-    return this.validations.some(fieldFeedback =>
-      (excludeKey === undefined || fieldFeedback.key !== excludeKey) &&
-      fieldFeedback.type === FieldFeedbackType.Info && fieldFeedback.show === true
-    );
+  hasWarnings(fieldFeedbacksKey?: number, excludeFieldFeedbackKey?: string) {
+    return this.hasFeedbacksOfType(FieldFeedbackType.Warning, fieldFeedbacksKey, excludeFieldFeedbackKey);
   }
 
-  hasFeedbacks(excludeKey?: string) {
-    return this.hasErrors(excludeKey) || this.hasWarnings(excludeKey) || this.hasInfos(excludeKey);
+  hasInfos(fieldFeedbacksKey?: number, excludeFieldFeedbackKey?: string) {
+    return this.hasFeedbacksOfType(FieldFeedbackType.Info, fieldFeedbacksKey, excludeFieldFeedbackKey);
+  }
+
+  hasAnyFeedbacks(fieldFeedbacksKey?: number, excludeFieldFeedbackKey?: string) {
+    return this.hasErrors(fieldFeedbacksKey, excludeFieldFeedbackKey) ||
+           this.hasWarnings(fieldFeedbacksKey, excludeFieldFeedbackKey) ||
+           this.hasInfos(fieldFeedbacksKey, excludeFieldFeedbackKey);
   }
 
   isValid() {

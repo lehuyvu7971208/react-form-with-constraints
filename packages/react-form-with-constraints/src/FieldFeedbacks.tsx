@@ -18,6 +18,7 @@ export interface FieldFeedbacksProps {
   /**
    * first-* => stops on the first * encountered
    * no => shows everything
+   * Default is 'first-error'
    */
   stop?: 'first' | 'first-error' | 'first-warning' | 'first-info' | 'no';
 }
@@ -61,7 +62,7 @@ export class FieldFeedbacks extends
     };
   }
 
-  readonly key: number;
+  readonly key: number; // 0, 1, 2...
   readonly fieldName: string; // Instead of reading props each time
 
   constructor(props: FieldFeedbacksProps, context: FieldFeedbacksContext) {
@@ -125,10 +126,10 @@ export class FieldFeedbacks extends
 
     if (input.name === this.fieldName) { // Ignore the event if it's not for us
       if (fieldFeedbacksParent !== undefined && (
-          fieldFeedbacksParent.props.stop === 'first' && field.hasFeedbacks() ||
-          fieldFeedbacksParent.props.stop === 'first-error' && field.hasErrors() ||
-          fieldFeedbacksParent.props.stop === 'first-warning' && field.hasWarnings() ||
-          fieldFeedbacksParent.props.stop === 'first-info' && field.hasInfos())) {
+          fieldFeedbacksParent.props.stop === 'first' && field.hasAnyFeedbacks(fieldFeedbacksParent.key) ||
+          fieldFeedbacksParent.props.stop === 'first-error' && field.hasErrors(fieldFeedbacksParent.key) ||
+          fieldFeedbacksParent.props.stop === 'first-warning' && field.hasWarnings(fieldFeedbacksParent.key) ||
+          fieldFeedbacksParent.props.stop === 'first-info' && field.hasInfos(fieldFeedbacksParent.key))) {
         // Do nothing
       }
       else {

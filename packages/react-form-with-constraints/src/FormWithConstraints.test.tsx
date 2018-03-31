@@ -1,7 +1,6 @@
 import React from 'react';
 import { mount as _mount, ReactWrapper } from 'enzyme';
-const pretty = require('pretty');
-//const beautify = require('js-beautify').html;
+import { html_beautify } from 'js-beautify';
 
 import { FormWithConstraints, FormWithConstraintsProps, FieldFeedbacksProps, FieldFeedback, Async } from './index';
 import { SignUp } from './SignUp';
@@ -9,6 +8,13 @@ import new_FormWithConstraints from './FormWithConstraintsEnzymeFix';
 import FieldFeedbacks from './FieldFeedbacksEnzymeFix';
 import checkUsernameAvailability from './checkUsernameAvailability';
 import sleep from './sleep';
+
+function beautify(html: string) {
+  return html_beautify(html, {
+    indent_size: 2,
+    unformatted: [] // FIXME See Add function default_options() to beautifier.js https://github.com/beautify-web/js-beautify/issues/1364
+  });
+}
 
 function mount(node: React.ReactElement<FormWithConstraintsProps>) {
   return _mount<FormWithConstraintsProps, {}>(node);
@@ -50,7 +56,7 @@ describe('FormWithBeforeAsync', () => {
         <FormWithConstraints ref={formWithConstraints => this.formWithConstraints = formWithConstraints}>
           <input name="input" ref={input => this.input = input} />
           <FieldFeedbacks for="input" stop={inputStop}>
-          <FieldFeedback when={() => true}>Error before Async</FieldFeedback>
+            <FieldFeedback when={() => true}>Error before Async</FieldFeedback>
             <FieldFeedback when={() => true} warning>Warning before Async</FieldFeedback>
             <FieldFeedback when={() => true} info>Info before Async</FieldFeedback>
             <Async
@@ -63,98 +69,101 @@ describe('FormWithBeforeAsync', () => {
     }
   }
 
-  test.only('should stop at first FieldFeedback', async () => {
+  test.only('stop="first"', async () => {
     const wrapper = mount(<FormWithBeforeAsync inputStop="first" />);
     const form = wrapper.instance() as FormWithBeforeAsync;
 
     await form.formWithConstraints!.validateFields(form.input!);
 
-    console.log(pretty(wrapper.html()));
-    expect(wrapper.html()).toEqual(`\
-<form>\
-<input name="input">\
-<div data-feedbacks="0">\
-<div data-feedback="0.0" class="error">Error before Async</div>\
-</div>\
+    const defaults = {
+      unformatted: [],
+      indent_size: 2
+    };
+
+    expect(beautify(wrapper.html())).toEqual(`\
+<form>
+  <input name="input">
+  <div data-feedbacks="0">
+    <div data-feedback="0.0" class="error">Error before Async</div>
+  </div>
 </form>`
     );
 
     wrapper.unmount();
   });
 
-  test.only('should stop at first-error FieldFeedback', async () => {
+  test.only('stop="first-error"', async () => {
     const wrapper = mount(<FormWithBeforeAsync inputStop="first-error" />);
     const form = wrapper.instance() as FormWithBeforeAsync;
 
     await form.formWithConstraints!.validateFields(form.input!);
 
-    console.log(pretty(wrapper.html()));
-    expect(wrapper.html()).toEqual(`\
-<form>\
-<input name="input">\
-<div data-feedbacks="0">\
-<div data-feedback="0.0" class="error">Error before Async</div>\
-</div>\
+    expect(beautify(wrapper.html())).toEqual(`\
+<form>
+  <input name="input">
+  <div data-feedbacks="0">
+    <div data-feedback="0.0" class="error">Error before Async</div>
+  </div>
 </form>`
     );
 
     wrapper.unmount();
   });
 
-  test.only('should stop at first-warning FieldFeedback', async () => {
+  test.only('stop="first-warning"', async () => {
     const wrapper = mount(<FormWithBeforeAsync inputStop="first-warning" />);
     const form = wrapper.instance() as FormWithBeforeAsync;
 
     await form.formWithConstraints!.validateFields(form.input!);
 
-    expect(wrapper.html()).toEqual(`\
-<form>\
-<input name="input">\
-<div data-feedbacks="0">\
-<div data-feedback="0.0" class="error">Error before Async</div>\
-<div data-feedback="0.1" class="warning">Warning before Async</div>\
-</div>\
+    expect(beautify(wrapper.html())).toEqual(`\
+<form>
+  <input name="input">
+  <div data-feedbacks="0">
+    <div data-feedback="0.0" class="error">Error before Async</div>
+    <div data-feedback="0.1" class="warning">Warning before Async</div>
+  </div>
 </form>`
     );
 
     wrapper.unmount();
   });
 
-  test.only('should stop at first-info FieldFeedback', async () => {
+  test.only('stop="first-info"', async () => {
     const wrapper = mount(<FormWithBeforeAsync inputStop="first-info" />);
     const form = wrapper.instance() as FormWithBeforeAsync;
 
     await form.formWithConstraints!.validateFields(form.input!);
 
-    expect(wrapper.html()).toEqual(`\
-<form>\
-<input name="input">\
-<div data-feedbacks="0">\
-<div data-feedback="0.0" class="error">Error before Async</div>\
-<div data-feedback="0.1" class="warning">Warning before Async</div>\
-<div data-feedback="0.2" class="info">Info before Async</div>\
-</div>\
+    expect(beautify(wrapper.html())).toEqual(`\
+<form>
+  <input name="input">
+  <div data-feedbacks="0">
+    <div data-feedback="0.0" class="error">Error before Async</div>
+    <div data-feedback="0.1" class="warning">Warning before Async</div>
+    <div data-feedback="0.2" class="info">Info before Async</div>
+  </div>
 </form>`
     );
 
     wrapper.unmount();
   });
 
-  test.only('should not stop', async () => {
+  test.only('stop="no"', async () => {
     const wrapper = mount(<FormWithBeforeAsync inputStop="no" />);
     const form = wrapper.instance() as FormWithBeforeAsync;
 
     await form.formWithConstraints!.validateFields(form.input!);
 
-    expect(wrapper.html()).toEqual(`\
-<form>\
-<input name="input">\
-<div data-feedbacks="0">\
-<div data-feedback="0.0" class="error">Error before Async</div>\
-<div data-feedback="0.1" class="warning">Warning before Async</div>\
-<div data-feedback="0.2" class="info">Info before Async</div>\
-<div data-feedback="0.3" class="error">Async error</div>\
-</div>\
+    expect(beautify(wrapper.html())).toEqual(`\
+<form>
+  <input name="input">
+  <div data-feedbacks="0">
+    <div data-feedback="0.0" class="error">Error before Async</div>
+    <div data-feedback="0.1" class="warning">Warning before Async</div>
+    <div data-feedback="0.2" class="info">Info before Async</div>
+    <div data-feedback="0.3" class="error">Async error</div>
+  </div>
 </form>`
     );
 
@@ -187,100 +196,98 @@ describe('FormWithAfterAsync', () => {
     }
   }
 
-  test.only('should stop at first FieldFeedback', async () => {
+  test.only('stop="first"', async () => {
     const wrapper = mount(<FormWithAfterAsync inputStop="first" />);
     const form = wrapper.instance() as FormWithAfterAsync;
 
     await form.formWithConstraints!.validateFields(form.input!);
 
-    console.log(pretty(wrapper.html()));
-    expect(wrapper.html()).toEqual(`\
-<form>\
-<input name="input">\
-<div data-feedbacks="0">\
-<div data-feedback="0.3" class="error">Async error</div>\
-</div>\
+    expect(beautify(wrapper.html())).toEqual(`\
+<form>
+  <input name="input">
+  <div data-feedbacks="0">
+    <div data-feedback="0.3" class="error">Async error</div>
+  </div>
 </form>`
     );
 
     wrapper.unmount();
   });
 
-  test.only('should stop at first-error FieldFeedback', async () => {
+  test.only('stop="first-error"', async () => {
     const wrapper = mount(<FormWithAfterAsync inputStop="first-error" />);
     const form = wrapper.instance() as FormWithAfterAsync;
 
     await form.formWithConstraints!.validateFields(form.input!);
 
-    console.log(pretty(wrapper.html()));
-    expect(wrapper.html()).toEqual(`\
-<form>\
-<input name="input">\
-<div data-feedbacks="0">\
-<div data-feedback="0.3" class="error">Async error</div>\
-</div>\
+    expect(beautify(wrapper.html())).toEqual(`\
+<form>
+  <input name="input">
+  <div data-feedbacks="0">
+    <div data-feedback="0.3" class="error">Async error</div>
+  </div>
 </form>`
     );
 
     wrapper.unmount();
   });
 
-  test.only('should stop at first-warning FieldFeedback', async () => {
+  test.only('stop="first-warning"', async () => {
     const wrapper = mount(<FormWithAfterAsync inputStop="first-warning" />);
     const form = wrapper.instance() as FormWithAfterAsync;
 
     await form.formWithConstraints!.validateFields(form.input!);
 
-    expect(wrapper.html()).toEqual(`\
-<form>\
-<input name="input">\
-<div data-feedbacks="0">\
-<div data-feedback="0.3" class="error">Async error</div>\
-<div data-feedback="0.0" class="error">Error after Async</div>\
-<div data-feedback="0.1" class="warning">Warning after Async</div>\
-</div>\
+    expect(beautify(wrapper.html())).toEqual(`\
+<form>
+  <input name="input">
+  <div data-feedbacks="0">
+    <div data-feedback="0.3" class="error">Async error</div>
+    <div data-feedback="0.0" class="error">Error after Async</div>
+    <div data-feedback="0.1" class="warning">Warning after Async</div>
+  </div>
 </form>`
     );
 
     wrapper.unmount();
   });
 
-  test.only('should stop at first-info FieldFeedback', async () => {
+  test.only('stop="first-info"', async () => {
     const wrapper = mount(<FormWithAfterAsync inputStop="first-info" />);
     const form = wrapper.instance() as FormWithAfterAsync;
 
     await form.formWithConstraints!.validateFields(form.input!);
 
-    expect(wrapper.html()).toEqual(`\
-<form>\
-<input name="input">\
-<div data-feedbacks="0">\
-<div data-feedback="0.3" class="error">Async error</div>\
-<div data-feedback="0.0" class="error">Error after Async</div>\
-<div data-feedback="0.1" class="warning">Warning after Async</div>\
-<div data-feedback="0.2" class="info">Info after Async</div>\
-</div>\
+    expect(beautify(wrapper.html())).toEqual(`\
+<form>
+  <input name="input">
+  <div data-feedbacks="0">
+    <div data-feedback="0.3" class="error">Async error</div>
+    <div data-feedback="0.0" class="error">Error after Async</div>
+    <div data-feedback="0.1" class="warning">Warning after Async</div>
+    <div data-feedback="0.2" class="info">Info after Async</div>
+  </div>
 </form>`
     );
 
     wrapper.unmount();
   });
 
-  test.only('should not stop', async () => {
+  test.only('stop="no"', async () => {
     const wrapper = mount(<FormWithAfterAsync inputStop="no" />);
     const form = wrapper.instance() as FormWithAfterAsync;
 
     await form.formWithConstraints!.validateFields(form.input!);
 
-    expect(wrapper.html()).toEqual(`\
-<form>\
-<input name="input">\
-<div data-feedbacks="0">\
-<div data-feedback="0.3" class="error">Async error</div>\
-<div data-feedback="0.0" class="error">Error after Async</div>\
-<div data-feedback="0.1" class="warning">Warning after Async</div>\
-<div data-feedback="0.2" class="info">Info after Async</div>\
-</div>\
+    expect(beautify(wrapper.html())).toEqual(`\
+<form>
+  <input name="input">
+  <div data-feedbacks="0">
+    <div data-feedback="0.3" class="error">Async error</div>
+    <div data-feedback="0.0" class="error">Error after Async</div>
+    <div data-feedback="0.1" class="warning">Warning after Async</div>
+    <div data-feedback="0.2" class="info">Info after Async</div>
+  </div>
 </form>`
     );
 
@@ -288,6 +295,7 @@ describe('FormWithAfterAsync', () => {
   });
 });
 
+// FIXME simplify?
 describe('FormWithNestedFieldFeedbacks', () => {
   interface FormWithNestedFieldFeedbacksProps {
     fieldFeedbacksWithBeforeAsyncStop: FieldFeedbacksProps['stop'];
@@ -338,52 +346,159 @@ describe('FormWithNestedFieldFeedbacks', () => {
     }
   }
 
-  test.only('should stop at first FieldFeedbacks', async () => {
+  test.only('stop="first"', async () => {
     const wrapper = mount(<FormWithNestedFieldFeedbacks fieldFeedbacksWithBeforeAsyncStop="first" fieldFeedbacksWithAfterAsyncStop="first" />);
     const form = wrapper.instance() as FormWithNestedFieldFeedbacks;
 
     await form.formWithConstraints!.validateFields(form.input!);
 
-    console.log(pretty(wrapper.html()));
-    expect(wrapper.html()).toEqual(`\
-<form>\
-<input name="input">\
-<div data-feedbacks="0">\
-<div data-feedback="0.0" class="error">Error before FieldFeedbacks</div>\
-<div data-feedback="0.1" class="warning">Warning before FieldFeedbacks</div>\
-<div data-feedback="0.2" class="info">Info before FieldFeedbacks</div>\
-<div data-feedbacks="1"></div>\
-<div data-feedbacks="2"></div>\
-<div data-feedback="0.3" class="error">Error after FieldFeedbacks</div>\
-<div data-feedback="0.4" class="warning">Warning after FieldFeedbacks</div>\
-<div data-feedback="0.5" class="info">Info after FieldFeedbacks</div>\
-</div>\
+    expect(beautify(wrapper.html())).toEqual(`\
+<form>
+  <input name="input">
+  <div data-feedbacks="0">
+    <div data-feedback="0.0" class="error">Error before FieldFeedbacks</div>
+    <div data-feedback="0.1" class="warning">Warning before FieldFeedbacks</div>
+    <div data-feedback="0.2" class="info">Info before FieldFeedbacks</div>
+    <div data-feedbacks="1">
+      <div data-feedback="1.0" class="error">Error before Async</div>
+    </div>
+    <div data-feedbacks="2">
+      <div data-feedback="2.3" class="error">Async error</div>
+    </div>
+    <div data-feedback="0.3" class="error">Error after FieldFeedbacks</div>
+    <div data-feedback="0.4" class="warning">Warning after FieldFeedbacks</div>
+    <div data-feedback="0.5" class="info">Info after FieldFeedbacks</div>
+  </div>
 </form>`
     );
 
     wrapper.unmount();
   });
 
-  test.only('should stop at first-error FieldFeedbacks', async () => {
+  test.only('stop="first-error"', async () => {
     const wrapper = mount(<FormWithNestedFieldFeedbacks fieldFeedbacksWithBeforeAsyncStop="first-error" fieldFeedbacksWithAfterAsyncStop="first-error" />);
     const form = wrapper.instance() as FormWithNestedFieldFeedbacks;
 
     await form.formWithConstraints!.validateFields(form.input!);
 
-    console.log(pretty(wrapper.html()));
-    expect(wrapper.html()).toEqual(`\
-<form>\
-<input name="input">\
-<div data-feedbacks="0">\
-<div data-feedback="0.0" class="error">Error before FieldFeedbacks</div>\
-<div data-feedback="0.1" class="warning">Warning before FieldFeedbacks</div>\
-<div data-feedback="0.2" class="info">Info before FieldFeedbacks</div>\
-<div data-feedbacks="1"></div>\
-<div data-feedbacks="2"></div>\
-<div data-feedback="0.3" class="error">Error after FieldFeedbacks</div>\
-<div data-feedback="0.4" class="warning">Warning after FieldFeedbacks</div>\
-<div data-feedback="0.5" class="info">Info after FieldFeedbacks</div>\
-</div>\
+    expect(beautify(wrapper.html())).toEqual(`\
+<form>
+  <input name="input">
+  <div data-feedbacks="0">
+    <div data-feedback="0.0" class="error">Error before FieldFeedbacks</div>
+    <div data-feedback="0.1" class="warning">Warning before FieldFeedbacks</div>
+    <div data-feedback="0.2" class="info">Info before FieldFeedbacks</div>
+    <div data-feedbacks="1">
+      <div data-feedback="1.0" class="error">Error before Async</div>
+    </div>
+    <div data-feedbacks="2">
+      <div data-feedback="2.3" class="error">Async error</div>
+    </div>
+    <div data-feedback="0.3" class="error">Error after FieldFeedbacks</div>
+    <div data-feedback="0.4" class="warning">Warning after FieldFeedbacks</div>
+    <div data-feedback="0.5" class="info">Info after FieldFeedbacks</div>
+  </div>
+</form>`
+    );
+
+    wrapper.unmount();
+  });
+
+  test.only('stop="first-warning"', async () => {
+    const wrapper = mount(<FormWithNestedFieldFeedbacks fieldFeedbacksWithBeforeAsyncStop="first-warning" fieldFeedbacksWithAfterAsyncStop="first-warning" />);
+    const form = wrapper.instance() as FormWithNestedFieldFeedbacks;
+
+    await form.formWithConstraints!.validateFields(form.input!);
+
+    expect(beautify(wrapper.html())).toEqual(`\
+<form>
+  <input name="input">
+  <div data-feedbacks="0">
+    <div data-feedback="0.0" class="error">Error before FieldFeedbacks</div>
+    <div data-feedback="0.1" class="warning">Warning before FieldFeedbacks</div>
+    <div data-feedback="0.2" class="info">Info before FieldFeedbacks</div>
+    <div data-feedbacks="1">
+      <div data-feedback="1.0" class="error">Error before Async</div>
+      <div data-feedback="1.1" class="warning">Warning before Async</div>
+    </div>
+    <div data-feedbacks="2">
+      <div data-feedback="2.3" class="error">Async error</div>
+      <div data-feedback="2.0" class="error">Error after Async</div>
+      <div data-feedback="2.1" class="warning">Warning after Async</div>
+    </div>
+    <div data-feedback="0.3" class="error">Error after FieldFeedbacks</div>
+    <div data-feedback="0.4" class="warning">Warning after FieldFeedbacks</div>
+    <div data-feedback="0.5" class="info">Info after FieldFeedbacks</div>
+  </div>
+</form>`
+    );
+
+    wrapper.unmount();
+  });
+
+  test.only('stop="first-info"', async () => {
+    const wrapper = mount(<FormWithNestedFieldFeedbacks fieldFeedbacksWithBeforeAsyncStop="first-info" fieldFeedbacksWithAfterAsyncStop="first-info" />);
+    const form = wrapper.instance() as FormWithNestedFieldFeedbacks;
+
+    await form.formWithConstraints!.validateFields(form.input!);
+
+    expect(beautify(wrapper.html())).toEqual(`\
+<form>
+  <input name="input">
+  <div data-feedbacks="0">
+    <div data-feedback="0.0" class="error">Error before FieldFeedbacks</div>
+    <div data-feedback="0.1" class="warning">Warning before FieldFeedbacks</div>
+    <div data-feedback="0.2" class="info">Info before FieldFeedbacks</div>
+    <div data-feedbacks="1">
+      <div data-feedback="1.0" class="error">Error before Async</div>
+      <div data-feedback="1.1" class="warning">Warning before Async</div>
+      <div data-feedback="1.2" class="info">Info before Async</div>
+    </div>
+    <div data-feedbacks="2">
+      <div data-feedback="2.3" class="error">Async error</div>
+      <div data-feedback="2.0" class="error">Error after Async</div>
+      <div data-feedback="2.1" class="warning">Warning after Async</div>
+      <div data-feedback="2.2" class="info">Info after Async</div>
+    </div>
+    <div data-feedback="0.3" class="error">Error after FieldFeedbacks</div>
+    <div data-feedback="0.4" class="warning">Warning after FieldFeedbacks</div>
+    <div data-feedback="0.5" class="info">Info after FieldFeedbacks</div>
+  </div>
+</form>`
+    );
+
+    wrapper.unmount();
+  });
+
+  test.only('stop="no"', async () => {
+    const wrapper = mount(<FormWithNestedFieldFeedbacks fieldFeedbacksWithBeforeAsyncStop="no" fieldFeedbacksWithAfterAsyncStop="no" />);
+    const form = wrapper.instance() as FormWithNestedFieldFeedbacks;
+
+    await form.formWithConstraints!.validateFields(form.input!);
+
+    expect(beautify(wrapper.html())).toEqual(`\
+<form>
+  <input name="input">
+  <div data-feedbacks="0">
+    <div data-feedback="0.0" class="error">Error before FieldFeedbacks</div>
+    <div data-feedback="0.1" class="warning">Warning before FieldFeedbacks</div>
+    <div data-feedback="0.2" class="info">Info before FieldFeedbacks</div>
+    <div data-feedbacks="1">
+      <div data-feedback="1.0" class="error">Error before Async</div>
+      <div data-feedback="1.1" class="warning">Warning before Async</div>
+      <div data-feedback="1.2" class="info">Info before Async</div>
+      <div data-feedback="1.3" class="error">Async error</div>
+    </div>
+    <div data-feedbacks="2">
+      <div data-feedback="2.3" class="error">Async error</div>
+      <div data-feedback="2.0" class="error">Error after Async</div>
+      <div data-feedback="2.1" class="warning">Warning after Async</div>
+      <div data-feedback="2.2" class="info">Info after Async</div>
+    </div>
+    <div data-feedback="0.3" class="error">Error after FieldFeedbacks</div>
+    <div data-feedback="0.4" class="warning">Warning after FieldFeedbacks</div>
+    <div data-feedback="0.5" class="info">Info after FieldFeedbacks</div>
+  </div>
 </form>`
     );
 
@@ -418,28 +533,27 @@ describe('SignUp', () => {
     signUp.passwordConfirm!.value = 'password';
     await signUp.form!.validateFields(signUp.username!, signUp.password!, signUp.passwordConfirm!);
 
-    console.log(pretty(wrapper.html()));
-    expect(wrapper.html()).toEqual(`\
-<form>\
-<input name="username">\
-<div data-feedbacks="0">\
-<div data-feedback="0.3" class="info">Username 'tanguy' available</div>\
-<div data-feedback="0.2" class="valid">Looks good!</div>\
-</div>\
-<input type="password" name="password">\
-<div data-feedbacks="1">\
-<div data-feedbacks="2"></div>\
-<div data-feedbacks="3">\
-<div data-feedback="3.0" class="warning">Should contain numbers</div>\
-<div data-feedback="3.2" class="warning">Should contain capital letters</div>\
-<div data-feedback="3.3" class="warning">Should contain special characters</div>\
-</div>\
-<div data-feedback="1.0" class="valid">Looks good!</div>\
-</div>\
-<input type="password" name="passwordConfirm">\
-<div data-feedbacks="4">\
-<div data-feedback="4.1" class="valid">Looks good!</div>\
-</div>\
+    expect(beautify(wrapper.html())).toEqual(`\
+<form>
+<input name="username">
+<div data-feedbacks="0">
+<div data-feedback="0.3" class="info">Username 'tanguy' available</div>
+<div data-feedback="0.2" class="valid">Looks good!</div>
+</div>
+<input type="password" name="password">
+<div data-feedbacks="1">
+<div data-feedbacks="2"></div>
+<div data-feedbacks="3">
+<div data-feedback="3.0" class="warning">Should contain numbers</div>
+<div data-feedback="3.2" class="warning">Should contain capital letters</div>
+<div data-feedback="3.3" class="warning">Should contain special characters</div>
+</div>
+<div data-feedback="1.0" class="valid">Looks good!</div>
+</div>
+<input type="password" name="passwordConfirm">
+<div data-feedbacks="4">
+<div data-feedback="4.1" class="valid">Looks good!</div>
+</div>
 </form>`
     );
   });
@@ -485,24 +599,23 @@ describe('SignUp', () => {
       [signUp.passwordConfirm]
     ]);
 
-    console.log(pretty(wrapper.html()));
-    expect(wrapper.html()).toEqual(`\
-<form>\
-<input name="username">\
-<div data-feedbacks="0">\
-<div data-feedback="0.0" class="error">Cannot be empty</div>\
-</div>\
-<input type="password" name="password">\
-<div data-feedbacks="1">\
-<div data-feedbacks="2">\
-<div data-feedback="2.0" class="error">Cannot be empty</div>\
-</div>\
-<div data-feedbacks="3"></div>\
-</div>\
-<input type="password" name="passwordConfirm">\
-<div data-feedbacks="4">\
-<div data-feedback="4.1" class="valid">Looks good!</div>\
-</div>\
+    expect(beautify(wrapper.html())).toEqual(`\
+<form>
+<input name="username">
+<div data-feedbacks="0">
+<div data-feedback="0.0" class="error">Cannot be empty</div>
+</div>
+<input type="password" name="password">
+<div data-feedbacks="1">
+<div data-feedbacks="2">
+<div data-feedback="2.0" class="error">Cannot be empty</div>
+</div>
+<div data-feedbacks="3"></div>
+</div>
+<input type="password" name="passwordConfirm">
+<div data-feedbacks="4">
+<div data-feedback="4.1" class="valid">Looks good!</div>
+</div>
 </form>`
     );
   });
@@ -553,23 +666,23 @@ describe('validate', () => {
         [signUp.password],
         [signUp.passwordConfirm]
       ]);*/
-      console.log(pretty(wrapper.html()));
-      /*expect(wrapper.html()).toEqual(`\
-<form>\
-<input name="username">\
-<div>\
-<div data-feedback="0.0" class="error">Cannot be empty</div>\
-<div data-feedback="0.1" class="error">Should be at least 3 characters long</div>\
-<div data-feedback="0.3" class="info">Username '' available</div>\
-</div>\
-<input type="password" name="password">\
-<div>\
-<div data-feedback="1.0" class="error">Cannot be empty</div>\
-<div data-feedback="1.1" class="error">Should be at least 5 characters long</div>\
-</div>\
-<input type="password" name="passwordConfirm">\
-<div>\
-</div>\
+
+      /*expect(beautify(wrapper.html())).toEqual(`\
+<form>
+<input name="username">
+<div>
+<div data-feedback="0.0" class="error">Cannot be empty</div>
+<div data-feedback="0.1" class="error">Should be at least 3 characters long</div>
+<div data-feedback="0.3" class="info">Username '' available</div>
+</div>
+<input type="password" name="password">
+<div>
+<div data-feedback="1.0" class="error">Cannot be empty</div>
+<div data-feedback="1.1" class="error">Should be at least 5 characters long</div>
+</div>
+<input type="password" name="passwordConfirm">
+<div>
+</div>
 </form>`
       );*/
     });
@@ -765,21 +878,21 @@ describe('validate', () => {
         [signUp.passwordConfirm]
       ]);
 
-      expect(wrapper.html()).toEqual(`\
-<form>\
-<input name="username">\
-<div>\
-<div data-feedback="0.4" class="info">Username 'jimmy' available</div>\
-<div data-feedback="0.2" class="valid">Looks good!</div>\
-</div>\
-<input type="password" name="password">\
-<div>\
-<div data-feedback="1.1" class="error">Should be at least 5 characters long</div>\
-</div>\
-<input type="password" name="passwordConfirm">\
-<div>\
-<div data-feedback="2.0" class="error">Not the same password</div>\
-</div>\
+      expect(beautify(wrapper.html())).toEqual(`\
+<form>
+<input name="username">
+<div>
+<div data-feedback="0.4" class="info">Username 'jimmy' available</div>
+<div data-feedback="0.2" class="valid">Looks good!</div>
+</div>
+<input type="password" name="password">
+<div>
+<div data-feedback="1.1" class="error">Should be at least 5 characters long</div>
+</div>
+<input type="password" name="passwordConfirm">
+<div>
+<div data-feedback="2.0" class="error">Not the same password</div>
+</div>
 </form>`
       );
     });
@@ -817,14 +930,14 @@ describe('validate', () => {
           ]
         }
       ]);
-      expect(wrapper.html()).toEqual(`\
-<form>\
-<input name="username">\
-<div><div data-feedback="0.3" class="error">Something wrong with username 'error'</div></div>\
-<input type="password" name="password">\
-<div><div data-feedback="1.1" class="error">Should be at least 5 characters long</div></div>\
-<input type="password" name="passwordConfirm">\
-<div><div data-feedback="2.0" class="error">Not the same password</div></div>\
+      expect(beautify(wrapper.html())).toEqual(`\
+<form>
+<input name="username">
+<div><div data-feedback="0.3" class="error">Something wrong with username 'error'</div></div>
+<input type="password" name="password">
+<div><div data-feedback="1.1" class="error">Should be at least 5 characters long</div></div>
+<input type="password" name="passwordConfirm">
+<div><div data-feedback="2.0" class="error">Not the same password</div></div>
 </form>`
       );
     });
