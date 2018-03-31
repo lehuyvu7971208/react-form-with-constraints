@@ -104,7 +104,6 @@ export class FieldFeedbacks extends
   }
 
   componentWillUnmount() {
-    // FIXME What about multiple FieldFeedbacks for the same field?
     this.context.form.fieldsStore.removeField(this.fieldName);
 
     if (this.context.fieldFeedbacks) {

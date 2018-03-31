@@ -288,6 +288,9 @@ TODO
 
 - switch to scoped npm packages, see https://babeljs.io/blog/2017/09/12/planning-for-7.0#using-npm-scoped-packages
 
+- check all as any
+
+- check all FIXME
 
 
 https://discuss.reactjs.org/t/if-typescript-is-so-great-how-come-all-notable-reactjs-projects-use-babel/4887

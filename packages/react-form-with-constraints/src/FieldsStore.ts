@@ -36,10 +36,16 @@ export class FieldsStore extends EventEmitter {
 
   removeField(fieldName: string) {
     const fields = this.fields.filter(_field => _field.name === fieldName);
-    console.assert(fields.length === 1, `Unknown field '${fieldName}'`);
+
+    // We can have multiple FieldFeedbacks for the same field,
+    // thus removeField() can be called multiple times
+    //console.assert(fields.length === 1, `Unknown field '${fieldName}'`);
+
     const index = this.fields.indexOf(fields[0]);
-    this.fields.splice(index, 1);
-    this.emit(FieldEvent.Removed, fieldName);
+    if (index > -1) {
+      this.fields.splice(index, 1);
+      this.emit(FieldEvent.Removed, fieldName);
+    }
   }
 
   isValid() {
