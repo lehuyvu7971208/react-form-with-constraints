@@ -14,10 +14,10 @@ export class FieldsStore extends EventEmitter {
     this.fields.forEach(field => field.clear());
   }
 
-  getField(fieldName: string): Readonly<Field> {
+  getField(fieldName: string): Readonly<Field> | undefined {
     const fields = this.fields.filter(_field => _field.name === fieldName);
-    console.assert(fields.length === 1, `Unknown field '${fieldName}'`);
-    return fields[0];
+    //console.assert(fields.length === 1, `Unknown field '${fieldName}'`);
+    return fields.length === 1 ? fields[0] : undefined;
   }
 
   addField(fieldName: string) {

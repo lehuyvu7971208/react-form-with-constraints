@@ -44,8 +44,7 @@ export class SignUp extends React.Component<Partial<SignUpProps>> {
     return (
       <FormWithConstraints ref={formWithConstraints => this.form = formWithConstraints}>
         <TextInput name="username" innerRef={username => this.username = username} />
-        {/*
-        <FieldFeedbacks for="username" stop="first">
+        <FieldFeedbacks for="username">
           <FieldFeedback when={value => value.length === 0}>Cannot be empty</FieldFeedback>
           <FieldFeedback when={value => value.length < 3}>Should be at least 3 characters long</FieldFeedback>
           <Async
@@ -58,29 +57,23 @@ export class SignUp extends React.Component<Partial<SignUpProps>> {
           />
           <FieldFeedback when="valid">Looks good!</FieldFeedback>
         </FieldFeedbacks>
-        */}
 
         <PasswordInput name="password" innerRef={password => this.password = password} />
-        <FieldFeedbacks for="password" stop="first">
-          <FieldFeedbacks>
-            <FieldFeedback when={value => value.length === 0}>Cannot be empty</FieldFeedback>
-            <FieldFeedback when={value => value.length < 5}>Should be at least 5 characters long</FieldFeedback>
-          </FieldFeedbacks>
-          <FieldFeedbacks>
-            <FieldFeedback when={value => !/\d/.test(value)} warning>Should contain numbers</FieldFeedback>
-            <FieldFeedback when={value => !/[a-z]/.test(value)} warning>Should contain small letters</FieldFeedback>
-            <FieldFeedback when={value => !/[A-Z]/.test(value)} warning>Should contain capital letters</FieldFeedback>
-            <FieldFeedback when={value => !/\W/.test(value)} warning>Should contain special characters</FieldFeedback>
-          </FieldFeedbacks>
+        <FieldFeedbacks for="password">
+          <FieldFeedback when={value => value.length === 0}>Cannot be empty</FieldFeedback>
+          <FieldFeedback when={value => value.length < 5}>Should be at least 5 characters long</FieldFeedback>
+          <FieldFeedback when={value => !/\d/.test(value)} warning>Should contain numbers</FieldFeedback>
+          <FieldFeedback when={value => !/[a-z]/.test(value)} warning>Should contain small letters</FieldFeedback>
+          <FieldFeedback when={value => !/[A-Z]/.test(value)} warning>Should contain capital letters</FieldFeedback>
+          <FieldFeedback when={value => !/\W/.test(value)} warning>Should contain special characters</FieldFeedback>
           <FieldFeedback when="valid">Looks good!</FieldFeedback>
         </FieldFeedbacks>
 
         <PasswordInput name="passwordConfirm" innerRef={passwordConfirm => this.passwordConfirm = passwordConfirm} />
-        {/*
         <FieldFeedbacks for="passwordConfirm">
           <FieldFeedback when={value => value !== this.password!.value}>Not the same password</FieldFeedback>
+          <FieldFeedback when="valid">Looks good!</FieldFeedback>
         </FieldFeedbacks>
-        */}
       </FormWithConstraints>
     );
   }

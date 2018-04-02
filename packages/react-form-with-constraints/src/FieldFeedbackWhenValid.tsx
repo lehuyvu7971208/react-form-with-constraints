@@ -34,15 +34,19 @@ export class FieldFeedbackWhenValid extends React.Component<FieldFeedbackWhenVal
   }
 
   componentWillMount() {
-    this.context.form.addFieldWillValidateEventListener(this.fieldWillValidate);
-    this.context.form.addFieldDidValidateEventListener(this.fieldDidValidate);
-    this.context.form.addResetEventListener(this.reset);
+    const { form } = this.context;
+
+    form.addFieldWillValidateEventListener(this.fieldWillValidate);
+    form.addFieldDidValidateEventListener(this.fieldDidValidate);
+    form.addResetEventListener(this.reset);
   }
 
   componentWillUnmount() {
-    this.context.form.removeFieldWillValidateEventListener(this.fieldWillValidate);
-    this.context.form.removeFieldDidValidateEventListener(this.fieldDidValidate);
-    this.context.form.removeResetEventListener(this.reset);
+    const { form } = this.context;
+
+    form.removeFieldWillValidateEventListener(this.fieldWillValidate);
+    form.removeFieldDidValidateEventListener(this.fieldDidValidate);
+    form.removeResetEventListener(this.reset);
   }
 
   fieldWillValidate(fieldName: string) {

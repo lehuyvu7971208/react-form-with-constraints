@@ -31,16 +31,14 @@ export interface FieldFeedbacksChildContext {
 
 export class FieldFeedbacksComponent extends React.Component<FieldFeedbacksProps> {}
 export class FieldFeedbacks extends
-                              withResetEventEmitter(
-                                withValidateFieldEventEmitter<
-                                  // FieldFeedback returns FieldFeedbackValidation
-                                  // Async returns FieldFeedbackValidation[] | undefined
-                                  // FieldFeedbacks returns (FieldFeedbackValidation | undefined)[]
-                                  FieldFeedbackValidation | (FieldFeedbackValidation | undefined)[] | undefined,
-                                  typeof FieldFeedbacksComponent
-                                >(
-                                  FieldFeedbacksComponent
-                                )
+                              withValidateFieldEventEmitter<
+                                // FieldFeedback returns FieldFeedbackValidation
+                                // Async returns FieldFeedbackValidation[] | undefined
+                                // FieldFeedbacks returns (FieldFeedbackValidation | undefined)[]
+                                FieldFeedbackValidation | (FieldFeedbackValidation | undefined)[] | undefined,
+                                typeof FieldFeedbacksComponent
+                              >(
+                                FieldFeedbacksComponent
                               )
                             implements React.ChildContextProvider<FieldFeedbacksChildContext> {
   static defaultProps: Partial<FieldFeedbacksProps> = {
@@ -62,16 +60,18 @@ export class FieldFeedbacks extends
     };
   }
 
-  readonly key: number; // 0, 1, 2...
+  readonly key: string; // '0', '1', '2'...
   readonly fieldName: string; // Instead of reading props each time
 
   constructor(props: FieldFeedbacksProps, context: FieldFeedbacksContext) {
     super(props, context);
 
-    this.key = context.form.computeFieldFeedbacksKey();
+    const { form, fieldFeedbacks: fieldFeedbacksParent } = context;
 
-    if (context.fieldFeedbacks !== undefined) {
-      this.fieldName = context.fieldFeedbacks.fieldName;
+    this.key = fieldFeedbacksParent ? fieldFeedbacksParent.computeFieldFeedbackKey() : form.computeFieldFeedbacksKey();
+
+    if (fieldFeedbacksParent) {
+      this.fieldName = fieldFeedbacksParent.fieldName;
       if (props.for !== undefined) throw new TypeError("FieldFeedbacks cannot have a parent and a 'for' prop");
     } else {
       if (props.for === undefined) throw new TypeError("FieldFeedbacks cannot be without parent and without 'for' prop");
@@ -79,7 +79,6 @@ export class FieldFeedbacks extends
     }
 
     this.validate = this.validate.bind(this);
-    this.reset = this.reset.bind(this);
   }
 
   private fieldFeedbackKeyCounter = 0;
@@ -92,29 +91,21 @@ export class FieldFeedbacks extends
   }
 
   componentWillMount() {
-    this.context.form.fieldsStore.addField(this.fieldName);
+    const { form, fieldFeedbacks: fieldFeedbacksParent } = this.context;
 
-    if (this.context.fieldFeedbacks) {
-      this.context.fieldFeedbacks.addValidateFieldEventListener(this.validate);
-      this.context.fieldFeedbacks.addResetEventListener(this.reset);
-    }
-    else {
-      this.context.form.addValidateFieldEventListener(this.validate);
-      this.context.form.addResetEventListener(this.reset);
-    }
+    form.fieldsStore.addField(this.fieldName);
+
+    const parent = fieldFeedbacksParent ? fieldFeedbacksParent : form;
+    parent.addValidateFieldEventListener(this.validate);
   }
 
   componentWillUnmount() {
-    this.context.form.fieldsStore.removeField(this.fieldName);
+    const { form, fieldFeedbacks: fieldFeedbacksParent } = this.context;
 
-    if (this.context.fieldFeedbacks) {
-      this.context.fieldFeedbacks.removeValidateFieldEventListener(this.validate);
-      this.context.fieldFeedbacks.removeResetEventListener(this.reset);
-    }
-    else {
-      this.context.form.removeValidateFieldEventListener(this.validate);
-      this.context.form.removeResetEventListener(this.reset);
-    }
+    form.fieldsStore.removeField(this.fieldName);
+
+    const parent = fieldFeedbacksParent ? fieldFeedbacksParent : form;
+    parent.removeValidateFieldEventListener(this.validate);
   }
 
   async validate(input: Input) {
@@ -122,7 +113,7 @@ export class FieldFeedbacks extends
 
     let validations;
 
-    const field = form.fieldsStore.getField(this.fieldName);
+    const field = form.fieldsStore.getField(this.fieldName)!;
 
     if (input.name === this.fieldName) { // Ignore the event if it's not for us
       if (fieldFeedbacksParent !== undefined && (
@@ -147,11 +138,6 @@ export class FieldFeedbacks extends
     validations = flattenDeep<FieldFeedbackValidation | undefined>(arrayOfArrays);
 
     return validations;
-  }
-
-  reset() {
-    this.context.form.fieldsStore.clear();
-    this.emitResetEvent();
   }
 
   render() {

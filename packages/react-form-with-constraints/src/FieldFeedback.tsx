@@ -60,7 +60,7 @@ export class FieldFeedback extends React.Component<FieldFeedbackProps, FieldFeed
   };
   context!: FieldFeedbackContext;
 
-  readonly key: string; // "0.1", "1.0", "3.5"...
+  readonly key: string; // '0.1', '1.0', '3.5'...
 
   constructor(props: FieldFeedbackProps, context: FieldFeedbackContext) {
     super(props, context);
@@ -93,22 +93,28 @@ export class FieldFeedback extends React.Component<FieldFeedbackProps, FieldFeed
   }
 
   componentWillMount() {
-    if (this.context.async) this.context.async.addValidateFieldEventListener(this.validate);
-    else this.context.fieldFeedbacks.addValidateFieldEventListener(this.validate);
-    this.context.fieldFeedbacks.addResetEventListener(this.reset);
+    const { form, fieldFeedbacks, async } = this.context;
+
+    if (async) async.addValidateFieldEventListener(this.validate);
+    else fieldFeedbacks.addValidateFieldEventListener(this.validate);
+
+    form.addResetEventListener(this.reset);
   }
 
   componentWillUnmount() {
-    if (this.context.async) this.context.async.removeValidateFieldEventListener(this.validate);
-    else this.context.fieldFeedbacks.removeValidateFieldEventListener(this.validate);
-    this.context.fieldFeedbacks.removeResetEventListener(this.reset);
+    const { form, fieldFeedbacks, async } = this.context;
+
+    if (async) async.removeValidateFieldEventListener(this.validate);
+    else fieldFeedbacks.removeValidateFieldEventListener(this.validate);
+
+    form.removeResetEventListener(this.reset);
   }
 
   async validate(input: Input) {
     const { when } = this.props;
-    const { fieldFeedbacks } = this.context;
+    const { form, fieldFeedbacks } = this.context;
 
-    const field = this.context.form.fieldsStore.getField(input.name);
+    const field = form.fieldsStore.getField(input.name)!;
 
     const validation = {...this.state.validation}; // Copy state so we don't modify it directly (use of setState() instead)
 

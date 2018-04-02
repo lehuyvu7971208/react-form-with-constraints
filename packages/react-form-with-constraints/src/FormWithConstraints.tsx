@@ -116,7 +116,7 @@ export class FormWithConstraints
 
   private fieldFeedbacksKeyCounter = 0;
   computeFieldFeedbacksKey() {
-    return this.fieldFeedbacksKeyCounter++;
+    return `${this.fieldFeedbacksKeyCounter++}`;
   }
 
   /**
@@ -124,12 +124,12 @@ export class FormWithConstraints
    * If called without arguments, validates all fields ($('[name]')).
    */
   validateFields(...inputsOrNames: Array<Input | string>) {
-    return this._validateFields(true /* forceValidateFields */, ...inputsOrNames);
+    return this._validateFields(/* forceValidateFields */ true, ...inputsOrNames);
   }
 
   // Validates only what's necessary (e.g. non-checked fields)
   validateForm() {
-    return this._validateFields(false /* forceValidateFields */);
+    return this._validateFields(/* forceValidateFields */ false);
   }
 
   async validateField(forceValidateFields: boolean, input: Input) {
@@ -220,9 +220,9 @@ export class FormWithConstraints
     return this.fieldsStore.isValid();
   }
 
-  async reset() {
+  reset() {
     this.fieldsStore.clear();
-    await this.emitResetEvent();
+    return this.emitResetEvent();
   }
 
   render() {

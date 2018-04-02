@@ -91,7 +91,7 @@ export class Async<T> extends
 
     let validations;
 
-    const field = form.fieldsStore.getField(input.name);
+    const field = form.fieldsStore.getField(input.name)!;
 
     if (fieldFeedbacks.props.stop === 'first' && field.hasAnyFeedbacks(fieldFeedbacks.key) ||
         fieldFeedbacks.props.stop === 'first-error' && field.hasErrors(fieldFeedbacks.key) ||
