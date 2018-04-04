@@ -1,10 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import withValidateFieldEventEmitter from './withValidateFieldEventEmitter';
-import withFieldWillValidateEventEmitter from './withFieldWillValidateEventEmitter';
-import withFieldDidValidateEventEmitter from './withFieldDidValidateEventEmitter';
-import withResetEventEmitter from './withResetEventEmitter';
+import { withValidateFieldEventEmitter } from './withValidateFieldEventEmitter';
+import { withFieldWillValidateEventEmitter } from './withFieldWillValidateEventEmitter';
+import { withFieldDidValidateEventEmitter } from './withFieldDidValidateEventEmitter';
+import { withResetEventEmitter } from './withResetEventEmitter';
 // @ts-ignore
 // TS6133: 'EventEmitter' is declared but its value is never read.
 // FIXME See https://github.com/Microsoft/TypeScript/issues/9944#issuecomment-309903027
