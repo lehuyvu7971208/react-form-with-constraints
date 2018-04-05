@@ -22,20 +22,6 @@ export default class Field {
   }
 
   private hasFeedbacksOfType(type: FieldFeedbackType, fieldFeedbacksKey?: string, excludeKey?: string) {
-    if (excludeKey !== undefined) {
-      const foundMatching = this.validations.find(fieldFeedback => fieldFeedback.key === excludeKey);
-      console.assert(foundMatching !== undefined, `No field feedback matching '${excludeKey}'`);
-    }
-    if (fieldFeedbacksKey !== undefined) {
-      const foundStartingWith = this.validations.find(fieldFeedback => fieldFeedback.key.startsWith(`${fieldFeedbacksKey}.`));
-      console.assert(foundStartingWith !== undefined, `No field feedback starting with '${fieldFeedbacksKey}.'`);
-
-      if (excludeKey !== undefined) {
-        const foundStartingWithAndMatching = this.validations.find(fieldFeedback => fieldFeedback.key.startsWith(`${fieldFeedbacksKey}.`) && fieldFeedback.key === excludeKey);
-        console.assert(foundStartingWithAndMatching !== undefined, `No field feedback starting with '${fieldFeedbacksKey}.' and matching '${excludeKey}'`);
-      }
-    }
-
     return this.validations.some(fieldFeedback =>
       (fieldFeedbacksKey === undefined || fieldFeedback.key.startsWith(`${fieldFeedbacksKey}.`)) &&
       (excludeKey === undefined || fieldFeedback.key !== excludeKey) &&

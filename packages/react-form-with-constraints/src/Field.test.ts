@@ -84,6 +84,24 @@ test('clear()', () => {
 
 test('has*() + isValid()', () => {
   const field = new Field('password');
+
+  expect(field.validations).toEqual([]);
+
+  expect(field.hasErrors()).toEqual(false);
+  expect(field.hasErrors('0')).toEqual(false);
+  expect(field.hasErrors('1')).toEqual(false);
+  expect(field.hasWarnings()).toEqual(false);
+  expect(field.hasWarnings('0')).toEqual(false);
+  expect(field.hasWarnings('1')).toEqual(false);
+  expect(field.hasInfos()).toEqual(false);
+  expect(field.hasInfos('0')).toEqual(false);
+  expect(field.hasInfos('1')).toEqual(false);
+  expect(field.hasAnyFeedbacks()).toEqual(false);
+  expect(field.hasAnyFeedbacks('0')).toEqual(false);
+  expect(field.hasAnyFeedbacks('1')).toEqual(false);
+  expect(field.isValid()).toEqual(true);
+
+
   field.addOrReplaceValidation(validation_empty);
   field.addOrReplaceValidation(validation_length);
   field.addOrReplaceValidation(validation_letters);
@@ -203,24 +221,4 @@ test('has*() + isValid()', () => {
   expect(field.hasAnyFeedbacks('0')).toEqual(false);
   expect(field.hasAnyFeedbacks('1')).toEqual(false);
   expect(field.isValid()).toEqual(true);
-});
-
-test('hasFeedbacksOfType() assertions', () => {
-  const field = new Field('password');
-  field.addOrReplaceValidation(validation_empty);
-  const validation_letters2: FieldFeedbackValidation = {
-    key: validation_letters.key,
-    type: validation_letters.type,
-    show: false
-  };
-  field.addOrReplaceValidation(validation_letters2);
-
-  expect(field.hasErrors()).toEqual(true);
-  expect(field.hasErrors('0')).toEqual(true);
-  expect(field.hasErrors('1')).toEqual(false);
-  expect(() => field.hasErrors('2')).toThrow("No field feedback starting with '2.'");
-  expect(field.hasErrors('0', '0.0')).toEqual(false);
-  expect(field.hasErrors('1', '1.0')).toEqual(false);
-  expect(() => field.hasErrors('0', '0.1')).toThrow("No field feedback matching '0.1'");
-  expect(() => field.hasErrors('1', '0.0')).toThrow("No field feedback starting with '1.' and matching '0.0'");
 });
