@@ -27,7 +27,7 @@ export class FieldsStore extends EventEmitter {
     if (fields.length === 0) {
       const newField = new Field(fieldName);
       this.fields.push(newField);
-      this.emit(FieldEvent.Added, fieldName, newField);
+      this.emit(FieldEvent.Added, newField);
     } else {
       // We can have multiple FieldFeedbacks for the same field,
       // thus addField() can be called multiple times

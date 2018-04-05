@@ -2,7 +2,7 @@ import Field from './Field';
 import FieldFeedbackValidation from './FieldFeedbackValidation';
 import { FieldFeedbackType } from './FieldFeedback';
 
-test('constructor', () => {
+test('constructor()', () => {
   const field = new Field('password');
   expect(field).toEqual({
     name: 'password',

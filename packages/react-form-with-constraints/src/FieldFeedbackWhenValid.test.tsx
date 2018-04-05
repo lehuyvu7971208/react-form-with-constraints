@@ -21,7 +21,7 @@ beforeEach(() => {
   fieldFeedbacks_username = new FieldFeedbacks({for: 'username', stop: 'no'}, {form: form_username});
 });
 
-test('constructor', () => {
+test('constructor()', () => {
   const wrapper = shallow(
     <FieldFeedbackWhenValid />,
     {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
