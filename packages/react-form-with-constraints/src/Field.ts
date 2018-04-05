@@ -21,7 +21,7 @@ export default class Field {
     clearArray(this.validations);
   }
 
-  private hasFeedbacksOfType(type: FieldFeedbackType, fieldFeedbacksKey?: string, excludeKey?: string) {
+  hasFeedbacksOfType(type: FieldFeedbackType, fieldFeedbacksKey?: string, excludeKey?: string) {
     return this.validations.some(fieldFeedback =>
       (fieldFeedbacksKey === undefined || fieldFeedback.key.startsWith(`${fieldFeedbacksKey}.`)) &&
       (excludeKey === undefined || fieldFeedback.key !== excludeKey) &&

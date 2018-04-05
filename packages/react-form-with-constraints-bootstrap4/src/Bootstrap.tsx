@@ -52,8 +52,8 @@ export class FormControlInput extends React.Component<FormControlInputProps, For
     }
   }
 
-  fieldDidValidate(fieldName: string, field: Field) {
-    if (fieldName === this.props.name) { // Ignore the event if it's not for us
+  fieldDidValidate(field: Field) {
+    if (field.name === this.props.name) { // Ignore the event if it's not for us
       this.setState({field});
     }
   }

@@ -158,7 +158,7 @@ export class FormWithConstraints
         `The store '${validationsFromStore}' does not match emitValidateFieldEvent() result '${validationsFromEmitValidateFieldEvent}'`
       );
 
-      this.emitFieldDidValidateEvent(fieldName, field);
+      this.emitFieldDidValidateEvent(field);
     }
 
     return field;

@@ -55,8 +55,8 @@ export class FieldFeedbackWhenValid extends React.Component<FieldFeedbackWhenVal
     }
   }
 
-  fieldDidValidate(fieldName: string, field: Field) {
-    if (fieldName === this.context.fieldFeedbacks.fieldName) { // Ignore the event if it's not for us
+  fieldDidValidate(field: Field) {
+    if (field.name === this.context.fieldFeedbacks.fieldName) { // Ignore the event if it's not for us
       this.setState({fieldIsValid: field.isValid()});
     }
   }
