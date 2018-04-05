@@ -19,7 +19,7 @@ test('constructor()', () => {
     {context: {form: new_FormWithConstraints({})}}
   );
   const fieldFeedbacks = wrapper.instance() as FieldFeedbacks;
-  expect(fieldFeedbacks.key).toEqual(0);
+  expect(fieldFeedbacks.key).toEqual('0');
 });
 
 test('computeFieldFeedbackKey()', () => {
@@ -44,18 +44,18 @@ test('computeFieldFeedbackKey()', () => {
 describe('componentWillMount()', () => {
   test('initialize FieldsStore', () => {
     const form = new_FormWithConstraints({});
-    expect(form.fieldsStore.fields).toEqual({});
+    expect(form.fieldsStore.fields).toEqual([]);
 
     const wrapper = shallow(
       <FieldFeedbacks for="username" />,
       {context: {form}}
     );
-    expect(form.fieldsStore.fields).toEqual({
-      username: {validateEventEmitted: false}
-    });
+    expect(form.fieldsStore.fields).toEqual([
+      {name: 'username', validations: []}
+    ]);
 
     wrapper.unmount();
-    expect(form.fieldsStore.fields).toEqual({});
+    expect(form.fieldsStore.fields).toEqual([]);
   });
 
   test('componentWillUnmount()', () => {
@@ -90,17 +90,14 @@ describe('validate()', () => {
     const emitValidateFieldEventSpy = jest.spyOn(fieldFeedbacks, 'emitValidateFieldEvent');
 
     expect(emitValidateFieldEventSpy).toHaveBeenCalledTimes(0);
-    const fieldFeedbackValidations = await form.validateFields(input_username_valid);
-    expect(fieldFeedbackValidations).toEqual([{
-      fieldName: 'username',
-      fieldFeedbackValidations: []
-    }]);
+    const fields = await form.validateFields(input_username_valid);
+    expect(fields).toEqual([
+      {name: 'username', validations: []}
+    ]);
     expect(emitValidateFieldEventSpy).toHaveBeenCalledTimes(1);
     expect(emitValidateFieldEventSpy).toHaveBeenLastCalledWith(input_username_valid);
 
-    expect(form.fieldsStore.fields).toEqual({
-      username: {validateEventEmitted: true}
-    });
+    expect(form.fieldsStore.fields).toEqual(fields);
   });
 
   test('known input name - mount', async () => {
@@ -111,17 +108,17 @@ describe('validate()', () => {
       </FieldFeedbacks>,
       {context: {form}}
     );
-    const fieldFeedbackValidations = await form.validateFields(input_username_valid);
-    expect(fieldFeedbackValidations).toEqual([{
-      fieldName: 'username',
-      fieldFeedbackValidations: [
-        {key: '0.0', type: 'error', show: false}
-      ]
-    }]);
+    const fields = await form.validateFields(input_username_valid);
+    expect(fields).toEqual([
+      {
+        name: 'username',
+        validations: [
+          {key: '0.0', type: 'error', show: false}
+        ]
+      }
+    ]);
 
-    expect(form.fieldsStore.fields).toEqual({
-      username: {validateEventEmitted: true}
-    });
+    expect(form.fieldsStore.fields).toEqual(fields);
   });
 
   test('unknown input name - emitValidateFieldEvent', async () => {
@@ -136,13 +133,13 @@ describe('validate()', () => {
 
     expect(emitValidateFieldEventSpy).toHaveBeenCalledTimes(0);
     const input = new InputMock('unknown', '', {valid: false, valueMissing: true}, 'Suffering from being missing');
-    const fieldFeedbackValidations = await form.validateFields(input);
-    expect(fieldFeedbackValidations).toEqual([]);
+    const fields = await form.validateFields(input);
+    expect(fields).toEqual([]);
     expect(emitValidateFieldEventSpy).toHaveBeenCalledTimes(0);
 
-    expect(form.fieldsStore.fields).toEqual({
-      username: {validateEventEmitted: false}
-    });
+    expect(form.fieldsStore.fields).toEqual([
+      {name: 'username', validations: []}
+    ]);
   });
 
   test('unknown input name - mount', async () => {
@@ -154,12 +151,12 @@ describe('validate()', () => {
       {context: {form}}
     );
     const input = new InputMock('unknown', '', {valid: false, valueMissing: true}, 'Suffering from being missing');
-    const fieldFeedbackValidations = await form.validateFields(input);
-    expect(fieldFeedbackValidations).toEqual([]);
+    const fields = await form.validateFields(input);
+    expect(fields).toEqual([]);
 
-    expect(form.fieldsStore.fields).toEqual({
-      username: {validateEventEmitted: false}
-    });
+    expect(form.fieldsStore.fields).toEqual([
+      {name: 'username', validations: []}
+    ]);
   });
 
   // FIXME What is this?
@@ -169,15 +166,12 @@ describe('validate()', () => {
       <FieldFeedbacks for="username" />,
       {context: {form}}
     );
-    const fieldFeedbackValidations = await form.validateFields(input_username_valid);
-    expect(fieldFeedbackValidations).toEqual([{
-      fieldName: 'username',
-      fieldFeedbackValidations: []
-    }]);
+    const fields = await form.validateFields(input_username_valid);
+    expect(fields).toEqual([
+      {name: 'username', validations: []}
+    ]);
 
-    expect(form.fieldsStore.fields).toEqual({
-      username: {validateEventEmitted: true}
-    });
+    expect(form.fieldsStore.fields).toEqual(fields);
   });
 });
 
@@ -190,7 +184,7 @@ describe('render()', () => {
     );
 
     expect(wrapper.html()).toEqual(
-      '<div></div>'
+      '<div data-feedbacks="0"></div>'
     );
   });
 
@@ -202,16 +196,18 @@ describe('render()', () => {
       </FieldFeedbacks>,
       {context: {form}}
     );
-    const fieldFeedbackValidations = await form.validateFields(input_username_valueMissing);
-    expect(fieldFeedbackValidations).toEqual([{
-      fieldName: 'username',
-      fieldFeedbackValidations: [
-        {key: '0.0', type: 'error', show: true}
-      ]
-    }]);
+    const fields = await form.validateFields(input_username_valueMissing);
+    expect(fields).toEqual([
+      {
+        name: 'username',
+        validations: [
+          {key: '0.0', type: 'error', show: true}
+        ]
+      }
+    ]);
 
     expect(wrapper.html()).toEqual(
-      '<div><div data-feedback="0.0" class="error">Suffering from being missing</div></div>'
+      '<div data-feedbacks="0"><div data-feedback="0.0" class="error">Suffering from being missing</div></div>'
     );
   });
 
@@ -225,16 +221,18 @@ describe('render()', () => {
       </FieldFeedbacks>,
       {context: {form}}
     );
-    const fieldFeedbackValidations = await form.validateFields(input_username_valueMissing);
-    expect(fieldFeedbackValidations).toEqual([{
-      fieldName: 'username',
-      fieldFeedbackValidations: [
-        {key: '0.0', type: 'error', show: true}
-      ]
-    }]);
+    const fields = await form.validateFields(input_username_valueMissing);
+    expect(fields).toEqual([
+      {
+        name: 'username',
+        validations: [
+          {key: '0.0', type: 'error', show: true}
+        ]
+      }
+    ]);
 
     expect(wrapper.html()).toEqual(
-      '<div><div><div data-feedback="0.0" class="error">Suffering from being missing</div></div></div>'
+      '<div data-feedbacks="0"><div><div data-feedback="0.0" class="error">Suffering from being missing</div></div></div>'
     );
   });
 
@@ -247,11 +245,11 @@ describe('render()', () => {
       {context: {form}}
     );
     const input = new InputMock('unknown', '', {valid: false, valueMissing: true}, 'Suffering from being missing');
-    const fieldFeedbackValidations = await form.validateFields(input);
-    expect(fieldFeedbackValidations).toEqual([]);
+    const fields = await form.validateFields(input);
+    expect(fields).toEqual([]);
 
     expect(wrapper.html()).toEqual(
-      '<div></div>'
+      '<div data-feedbacks="0"></div>'
     );
   });
 
@@ -266,21 +264,23 @@ describe('render()', () => {
         </FieldFeedbacks>,
         {context: {form}}
       );
-      const fieldFeedbackValidations = await form.validateFields(input_username_valueMissing);
-      expect(fieldFeedbackValidations).toEqual([{
-        fieldName: 'username',
-        fieldFeedbackValidations: [
-          {key: '0.0', type: 'error', show: true},
-          {key: '0.1', type: 'error', show: true},
-          {key: '0.2', type: 'error', show: true}
-        ]
-      }]);
+      const fields = await form.validateFields(input_username_valueMissing);
+      expect(fields).toEqual([
+        {
+          name: 'username',
+          validations: [
+            {key: '0.0', type: 'error', show: true},
+            {key: '0.1', type: 'error', show: true},
+            {key: '0.2', type: 'error', show: true}
+          ]
+        }
+      ]);
 
       expect(wrapper.html()).toEqual(
-        '<div>' +
-        '<div data-feedback="0.0" class="error">Suffering from being missing</div>' +
-        '<div data-feedback="0.1" class="error">Suffering from being missing</div>' +
-        '<div data-feedback="0.2" class="error">Suffering from being missing</div>' +
+        '<div data-feedbacks="0">' +
+          '<div data-feedback="0.0" class="error">Suffering from being missing</div>' +
+          '<div data-feedback="0.1" class="error">Suffering from being missing</div>' +
+          '<div data-feedback="0.2" class="error">Suffering from being missing</div>' +
         '</div>'
       );
     });
@@ -295,18 +295,20 @@ describe('render()', () => {
         </FieldFeedbacks>,
         {context: {form}}
       );
-      const fieldFeedbackValidations = await form.validateFields(input_username_valueMissing);
-      expect(fieldFeedbackValidations).toEqual([{
-        fieldName: 'username',
-        fieldFeedbackValidations: [
-          {key: '0.0', type: 'error', show: true},
-          {key: '0.1', type: 'error', show: undefined},
-          {key: '0.2', type: 'error', show: undefined}
-        ]
-      }]);
+      const fields = await form.validateFields(input_username_valueMissing);
+      expect(fields).toEqual([
+        {
+          name: 'username',
+          validations: [
+            {key: '0.0', type: 'error', show: true},
+            {key: '0.1', type: 'error', show: undefined},
+            {key: '0.2', type: 'error', show: undefined}
+          ]
+        }
+      ]);
 
       expect(wrapper.html()).toEqual(
-        '<div><div data-feedback="0.0" class="error">Suffering from being missing</div></div>'
+        '<div data-feedbacks="0"><div data-feedback="0.0" class="error">Suffering from being missing</div></div>'
       );
     });
 
@@ -321,17 +323,19 @@ describe('render()', () => {
         {context: {form}}
       );
       const fieldFeedbackValidations = await form.validateFields(input_username_valueMissing);
-      expect(fieldFeedbackValidations).toEqual([{
-        fieldName: 'username',
-        fieldFeedbackValidations: [
-          {key: '0.0', type: 'warning', show: true},
-          {key: '0.1', type: 'error', show: true},
-          {key: '0.2', type: 'info', show: undefined}
-        ]
-      }]);
+      expect(fieldFeedbackValidations).toEqual([
+        {
+          name: 'username',
+          validations: [
+            {key: '0.0', type: 'warning', show: true},
+            {key: '0.1', type: 'error', show: true},
+            {key: '0.2', type: 'info', show: undefined}
+          ]
+        }
+      ]);
 
       expect(wrapper.html()).toEqual(
-        '<div><div data-feedback="0.0" class="warning">Suffering from being missing</div><div data-feedback="0.1" class="error">Suffering from being missing</div></div>'
+        '<div data-feedbacks="0"><div data-feedback="0.0" class="warning">Suffering from being missing</div><div data-feedback="0.1" class="error">Suffering from being missing</div></div>'
       );
     });
   });
