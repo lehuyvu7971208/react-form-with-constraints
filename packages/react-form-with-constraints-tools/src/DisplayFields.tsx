@@ -25,17 +25,19 @@ export class DisplayFields extends React.Component<DisplayFieldsProps> {
   }
 
   componentWillMount() {
-    this.context.form.fieldsStore.addListener(FieldEvent.Added, this.reRender);
-    this.context.form.fieldsStore.addListener(FieldEvent.Removed, this.reRender);
-    this.context.form.addFieldWillValidateEventListener(this.reRender);
-    this.context.form.addFieldDidValidateEventListener(this.reRender);
+    const { form } = this.context;
+    form.fieldsStore.addListener(FieldEvent.Added, this.reRender);
+    form.fieldsStore.addListener(FieldEvent.Removed, this.reRender);
+    form.addFieldDidValidateEventListener(this.reRender);
+    form.addResetEventListener(this.reRender);
   }
 
   componentWillUnmount() {
-    this.context.form.fieldsStore.removeListener(FieldEvent.Added, this.reRender);
-    this.context.form.fieldsStore.removeListener(FieldEvent.Removed, this.reRender);
-    this.context.form.removeFieldWillValidateEventListener(this.reRender);
-    this.context.form.removeFieldDidValidateEventListener(this.reRender);
+    const { form } = this.context;
+    form.fieldsStore.removeListener(FieldEvent.Added, this.reRender);
+    form.fieldsStore.removeListener(FieldEvent.Removed, this.reRender);
+    form.removeFieldDidValidateEventListener(this.reRender);
+    form.removeResetEventListener(this.reRender);
   }
 
   reRender() {

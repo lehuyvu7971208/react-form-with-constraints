@@ -1,7 +1,7 @@
 import React from 'react';
 import { shallow as _shallow } from 'enzyme';
 
-import { FormWithConstraints, FormWithConstraintsChildContext, fieldWithoutFeedback, FieldEvent } from 'react-form-with-constraints';
+import { FormWithConstraints, FormWithConstraintsChildContext, FieldEvent, Field, FieldFeedbackValidation, FieldFeedbackType } from 'react-form-with-constraints';
 
 import { DisplayFields } from './index';
 import new_FormWithConstraints from './FormWithConstraintsEnzymeFix';
@@ -9,15 +9,6 @@ import new_FormWithConstraints from './FormWithConstraintsEnzymeFix';
 function shallow(node: React.ReactElement<{}>, options: {context: FormWithConstraintsChildContext}) {
   return _shallow<{}>(node, options);
 }
-
-let form_username: FormWithConstraints;
-
-beforeEach(() => {
-  form_username = new_FormWithConstraints({});
-  form_username.fieldsStore.fields = {
-    username: fieldWithoutFeedback
-  };
-});
 
 test('componentWillMount() componentWillUnmount()', () => {
   const form = new_FormWithConstraints({});
@@ -30,118 +21,180 @@ test('componentWillMount() componentWillUnmount()', () => {
   );
   const displayFields = wrapper.instance() as DisplayFields;
 
-  expect(fieldsStoreAddListenerSpy).toHaveBeenCalledTimes(3);
+  expect(fieldsStoreAddListenerSpy).toHaveBeenCalledTimes(2);
   expect(fieldsStoreAddListenerSpy.mock.calls).toEqual([
-    [FieldEvent.Added, displayFields.fieldAdded],
-    [FieldEvent.Removed, displayFields.fieldRemoved],
-    [FieldEvent.Updated, displayFields.fieldUpdated]
+    [FieldEvent.Added, displayFields.reRender],
+    [FieldEvent.Removed, displayFields.reRender]
   ]);
   expect(fieldsStoreRemoveListenerSpy).toHaveBeenCalledTimes(0);
 
   wrapper.unmount();
-  expect(fieldsStoreAddListenerSpy).toHaveBeenCalledTimes(3);
-  expect(fieldsStoreRemoveListenerSpy).toHaveBeenCalledTimes(3);
+  expect(fieldsStoreAddListenerSpy).toHaveBeenCalledTimes(2);
+  expect(fieldsStoreRemoveListenerSpy).toHaveBeenCalledTimes(2);
   expect(fieldsStoreRemoveListenerSpy.mock.calls).toEqual([
-    [FieldEvent.Added, displayFields.fieldAdded],
-    [FieldEvent.Removed, displayFields.fieldRemoved],
-    [FieldEvent.Updated, displayFields.fieldUpdated]
+    [FieldEvent.Added, displayFields.reRender],
+    [FieldEvent.Removed, displayFields.reRender]
   ]);
 });
 
+
 describe('render()', () => {
-  test('1 field', () => {
-    const wrapper = shallow(
-      <DisplayFields />,
-      {context: {form: form_username}}
-    );
+  let form_username: FormWithConstraints;
 
-    expect(wrapper.text()).toEqual(
-`Fields = {
-  username: {
-    validateEventEmitted: false
-  }
-}`);
+  const validation_empty: FieldFeedbackValidation = {
+    key: '0.0',
+    type: FieldFeedbackType.Error,
+    show: true
+  };
 
-    expect(wrapper.html()).toEqual(
-`<pre style="font-size:small">Fields = {
-  username: {
-    validateEventEmitted: false
-  }
-}</pre>`);
+  beforeEach(() => {
+    form_username = new_FormWithConstraints({});
   });
 
-  test('adding field', () => {
+  test('0 field', () => {
     const wrapper = shallow(
       <DisplayFields />,
       {context: {form: form_username}}
     );
+
+    expect(wrapper.text()).toEqual(`Fields = []`);
+    expect(wrapper.html()).toEqual(`<pre style="font-size:small">Fields = []</pre>`);
+  });
+
+  test('add field', () => {
+    const wrapper = shallow(
+      <DisplayFields />,
+      {context: {form: form_username}}
+    );
+
+    form_username.fieldsStore.addField('username');
+
+    // See http://airbnb.io/enzyme/docs/guides/migration-from-2-to-3.html#for-mount-updates-are-sometimes-required-when-they-werent-before
+    wrapper.update();
+
+    expect(wrapper.text()).toEqual(
+`Fields = [
+  {
+    name: "username",
+    validations: []
+  }
+]`);
 
     form_username.fieldsStore.addField('password');
+    wrapper.update();
+    expect(wrapper.text()).toEqual(
+`Fields = [
+  {
+    name: "username",
+    validations: []
+  },
+  {
+    name: "password",
+    validations: []
+  }
+]`);
+  });
+
+  test('remove field', () => {
+    const wrapper = shallow(
+      <DisplayFields />,
+      {context: {form: form_username}}
+    );
+
+    form_username.fieldsStore.addField('username');
+    form_username.fieldsStore.addField('password');
+    wrapper.update();
+    expect(wrapper.text()).toEqual(
+`Fields = [
+  {
+    name: "username",
+    validations: []
+  },
+  {
+    name: "password",
+    validations: []
+  }
+]`);
+
+    form_username.fieldsStore.removeField('password');
+    wrapper.update();
+    expect(wrapper.text()).toEqual(
+`Fields = [
+  {
+    name: "username",
+    validations: []
+  }
+]`);
+  });
+
+  test('form.emitFieldDidValidateEvent()', async () => {
+    const wrapper = shallow(
+      <DisplayFields />,
+      {context: {form: form_username}}
+    );
+
+    form_username.fieldsStore.addField('username');
+    form_username.fieldsStore.addField('password');
+    const username = form_username.fieldsStore.getField('username')!;
+    username.addOrReplaceValidation(validation_empty);
+    await form_username.emitFieldDidValidateEvent(username);
 
     // See http://airbnb.io/enzyme/docs/guides/migration-from-2-to-3.html#for-mount-updates-are-sometimes-required-when-they-werent-before
     wrapper.update();
 
     expect(wrapper.text()).toEqual(
-`Fields = {
-  username: {
-    validateEventEmitted: false
+`Fields = [
+  {
+    name: "username",
+    validations: [
+      { key: "0.0", type: "error", show: true }
+    ]
   },
-  password: {
-    validateEventEmitted: false
+  {
+    name: "password",
+    validations: []
   }
-}`);
+]`);
   });
 
-  test('removing field', () => {
+  test('form.reset()', async () => {
     const wrapper = shallow(
       <DisplayFields />,
       {context: {form: form_username}}
     );
 
-    form_username.fieldsStore.removeField('username');
-
+    form_username.fieldsStore.addField('username');
+    form_username.fieldsStore.addField('password');
+    const username = form_username.fieldsStore.getField('username')!;
+    username.addOrReplaceValidation(validation_empty);
+    await form_username.emitFieldDidValidateEvent(username);
     wrapper.update();
-
-    expect(wrapper.text()).toEqual('Fields = {}');
-  });
-
-  test('fieldValidated()', () => {
-    const wrapper = shallow(
-      <DisplayFields />,
-      {context: {form: form_username}}
-    );
-
-    form_username.validateFields();
-
-    // See http://airbnb.io/enzyme/docs/guides/migration-from-2-to-3.html#for-mount-updates-are-sometimes-required-when-they-werent-before
-    wrapper.update();
-
     expect(wrapper.text()).toEqual(
-`Fields = {
-  username: {
-    validateEventEmitted: false
+`Fields = [
+  {
+    name: "username",
+    validations: [
+      { key: "0.0", type: "error", show: true }
+    ]
   },
-  password: {
-    validateEventEmitted: false
+  {
+    name: "password",
+    validations: []
   }
-}`);
-  });
+]`);
 
-  test('reset()', () => {
-    const wrapper = shallow(
-      <DisplayFields />,
-      {context: {form: form_username}}
-    );
-
-    form_username.reset();
-
+    await form_username.reset();
     wrapper.update();
-
     expect(wrapper.text()).toEqual(
-`Fields = {
-  username: {
-    validateEventEmitted: false
+`Fields = [
+  {
+    name: "username",
+    validations: []
+  },
+  {
+    name: "password",
+    validations: []
   }
-}`);
+]`);
   });
 });
