@@ -6,7 +6,7 @@ import {
   FieldFeedback, FieldFeedbacksContext, ValidateFieldEvent, ResetEvent
 } from './index';
 import checkUsernameAvailability from './checkUsernameAvailability';
-import { InputMock, input_unknown_valueMissing, input_username_valid } from './InputMock';
+import { InputMock, input_unknown_valueMissing, input_username_valid, input_username_error_valid } from './InputMock';
 import new_FormWithConstraints from './FormWithConstraintsEnzymeFix';
 import FieldFeedbacks from './FieldFeedbacksEnzymeFix';
 
@@ -152,8 +152,7 @@ describe('render()', () => {
     );
     expect(wrapper.html()).toEqual('<div data-feedbacks="1"></div>');
 
-    const input = new InputMock('username', 'error', {valid: true}, '');
-    const fieldFeedbackValidationsPromise = form_username.validateFields(input);
+    const fieldFeedbackValidationsPromise = form_username.validateFields(input_username_error_valid);
     expect(wrapper.html()).toEqual('<div data-feedbacks="1">Pending...</div>');
 
     const fieldFeedbackValidations = await fieldFeedbackValidationsPromise;
@@ -184,8 +183,7 @@ describe('render()', () => {
     );
     expect(wrapper.html()).toEqual('<div data-feedbacks="1"></div>');
 
-    const input = new InputMock('username', 'error', {valid: true}, '');
-    const fieldFeedbackValidationsPromise = form_username.validateFields(input);
+    const fieldFeedbackValidationsPromise = form_username.validateFields(input_username_error_valid);
     expect(wrapper.html()).toEqual('<div data-feedbacks="1">Pending...</div>');
 
     const fieldFeedbackValidations = await fieldFeedbackValidationsPromise;

@@ -32,4 +32,5 @@ export class InputMock implements Input {
 
 export const input_username_valueMissing = new InputMock('username', '', {valid: false, valueMissing: true}, 'Suffering from being missing');
 export const input_username_valid = new InputMock('username', 'jimmy', {valid: true}, '');
+export const input_username_error_valid = new InputMock('username', 'error', {valid: true}, '');
 export const input_unknown_valueMissing = new InputMock('unknown', '', {valid: false, valueMissing: true}, 'Suffering from being missing');
