@@ -89,7 +89,7 @@ describe('validate()', () => {
   describe('when prop', () => {
     describe('string', () => {
       test('unknown', async () => {
-        shallow(
+        const wrapper = shallow(
           <FieldFeedback when={'unknown' as any} />,
           {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
         );
@@ -281,13 +281,13 @@ describe('validate()', () => {
       });
     });
 
-    test('invalid typeof', () => {
+    test('invalid typeof', async () => {
       shallow(
         <FieldFeedback when={2 as any} />,
         {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
       );
       const input = new InputMock('username', '', {}, '');
-      expect(fieldFeedbacks_username.emitValidateFieldEvent(input)).rejects.toEqual(new TypeError("Invalid FieldFeedback 'when' type: number"));
+      await expect(fieldFeedbacks_username.emitValidateFieldEvent(input)).rejects.toEqual(new TypeError("Invalid FieldFeedback 'when' type: number"));
     });
   });
 
@@ -344,7 +344,7 @@ describe('validate()', () => {
 
 describe('render()', () => {
   test('error', async () => {
-    const fieldFeedback = mount(
+    const wrapper = mount(
       <FieldFeedback when="*" error />,
       {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
     );
@@ -353,11 +353,11 @@ describe('render()', () => {
     expect(validations).toEqual([
       {key: '0.0', type: 'error', show: true}
     ]);
-    expect(fieldFeedback.html()).toEqual('<div data-feedback="0.0" class="error">Suffering from being missing</div>');
+    expect(wrapper.html()).toEqual('<div data-feedback="0.0" class="error">Suffering from being missing</div>');
   });
 
   test('warning', async () => {
-    const fieldFeedback = mount(
+    const wrapper = mount(
       <FieldFeedback when="*" warning />,
       {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
     );
@@ -366,11 +366,11 @@ describe('render()', () => {
     expect(validations).toEqual([
       {key: '0.0', type: 'warning', show: true}
     ]);
-    expect(fieldFeedback.html()).toEqual('<div data-feedback="0.0" class="warning">Suffering from being missing</div>');
+    expect(wrapper.html()).toEqual('<div data-feedback="0.0" class="warning">Suffering from being missing</div>');
   });
 
   test('info', async () => {
-    const fieldFeedback = mount(
+    const wrapper = mount(
       <FieldFeedback when="*" info />,
       {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
     );
@@ -379,11 +379,11 @@ describe('render()', () => {
     expect(validations).toEqual([
       {key: '0.0', type: 'info', show: true}
     ]);
-    expect(fieldFeedback.html()).toEqual('<div data-feedback="0.0" class="info">Suffering from being missing</div>');
+    expect(wrapper.html()).toEqual('<div data-feedback="0.0" class="info">Suffering from being missing</div>');
   });
 
   test('no error', async () => {
-    const fieldFeedback = mount(
+    const wrapper = mount(
       <FieldFeedback when="*" />,
       {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
     );
@@ -392,11 +392,11 @@ describe('render()', () => {
     expect(validations).toEqual([
       {key: '0.0', type: 'error', show: false}
     ]);
-    expect(fieldFeedback.html()).toEqual(null);
+    expect(wrapper.html()).toEqual(null);
   });
 
   test('with children', async () => {
-    const fieldFeedback = mount(
+    const wrapper = mount(
       <FieldFeedback when="*">message</FieldFeedback>,
       {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
     );
@@ -405,11 +405,11 @@ describe('render()', () => {
     expect(validations).toEqual([
       {key: '0.0', type: 'error', show: true}
     ]);
-    expect(fieldFeedback.html()).toEqual('<div data-feedback="0.0" class="error">message</div>');
+    expect(wrapper.html()).toEqual('<div data-feedback="0.0" class="error">message</div>');
   });
 
   test('with already existing class', async () => {
-    const fieldFeedback = mount(
+    const wrapper = mount(
       <FieldFeedback when="*" className="alreadyExistingClassName" />,
       {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
     );
@@ -418,11 +418,11 @@ describe('render()', () => {
     expect(validations).toEqual([
       {key: '0.0', type: 'error', show: true}
     ]);
-    expect(fieldFeedback.html()).toEqual('<div data-feedback="0.0" class="alreadyExistingClassName error">Suffering from being missing</div>');
+    expect(wrapper.html()).toEqual('<div data-feedback="0.0" class="alreadyExistingClassName error">Suffering from being missing</div>');
   });
 
   test('with div props', async () => {
-    const fieldFeedback = mount(
+    const wrapper = mount(
       <FieldFeedback when="*" style={{color: 'yellow'}} />,
       {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
     );
@@ -431,7 +431,7 @@ describe('render()', () => {
     expect(validations).toEqual([
       {key: '0.0', type: 'error', show: true}
     ]);
-    expect(fieldFeedback.html()).toEqual('<div data-feedback="0.0" style="color: yellow;" class="error">Suffering from being missing</div>');
+    expect(wrapper.html()).toEqual('<div data-feedback="0.0" style="color: yellow;" class="error">Suffering from being missing</div>');
   });
 
   test('when="valid"', async () => {

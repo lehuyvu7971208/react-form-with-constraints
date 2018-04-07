@@ -4,9 +4,10 @@ import { TextInput } from './react-native-TextInput-fix'; // Specific to TypeScr
 
 import {
   FormWithConstraints as _FormWithConstraints,
+  FieldFeedbacks as _FieldFeedbacks,
+  Async,
   FieldFeedback as _FieldFeedback,
   FieldFeedbackWhenValid as _FieldFeedbackWhenValid,
-  FieldFeedbacks as _FieldFeedbacks,
   Field
 } from 'react-form-with-constraints';
 
@@ -93,13 +94,21 @@ export class FormWithConstraints extends _FormWithConstraints {
       });
     }
 
-    inputs
-      .map(input => input.props.name)
-      .forEach((name, index, self) => {
-        if (self.indexOf(name) !== index) {
-          throw new Error(`Multiple elements matching '[name="${name}"]' inside the form`);
-        }
-      });
+    // Checks
+
+    const namesFound = inputs.map(input => input.props.name);
+    namesFound.forEach((name, index, self) => {
+      if (self.indexOf(name) !== index) {
+        throw new Error(`Multiple elements matching '[name="${name}"]' inside the form`);
+      }
+    });
+
+    const names = inputsOrNames.filter(input => typeof input === 'string') as string[];
+    names.forEach(name => {
+      if (!namesFound.includes(name)) {
+        throw new Error(`Could not find field '[name="${name}"]' inside the form`);
+      }
+    });
 
     return inputs;
   }
@@ -114,24 +123,12 @@ export class FormWithConstraints extends _FormWithConstraints {
 // FIXME See Support for Fragments in react native instead of view https://react-native.canny.io/feature-requests/p/support-for-fragments-in-react-native-instead-of-view
 export class FieldFeedbacks extends _FieldFeedbacks {
   render() {
-    return <View {...this.props as any} />;
+    return <View {...this.props} />;
   }
 }
 
 
-class FieldFeedbackWhenValid extends _FieldFeedbackWhenValid {
-  render() {
-    const { fieldIsValid } = this.state;
-    const { form } = this.context;
-                      // React Native implementation needs to access props thus the cast
-    const { style } = (form as any as FormWithConstraints).props;
-
-    const className = form.props.fieldFeedbackClassNames!.valid;
-    const tmp = style !== undefined ? style[className] : undefined;
-
-    return fieldIsValid ? <Text style={tmp} {...this.props} /> : null;
-  }
-}
+export { Async };
 
 
 export class FieldFeedback extends _FieldFeedback {
@@ -156,5 +153,20 @@ export class FieldFeedback extends _FieldFeedback {
     }
 
     return feedback;
+  }
+}
+
+
+class FieldFeedbackWhenValid extends _FieldFeedbackWhenValid {
+  render() {
+    const { fieldIsValid } = this.state;
+    const { form } = this.context;
+                      // React Native implementation needs to access props thus the cast
+    const { style } = (form as any as FormWithConstraints).props;
+
+    const className = form.props.fieldFeedbackClassNames!.valid;
+    const tmp = style !== undefined ? style[className] : undefined;
+
+    return fieldIsValid ? <Text style={tmp} {...this.props} /> : null;
   }
 }

@@ -136,8 +136,8 @@ export default class App extends React.Component<Props, State> {
           <View style={styles.flow}>
             <Text onPress={() => this.password!.focus()}>Password</Text>
             <TextInput
-              name="password"
               secureTextEntry
+              name="password"
               ref={input => this.password = input as any}
               value={this.state.password}
               onChangeText={this.handlePasswordChange}
@@ -157,8 +157,8 @@ export default class App extends React.Component<Props, State> {
           <View style={styles.flow}>
             <Text onPress={() => this.passwordConfirm!.focus()}>Confirm Password</Text>
             <TextInput
-              name="passwordConfirm"
               secureTextEntry
+              name="passwordConfirm"
               ref={input => this.passwordConfirm = input as any}
               value={this.state.passwordConfirm}
               onChangeText={this.handlePasswordConfirmChange}
@@ -199,16 +199,8 @@ const styles = StyleSheet.create({
 });
 
 const feedbacksStyles = StyleSheet.create({
-  error: {
-    color: 'red'
-  },
-  warning: {
-    color: 'orange'
-  },
-  info: {
-    color: 'blue'
-  },
-  valid: {
-    color: 'green'
-  }
+  error: {color: 'red'},
+  warning: {color: 'orange'},
+  info: {color: 'blue'},
+  valid: {color: 'green'}
 });

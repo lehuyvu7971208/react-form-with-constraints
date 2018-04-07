@@ -4,465 +4,584 @@ import { StyleSheet, /*TextInput,*/ View } from 'react-native';
 import { TextInput } from './react-native-TextInput-fix'; // Specific to TypeScript
 import renderer from 'react-test-renderer';
 
-import { fieldWithoutFeedback, FieldFeedbacksProps } from 'react-form-with-constraints';
+import { FieldFeedbacksProps, Field } from 'react-form-with-constraints';
 
+import beautifyHtml from '../../react-form-with-constraints/src/beautifyHtml';
+import { InputMock, input_username_valueMissing, input_username_valid } from '../../react-form-with-constraints/src/InputMock';
 import { FormWithConstraints, FieldFeedbacks, FieldFeedback } from './index';
 import new_FormWithConstraints from './FormWithConstraintsEnzymeFix';
+import { SignUp } from './SignUp';
 
 // Taken and adapted from FormWithConstraints.test.tsx
 describe('FormWithConstraints', () => {
   describe('validate', () => {
-    class SignUp extends React.Component {
-      form: FormWithConstraints | null | undefined;
-      username: TextInput | null | undefined;
-      password: TextInput | null | undefined;
-      passwordConfirm: TextInput | null | undefined;
-
-      render() {
-        return (
-          <FormWithConstraints ref={formWithConstraints => this.form = formWithConstraints}>
-            <TextInput
-              name="username"
-              ref={username => this.username = username as any}
-            />
-            <TextInput
-              name="password"
-              secureTextEntry
-              ref={password => this.password = password as any}
-            />
-            <TextInput
-              name="passwordConfirm"
-              secureTextEntry
-              ref={passwordConfirm => this.passwordConfirm = passwordConfirm as any}
-            />
-          </FormWithConstraints>
-        );
-      }
-    }
-
     describe('validateFields()', () => {
       test('inputs', async () => {
-        const signUp = renderer.create(<SignUp />).getInstance() as any as SignUp;
+        const wrapper = renderer.create(<SignUp />);
+        const signUp = wrapper.getInstance() as any as SignUp;
         const emitValidateFieldEventSpy = jest.spyOn(signUp.form!, 'emitValidateFieldEvent');
-        const fieldFeedbackValidations = await signUp.form!.validateFields(signUp.username!, signUp.password!, signUp.passwordConfirm!);
-        expect(fieldFeedbackValidations).toEqual([
+
+        signUp.setState({username: 'john'});
+        signUp.setState({password: '123456'});
+        signUp.setState({passwordConfirm: '12345'});
+
+        const fields = await signUp.form!.validateFields(signUp.username!, signUp.password!, signUp.passwordConfirm!);
+        expect(fields).toEqual([
           {
-            fieldName: 'username',
-            fieldFeedbackValidations: []
+            name: 'username',
+            validations: [
+              {key: '0.0', type: 'error', show: false},
+              {key: '0.1', type: 'error', show: false},
+              {key: '0.3', type: 'error', show: true},
+              {key: '0.2', type: 'whenValid', show: undefined}
+            ]
           },
           {
-            fieldName: 'password',
-            fieldFeedbackValidations: []
+            name: 'password',
+            validations: [
+              {key: '1.0', type: 'error', show: false},
+              {key: '1.1', type: 'error', show: false},
+              {key: '1.2', type: 'warning', show: false},
+              {key: '1.3', type: 'warning', show: true},
+              {key: '1.4', type: 'warning', show: true},
+              {key: '1.5', type: 'warning', show: true},
+              {key: '1.6', type: 'whenValid', show: undefined}
+            ]
           },
           {
-            fieldName: 'passwordConfirm',
-            fieldFeedbackValidations: []
+            name: 'passwordConfirm',
+            validations: [
+              {key: '2.0', type: 'error', show: true},
+              {key: '2.1', type: 'whenValid', show: undefined}
+            ]
           }
         ]);
         expect(emitValidateFieldEventSpy).toHaveBeenCalledTimes(3);
         expect(emitValidateFieldEventSpy.mock.calls).toEqual([
-          [{name: 'username', type: undefined, value: undefined, validity: undefined, validationMessage: undefined}],
-          [{name: 'password', type: undefined, value: undefined, validity: undefined, validationMessage: undefined}],
-          [{name: 'passwordConfirm', type: undefined, value: undefined, validity: undefined, validationMessage: undefined}]
+          [{name: 'username', type: undefined, value: 'john', validity: undefined, validationMessage: undefined}],
+          [{name: 'password', type: undefined, value: '123456', validity: undefined, validationMessage: undefined}],
+          [{name: 'passwordConfirm', type: undefined, value: '12345', validity: undefined, validationMessage: undefined}]
         ]);
+
+        wrapper.unmount();
       });
 
       test('field names', async () => {
-        const signUp = renderer.create(<SignUp />).getInstance() as any as SignUp;
+        const wrapper = renderer.create(<SignUp />);
+        const signUp = wrapper.getInstance() as any as SignUp;
         const emitValidateFieldEventSpy = jest.spyOn(signUp.form!, 'emitValidateFieldEvent');
-        const fieldFeedbackValidations = await signUp.form!.validateFields('username', 'password', 'passwordConfirm');
-        expect(fieldFeedbackValidations).toEqual([
+
+        signUp.setState({username: 'john'});
+        signUp.setState({password: '123456'});
+        signUp.setState({passwordConfirm: '12345'});
+
+        const fields = await signUp.form!.validateFields('username', 'password', 'passwordConfirm');
+        expect(fields).toEqual([
           {
-            fieldName: 'username',
-            fieldFeedbackValidations: []
+            name: 'username',
+            validations: [
+              {key: '0.0', type: 'error', show: false},
+              {key: '0.1', type: 'error', show: false},
+              {key: '0.3', type: 'error', show: true},
+              {key: '0.2', type: 'whenValid', show: undefined}
+            ]
           },
           {
-            fieldName: 'password',
-            fieldFeedbackValidations: []
+            name: 'password',
+            validations: [
+              {key: '1.0', type: 'error', show: false},
+              {key: '1.1', type: 'error', show: false},
+              {key: '1.2', type: 'warning', show: false},
+              {key: '1.3', type: 'warning', show: true},
+              {key: '1.4', type: 'warning', show: true},
+              {key: '1.5', type: 'warning', show: true},
+              {key: '1.6', type: 'whenValid', show: undefined}
+            ]
           },
           {
-            fieldName: 'passwordConfirm',
-            fieldFeedbackValidations: []
+            name: 'passwordConfirm',
+            validations: [
+              {key: '2.0', type: 'error', show: true},
+              {key: '2.1', type: 'whenValid', show: undefined}
+            ]
           }
         ]);
         expect(emitValidateFieldEventSpy).toHaveBeenCalledTimes(3);
         expect(emitValidateFieldEventSpy.mock.calls).toEqual([
-          [{name: 'username', type: undefined, value: undefined, validity: undefined, validationMessage: undefined}],
-          [{name: 'password', type: undefined, value: undefined, validity: undefined, validationMessage: undefined}],
-          [{name: 'passwordConfirm', type: undefined, value: undefined, validity: undefined, validationMessage: undefined}]
+          [{name: 'username', type: undefined, value: 'john', validity: undefined, validationMessage: undefined}],
+          [{name: 'password', type: undefined, value: '123456', validity: undefined, validationMessage: undefined}],
+          [{name: 'passwordConfirm', type: undefined, value: '12345', validity: undefined, validationMessage: undefined}]
         ]);
+
+        wrapper.unmount();
       });
 
       test('inputs + field names', async () => {
-        const signUp = renderer.create(<SignUp />).getInstance() as any as SignUp;
+        const wrapper = renderer.create(<SignUp />);
+        const signUp = wrapper.getInstance() as any as SignUp;
         const emitValidateFieldEventSpy = jest.spyOn(signUp.form!, 'emitValidateFieldEvent');
-        const fieldFeedbackValidations = await signUp.form!.validateFields(signUp.username!, 'password', signUp.passwordConfirm!);
-        expect(fieldFeedbackValidations).toEqual([
+
+        signUp.setState({username: 'john'});
+        signUp.setState({password: '123456'});
+        signUp.setState({passwordConfirm: '12345'});
+
+        const fields = await signUp.form!.validateFields(signUp.username!, 'password', signUp.passwordConfirm!);
+        expect(fields).toEqual([
           {
-            fieldName: 'username',
-            fieldFeedbackValidations: []
+            name: 'username',
+            validations: [
+              {key: '0.0', type: 'error', show: false},
+              {key: '0.1', type: 'error', show: false},
+              {key: '0.3', type: 'error', show: true},
+              {key: '0.2', type: 'whenValid', show: undefined}
+            ]
           },
           {
-            fieldName: 'password',
-            fieldFeedbackValidations: []
+            name: 'password',
+            validations: [
+              {key: '1.0', type: 'error', show: false},
+              {key: '1.1', type: 'error', show: false},
+              {key: '1.2', type: 'warning', show: false},
+              {key: '1.3', type: 'warning', show: true},
+              {key: '1.4', type: 'warning', show: true},
+              {key: '1.5', type: 'warning', show: true},
+              {key: '1.6', type: 'whenValid', show: undefined}
+            ]
           },
           {
-            fieldName: 'passwordConfirm',
-            fieldFeedbackValidations: []
+            name: 'passwordConfirm',
+            validations: [
+              {key: '2.0', type: 'error', show: true},
+              {key: '2.1', type: 'whenValid', show: undefined}
+            ]
           }
         ]);
         expect(emitValidateFieldEventSpy).toHaveBeenCalledTimes(3);
         expect(emitValidateFieldEventSpy.mock.calls).toEqual([
-          [{name: 'username', type: undefined, value: undefined, validity: undefined, validationMessage: undefined}],
-          [{name: 'password', type: undefined, value: undefined, validity: undefined, validationMessage: undefined}],
-          [{name: 'passwordConfirm', type: undefined, value: undefined, validity: undefined, validationMessage: undefined}]
+          [{name: 'username', type: undefined, value: 'john', validity: undefined, validationMessage: undefined}],
+          [{name: 'password', type: undefined, value: '123456', validity: undefined, validationMessage: undefined}],
+          [{name: 'passwordConfirm', type: undefined, value: '12345', validity: undefined, validationMessage: undefined}]
         ]);
+
+        wrapper.unmount();
       });
 
       test('without arguments', async () => {
-        const signUp = renderer.create(<SignUp />).getInstance() as any as SignUp;
+        const wrapper = renderer.create(<SignUp />);
+        const signUp = wrapper.getInstance() as any as SignUp;
         const emitValidateFieldEventSpy = jest.spyOn(signUp.form!, 'emitValidateFieldEvent');
-        const fieldFeedbackValidations = await signUp.form!.validateFields();
-        expect(fieldFeedbackValidations).toEqual([
+
+        signUp.setState({username: 'john'});
+        signUp.setState({password: '123456'});
+        signUp.setState({passwordConfirm: '12345'});
+
+        const fields = await signUp.form!.validateFields();
+        expect(fields).toEqual([
           {
-            fieldName: 'username',
-            fieldFeedbackValidations: []
+            name: 'username',
+            validations: [
+              {key: '0.0', type: 'error', show: false},
+              {key: '0.1', type: 'error', show: false},
+              {key: '0.3', type: 'error', show: true},
+              {key: '0.2', type: 'whenValid', show: undefined}
+            ]
           },
           {
-            fieldName: 'password',
-            fieldFeedbackValidations: []
+            name: 'password',
+            validations: [
+              {key: '1.0', type: 'error', show: false},
+              {key: '1.1', type: 'error', show: false},
+              {key: '1.2', type: 'warning', show: false},
+              {key: '1.3', type: 'warning', show: true},
+              {key: '1.4', type: 'warning', show: true},
+              {key: '1.5', type: 'warning', show: true},
+              {key: '1.6', type: 'whenValid', show: undefined}
+            ]
           },
           {
-            fieldName: 'passwordConfirm',
-            fieldFeedbackValidations: []
+            name: 'passwordConfirm',
+            validations: [
+              {key: '2.0', type: 'error', show: true},
+              {key: '2.1', type: 'whenValid', show: undefined}
+            ]
           }
         ]);
         expect(emitValidateFieldEventSpy).toHaveBeenCalledTimes(3);
         expect(emitValidateFieldEventSpy.mock.calls).toEqual([
-          [{name: 'username', type: undefined, value: undefined, validity: undefined, validationMessage: undefined}],
-          [{name: 'password', type: undefined, value: undefined, validity: undefined, validationMessage: undefined}],
-          [{name: 'passwordConfirm', type: undefined, value: undefined, validity: undefined, validationMessage: undefined}]
+          [{name: 'username', type: undefined, value: 'john', validity: undefined, validationMessage: undefined}],
+          [{name: 'password', type: undefined, value: '123456', validity: undefined, validationMessage: undefined}],
+          [{name: 'passwordConfirm', type: undefined, value: '12345', validity: undefined, validationMessage: undefined}]
         ]);
+
+        wrapper.unmount();
       });
-    });
 
-    describe('validateForm()', () => {
-      test('validateDirtyFields = false', async () => {
-        const signUp = renderer.create(<SignUp />).getInstance() as any as SignUp;
-        const fieldsStore = signUp.form!.fieldsStore;
-        fieldsStore.fields = {
-          username: fieldWithoutFeedback,
-          password: fieldWithoutFeedback,
-          passwordConfirm: fieldWithoutFeedback
-        };
+      test('change inputs', async () => {
+        const wrapper = renderer.create(<SignUp />);
+        const signUp = wrapper.getInstance() as any as SignUp;
         const emitValidateFieldEventSpy = jest.spyOn(signUp.form!, 'emitValidateFieldEvent');
-        let fieldFeedbackValidations = await signUp.form!.validateForm();
-        expect(fieldFeedbackValidations).toEqual([
+
+        signUp.setState({username: ''});
+        signUp.setState({password: ''});
+        signUp.setState({passwordConfirm: ''});
+
+        let fields = await signUp.form!.validateFields();
+        expect(fields).toEqual([
           {
-            fieldName: 'username',
-            fieldFeedbackValidations: []
+            name: 'username',
+            validations: [
+              {key: '0.0', type: 'error', show: true},
+              {key: '0.1', type: 'error', show: undefined},
+              {key: '0.2', type: 'whenValid', show: undefined}
+            ]
           },
           {
-            fieldName: 'password',
-            fieldFeedbackValidations: []
+            name: 'password',
+            validations: [
+              {key: '1.0', type: 'error', show: true},
+              {key: '1.1', type: 'error', show: undefined},
+              {key: '1.2', type: 'warning', show: undefined},
+              {key: '1.3', type: 'warning', show: undefined},
+              {key: '1.4', type: 'warning', show: undefined},
+              {key: '1.5', type: 'warning', show: undefined},
+              {key: '1.6', type: 'whenValid', show: undefined}
+            ]
           },
           {
-            fieldName: 'passwordConfirm',
-            fieldFeedbackValidations: []
+            name: 'passwordConfirm',
+            validations: [
+              {key: '2.0', type: 'error', show: false},
+              {key: '2.1', type: 'whenValid', show: undefined}
+            ]
           }
         ]);
         expect(emitValidateFieldEventSpy).toHaveBeenCalledTimes(3);
         expect(emitValidateFieldEventSpy.mock.calls).toEqual([
-          [{name: 'username', type: undefined, value: undefined, validity: undefined, validationMessage: undefined}],
-          [{name: 'password', type: undefined, value: undefined, validity: undefined, validationMessage: undefined}],
-          [{name: 'passwordConfirm', type: undefined, value: undefined, validity: undefined, validationMessage: undefined}]
+          [{name: 'username', type: undefined, value: '', validity: undefined, validationMessage: undefined}],
+          [{name: 'password', type: undefined, value: '', validity: undefined, validationMessage: undefined}],
+          [{name: 'passwordConfirm', type: undefined, value: '', validity: undefined, validationMessage: undefined}]
         ]);
 
-        fieldsStore.fields.username!.dirty = true;
-        fieldsStore.fields.password!.dirty = true;
-        fieldsStore.fields.passwordConfirm!.dirty = true;
         emitValidateFieldEventSpy.mockClear();
-        // Fields are dirty so calling validateForm() again won't do anything
-        fieldFeedbackValidations = await signUp.form!.validateForm();
-        expect(fieldFeedbackValidations).toEqual([]);
-        expect(emitValidateFieldEventSpy).toHaveBeenCalledTimes(0);
-        expect(emitValidateFieldEventSpy.mock.calls).toEqual([]);
+
+        signUp.setState({username: 'john'});
+        signUp.setState({password: '123456'});
+        signUp.setState({passwordConfirm: '12345'});
+
+        fields = await signUp.form!.validateFields();
+        expect(fields).toEqual([
+          {
+            name: 'username',
+            validations: [
+              {key: '0.0', type: 'error', show: false},
+              {key: '0.1', type: 'error', show: false},
+              {key: '0.3', type: 'error', show: true},
+              {key: '0.2', type: 'whenValid', show: undefined}
+            ]
+          },
+          {
+            name: 'password',
+            validations: [
+              {key: '1.0', type: 'error', show: false},
+              {key: '1.1', type: 'error', show: false},
+              {key: '1.2', type: 'warning', show: false},
+              {key: '1.3', type: 'warning', show: true},
+              {key: '1.4', type: 'warning', show: true},
+              {key: '1.5', type: 'warning', show: true},
+              {key: '1.6', type: 'whenValid', show: undefined}
+            ]
+          },
+          {
+            name: 'passwordConfirm',
+            validations: [
+              {key: '2.0', type: 'error', show: true},
+              {key: '2.1', type: 'whenValid', show: undefined}
+            ]
+          }
+        ]);
+        expect(emitValidateFieldEventSpy).toHaveBeenCalledTimes(3);
+        expect(emitValidateFieldEventSpy.mock.calls).toEqual([
+          [{name: 'username', type: undefined, value: 'john', validity: undefined, validationMessage: undefined}],
+          [{name: 'password', type: undefined, value: '123456', validity: undefined, validationMessage: undefined}],
+          [{name: 'passwordConfirm', type: undefined, value: '12345', validity: undefined, validationMessage: undefined}]
+        ]);
+
+        wrapper.unmount();
       });
     });
-  });
 
-  describe('render()', () => {
-    test('without children', () => {
-      const wrapper = renderer.create(<FormWithConstraints />);
-      const form = wrapper.getInstance() as any as FormWithConstraints;
-      expect(form.fieldsStore.fields).toEqual({});
-      expect(form.isValid()).toEqual(true);
-    });
+    test('validateForm()', async () => {
+      const wrapper = renderer.create(<SignUp />);
+      const signUp = wrapper.getInstance() as any as SignUp;
+      const emitValidateFieldEventSpy = jest.spyOn(signUp.form!, 'emitValidateFieldEvent');
 
-    test('children', () => {
-      const wrapper = renderer.create(
-        <FormWithConstraints>
-          <TextInput name="username" keyboardType="email-address" />
-          <FieldFeedbacks for="username">
-            <FieldFeedback when={value => value.length === 0}>Cannot be empty</FieldFeedback>
-          </FieldFeedbacks>
+      signUp.setState({username: 'john'});
+      signUp.setState({password: '123456'});
+      signUp.setState({passwordConfirm: '12345'});
 
-          <TextInput name="password" secureTextEntry />
-          <FieldFeedbacks for="password">
-            <FieldFeedback when={value => value.length === 0}>Cannot be empty</FieldFeedback>
-          </FieldFeedbacks>
-        </FormWithConstraints>
-      );
-
-      expect(wrapper.toJSON()).toEqual(
+      const fields1 = await signUp.form!.validateForm();
+      expect(fields1).toEqual([
         {
-          type: 'View',
-          props: {},
-          children: [
-            { type: 'TextInput', props: { name: 'username', keyboardType: 'email-address', allowFontScaling: true }, children: null },
-            { type: 'View', props: {}, children: null },
-            { type: 'TextInput', props: { name: 'password', secureTextEntry: true, allowFontScaling: true }, children: null },
-            { type: 'View', props: {}, children: null }
+          name: 'username',
+          validations: [
+            {key: '0.0', type: 'error', show: false},
+            {key: '0.1', type: 'error', show: false},
+            {key: '0.3', type: 'error', show: true},
+            {key: '0.2', type: 'whenValid', show: undefined}
+          ]
+        },
+        {
+          name: 'password',
+          validations: [
+            {key: '1.0', type: 'error', show: false},
+            {key: '1.1', type: 'error', show: false},
+            {key: '1.2', type: 'warning', show: false},
+            {key: '1.3', type: 'warning', show: true},
+            {key: '1.4', type: 'warning', show: true},
+            {key: '1.5', type: 'warning', show: true},
+            {key: '1.6', type: 'whenValid', show: undefined}
+          ]
+        },
+        {
+          name: 'passwordConfirm',
+          validations: [
+            {key: '2.0', type: 'error', show: true},
+            {key: '2.1', type: 'whenValid', show: undefined}
           ]
         }
-      );
+      ]);
+      expect(emitValidateFieldEventSpy).toHaveBeenCalledTimes(3);
+      expect(emitValidateFieldEventSpy.mock.calls).toEqual([
+        [{name: 'username', type: undefined, value: 'john', validity: undefined, validationMessage: undefined}],
+        [{name: 'password', type: undefined, value: '123456', validity: undefined, validationMessage: undefined}],
+        [{name: 'passwordConfirm', type: undefined, value: '12345', validity: undefined, validationMessage: undefined}]
+      ]);
 
-      const form = wrapper.getInstance() as any as FormWithConstraints;
-      expect(form.fieldsStore.fields).toEqual({
-        username: fieldWithoutFeedback,
-        password: fieldWithoutFeedback
-      });
+      // Fields are already dirty so calling validateForm() again won't do anything
+
+      emitValidateFieldEventSpy.mockClear();
+
+      signUp.setState({username: 'jimmy'});
+      signUp.setState({password: '12345'});
+      signUp.setState({passwordConfirm: '12345'});
+
+      const fields2 = await signUp.form!.validateForm();
+      expect(fields2).toEqual(fields1);
+      expect(emitValidateFieldEventSpy).toHaveBeenCalledTimes(0);
+      expect(emitValidateFieldEventSpy.mock.calls).toEqual([]);
+
+      wrapper.unmount();
     });
 
-    test('children with <View> inside hierarchy', () => {
+    test('normalizeInputs - multiple elements matching', async () => {
       const wrapper = renderer.create(
         <FormWithConstraints>
-          <View>
-            <TextInput name="username" keyboardType="email-address" />
-            <View>
-              <FieldFeedbacks for="username">
-                <View>
-                <FieldFeedback when={value => value.length === 0}>Cannot be empty</FieldFeedback>
-                </View>
-              </FieldFeedbacks>
-            </View>
+          <TextInput name="username" />
+          <FieldFeedbacks for="username" />
 
-            <TextInput name="password" secureTextEntry />
-            <View>
-              <FieldFeedbacks for="password">
-                <View>
-                <FieldFeedback when={value => value.length === 0}>Cannot be empty</FieldFeedback>
-                </View>
-              </FieldFeedbacks>
-            </View>
-          </View>
+          <TextInput secureTextEntry name="password" />
+          <TextInput secureTextEntry name="password" />
+          <TextInput secureTextEntry name="password" />
+          <FieldFeedbacks for="password" />
         </FormWithConstraints>
       );
-
       const form = wrapper.getInstance() as any as FormWithConstraints;
-      expect(form.fieldsStore.fields).toEqual({
-        username: fieldWithoutFeedback,
-        password: fieldWithoutFeedback
-      });
+
+      // See async/await toThrow is not working https://github.com/facebook/jest/issues/1700
+
+      await expect(form.validateFields('username')).resolves.toEqual([{name: 'username', validations: []}]);
+      await expect(form.validateFields()).rejects.toEqual(new Error(`Multiple elements matching '[name="password"]' inside the form`));
+      await expect(form.validateFields('password')).rejects.toEqual(new Error(`Multiple elements matching '[name="password"]' inside the form`));
+
+      wrapper.unmount();
     });
 
-    test('children with <View> inside hierarchy + multiple FieldFeedbacks', () => {
+    test('normalizeInputs - could not find field', async () => {
       const wrapper = renderer.create(
         <FormWithConstraints>
-          <View>
-            <TextInput name="username" keyboardType="email-address" />
-            <View>
-              <FieldFeedbacks for="username">
-                <View>
-                <FieldFeedback when={value => value.length === 0}>Cannot be empty</FieldFeedback>
-                </View>
-              </FieldFeedbacks>
-            </View>
-            <View>
-              <FieldFeedbacks for="username">
-                <View>
-                <FieldFeedback when={value => value.length === 0}>Cannot be empty</FieldFeedback>
-                </View>
-              </FieldFeedbacks>
-            </View>
-
-            <TextInput name="password" secureTextEntry />
-            <View>
-              <FieldFeedbacks for="password">
-                <View>
-                <FieldFeedback when={value => value.length === 0}>Cannot be empty</FieldFeedback>
-                </View>
-              </FieldFeedbacks>
-            </View>
-            <View>
-              <FieldFeedbacks for="password">
-                <View>
-                <FieldFeedback when={value => value.length === 0}>Cannot be empty</FieldFeedback>
-                </View>
-              </FieldFeedbacks>
-            </View>
-          </View>
+          <TextInput name="username" />
         </FormWithConstraints>
       );
-
       const form = wrapper.getInstance() as any as FormWithConstraints;
-      expect(form.fieldsStore.fields).toEqual({
-        username: fieldWithoutFeedback,
-        password: fieldWithoutFeedback
-      });
+
+      await expect(form.validateFields()).resolves.toEqual([]); // Ignore input without FieldFeedbacks
+      await expect(form.validateFields('unknown')).rejects.toEqual(new Error(`Could not find field '[name="unknown"]' inside the form`));
+
+      wrapper.unmount();
+    });
+
+    test('normalizeInputs - child with props undefined', async () => {
+      const wrapper = renderer.create(
+        <FormWithConstraints>
+          ChildWithPropsUndefined
+        </FormWithConstraints>
+      );
+      const form = wrapper.getInstance() as any as FormWithConstraints;
+
+      await expect(form.validateFields()).resolves.toEqual([]);
+      await expect(form.validateFields('unknown')).rejects.toEqual(new Error(`Could not find field '[name="unknown"]' inside the form`));
+
+      wrapper.unmount();
     });
   });
 });
 
 describe('FieldFeedbacks', () => {
+  let form_username: FormWithConstraints;
+
+  beforeEach(() => {
+    form_username = new_FormWithConstraints({});
+  });
+
   test('render()', () => {
-    const form = new_FormWithConstraints({});
     const wrapper = shallow(
       <FieldFeedbacks for="username">
         <FieldFeedback when={value => value.length === 0}>Cannot be empty</FieldFeedback>
       </FieldFeedbacks>,
-      {context: {form}}
+      {context: {form: form_username}}
     );
-    expect(wrapper.debug()).toEqual(
-`<View>
-  <FieldFeedback when={[Function: when]}>
-    Cannot be empty
-  </FieldFeedback>
-</View>`
+    expect(beautifyHtml(wrapper.debug(), '      ')).toEqual(`\
+      <View for="username" stop="first-error">
+        <FieldFeedback when={[Function: when]}>
+          Cannot be empty
+        </FieldFeedback>
+      </View>`
     );
   });
 });
 
 // Taken and adapted from FieldFeedback.test.tsx
 describe('FieldFeedback', () => {
-  const initialFieldFeedbackKeyCounter = 1;
+  let form_username: FormWithConstraints;
+  let fieldFeedbacks_username: FieldFeedbacks;
+
+  beforeEach(() => {
+    form_username = new_FormWithConstraints({});
+
+    fieldFeedbacks_username = new FieldFeedbacks({for: 'username', stop: 'no'}, {form: form_username as any});
+    fieldFeedbacks_username.componentWillMount(); // Needed because of fieldsStore.addField() inside componentWillMount()
+  });
 
   describe('render()', () => {
-    test('should not render', () => {
-      const form = new_FormWithConstraints({});
-      form.fieldsStore.fields = {
-        username: {
-          dirty: true,
-          errors: new Set(),
-          warnings: new Set(),
-          infos: new Set(),
-          validationMessage: ''
-        }
-      };
-      const fieldFeedbacks = new FieldFeedbacks({for: 'username', stop: 'no'}, {form: form as any});
-
-      const fieldFeedback = shallow(
-        <FieldFeedback when={value => value.length === 0}>Cannot be empty</FieldFeedback>,
-        {context: {form, fieldFeedbacks}}
+    test('error', async () => {
+      const wrapper = shallow(
+        <FieldFeedback when={value => value.length === 0} error>Cannot be empty</FieldFeedback>,
+        {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
       );
+      const validations = await fieldFeedbacks_username.emitValidateFieldEvent(input_username_valueMissing);
 
-      expect(fieldFeedback.debug()).toEqual('');
-    });
-
-    test('with children', () => {
-      const form = new_FormWithConstraints({});
-      form.fieldsStore.fields = {
-        username: {
-          dirty: true,
-          errors: new Set([0.1]),
-          warnings: new Set(),
-          infos: new Set(),
-          validationMessage: ''
-        }
-      };
-      const fieldFeedbacks = new FieldFeedbacks({for: 'username', stop: 'no'}, {form: form as any});
-
-      const fieldFeedback = shallow(
-        <FieldFeedback when={value => value.length === 0}>Cannot be empty</FieldFeedback>,
-        {context: {form, fieldFeedbacks}}
-      );
-
-      expect(fieldFeedback.debug()).toEqual(
-`<Text style={[undefined]} accessible={true} allowFontScaling={true} ellipsizeMode="tail">
-  Cannot be empty
-</Text>`
+      expect(validations).toEqual([
+        {key: '0.0', type: 'error', show: true}
+      ]);
+      wrapper.update();
+      expect(beautifyHtml(wrapper.debug(), '        ')).toEqual(`\
+        <Text style={[undefined]} accessible={true} allowFontScaling={true} ellipsizeMode=\"tail\">
+          Cannot be empty
+        </Text>`
       );
     });
 
-    test('without children', () => {
-      const form = new_FormWithConstraints({});
-      form.fieldsStore.fields = {
-        username: {
-          dirty: true,
-          errors: new Set([0.1]),
-          warnings: new Set(),
-          infos: new Set(),
-          validationMessage: ''
-        }
-      };
-      const fieldFeedbacks = new FieldFeedbacks({for: 'username', stop: 'no'}, {form: form as any});
-
-      const fieldFeedback = shallow(
-        <FieldFeedback when={value => value.length === 0}>Cannot be empty</FieldFeedback>,
-        {context: {form, fieldFeedbacks}}
-      );
-
-      expect(fieldFeedback.debug()).toEqual(
-`<Text style={[undefined]} accessible={true} allowFontScaling={true} ellipsizeMode="tail">
-  Cannot be empty
-</Text>`
-      );
+    test('warning', async () => {
     });
 
-    test('with style', () => {
+    test('info', async () => {
+    });
+
+    test('no error', async () => {
+      const wrapper = shallow(
+        <FieldFeedback when={value => value.length === 0} error>Cannot be empty</FieldFeedback>,
+        {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
+      );
+      const validations = await fieldFeedbacks_username.emitValidateFieldEvent(input_username_valid);
+
+      expect(validations).toEqual([
+        {key: '0.0', type: 'error', show: false}
+      ]);
+      wrapper.update();
+      expect(wrapper.debug()).toEqual('');
+    });
+
+    test('with children', async () => {
+    });
+
+    test('without children', async () => {
+      const wrapper = shallow(
+        <FieldFeedback when={value => value.length === 0} />,
+        {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
+      );
+      const validations = await fieldFeedbacks_username.emitValidateFieldEvent(input_username_valueMissing);
+
+      expect(validations).toEqual([
+        {key: '0.0', type: 'error', show: true}
+      ]);
+      wrapper.update();
+      expect(wrapper.debug()).toEqual('');
+    });
+
+    test('with already existing class', async () => {
+    });
+
+    test('with div props', async () => {
+      const wrapper = shallow(
+        <FieldFeedback when={value => value.length === 0} style={{color: 'yellow'}}>Cannot be empty</FieldFeedback>,
+        {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
+      );
+      const validations = await fieldFeedbacks_username.emitValidateFieldEvent(input_username_valueMissing);
+
+      expect(validations).toEqual([
+        {key: '0.0', type: 'error', show: true}
+      ]);
+      wrapper.update();
+      expect(beautifyHtml(wrapper.debug(), '        ')).toEqual(`\
+        <Text style={{...}} accessible={true} allowFontScaling={true} ellipsizeMode=\"tail\">
+          Cannot be empty
+        </Text>`
+      );
+      expect(wrapper.props().style).toEqual({color: 'yellow'});
+    });
+
+    test('with style', async () => {
       const feedbacksStyles = StyleSheet.create({
-        error: { color: 'red' },
-        warning: { color: 'orange' },
-        info: { color: 'blue' }
+        error: {color: 'red'},
+        warning: {color: 'orange'},
+        info: {color: 'blue'}
       });
 
       const form = new_FormWithConstraints({style: feedbacksStyles});
-      form.fieldsStore.fields = {
-        username: {
-          dirty: true,
-          errors: new Set([0.1]),
-          warnings: new Set(),
-          infos: new Set(),
-          validationMessage: ''
-        }
-      };
       const fieldFeedbacks = new FieldFeedbacks({for: 'username', stop: 'no'}, {form: form as any});
+      fieldFeedbacks.componentWillMount(); // Needed because of fieldsStore.addField() inside componentWillMount()
 
-      const fieldFeedback = shallow(
+      const wrapper = shallow(
         <FieldFeedback when={value => value.length === 0}>Cannot be empty</FieldFeedback>,
         {context: {form, fieldFeedbacks}}
       );
+      const validations = await fieldFeedbacks.emitValidateFieldEvent(input_username_valueMissing);
 
-      expect(fieldFeedback.debug()).toEqual(
-`<Text style={{...}} accessible={true} allowFontScaling={true} ellipsizeMode="tail">
-  Cannot be empty
-</Text>`
+      expect(validations).toEqual([
+        {key: '0.0', type: 'error', show: true}
+      ]);
+      wrapper.update();
+      expect(beautifyHtml(wrapper.debug(), '        ')).toEqual(`\
+        <Text style={{...}} accessible={true} allowFontScaling={true} ellipsizeMode=\"tail\">
+          Cannot be empty
+        </Text>`
       );
-      expect(fieldFeedback.props().style).toEqual({color: 'red'});
+      expect(wrapper.props().style).toEqual({color: 'red'});
     });
 
-    test('when="valid"', () => {
-      const form = new_FormWithConstraints({});
-      form.fieldsStore.fields = {
-        username: {
-          dirty: true,
-          errors: new Set([0.1]),
-          warnings: new Set(),
-          infos: new Set(),
-          validationMessage: ''
-        }
-      };
-      const fieldFeedbacks = new FieldFeedbacks({for: 'username', stop: 'no'}, {form: form as any});
-
-      const fieldFeedback = shallow(
+    test('when="valid"', async () => {
+      const wrapper = shallow(
         <FieldFeedback when="valid">Looks good!</FieldFeedback>,
-        {context: {form, fieldFeedbacks}}
+        {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
       );
 
-      expect(fieldFeedback.debug()).toEqual(
-`<FieldFeedbackWhenValid>
-  Looks good!
-</FieldFeedbackWhenValid>`
+      const noReturn = await form_username.emitFieldDidValidateEvent(new Field(fieldFeedbacks_username.fieldName));
+      expect(noReturn).toEqual([]); // FIXME [undefined]
+      wrapper.update();
+      expect(beautifyHtml(wrapper.debug(), '        ')).toEqual(`\
+        <FieldFeedbackWhenValid data-feedback="0.0">
+          Looks good!
+        </FieldFeedbackWhenValid>`
       );
     });
   });

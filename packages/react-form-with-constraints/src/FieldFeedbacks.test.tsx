@@ -2,7 +2,7 @@ import React from 'react';
 import { mount as _mount, shallow as _shallow } from 'enzyme';
 
 import { FormWithConstraintsChildContext, FieldFeedback, FieldFeedbacksProps, ValidateFieldEvent } from './index';
-import { InputMock, input_username_valueMissing, input_username_valid } from './InputMock';
+import { InputMock, input_username_valueMissing, input_unknown_valueMissing, input_username_valid } from './InputMock';
 import new_FormWithConstraints from './FormWithConstraintsEnzymeFix';
 import FieldFeedbacks from './FieldFeedbacksEnzymeFix';
 
@@ -81,13 +81,13 @@ describe('componentWillMount()', () => {
 describe('validate()', () => {
   test('known input name', async () => {
     const form = new_FormWithConstraints({});
-    const fieldFeedbacks = shallow(
+    const wrapper = shallow(
       <FieldFeedbacks for="username">
         <FieldFeedback when="*" />
       </FieldFeedbacks>,
       {context: {form}}
     ).instance() as FieldFeedbacks;
-    const emitValidateFieldEventSpy = jest.spyOn(fieldFeedbacks, 'emitValidateFieldEvent');
+    const emitValidateFieldEventSpy = jest.spyOn(wrapper, 'emitValidateFieldEvent');
 
     expect(emitValidateFieldEventSpy).toHaveBeenCalledTimes(0);
     const fields = await form.validateFields(input_username_valid);
@@ -123,17 +123,16 @@ describe('validate()', () => {
 
   test('unknown input name - emitValidateFieldEvent', async () => {
     const form = new_FormWithConstraints({});
-    const fieldFeedbacks = shallow(
+    const wrapper = shallow(
       <FieldFeedbacks for="username">
         <FieldFeedback when="*" />
       </FieldFeedbacks>,
       {context: {form}}
     ).instance() as FieldFeedbacks;
-    const emitValidateFieldEventSpy = jest.spyOn(fieldFeedbacks, 'emitValidateFieldEvent');
+    const emitValidateFieldEventSpy = jest.spyOn(wrapper, 'emitValidateFieldEvent');
 
     expect(emitValidateFieldEventSpy).toHaveBeenCalledTimes(0);
-    const input = new InputMock('unknown', '', {valid: false, valueMissing: true}, 'Suffering from being missing');
-    const fields = await form.validateFields(input);
+    const fields = await form.validateFields(input_unknown_valueMissing);
     expect(fields).toEqual([]);
     expect(emitValidateFieldEventSpy).toHaveBeenCalledTimes(0);
 
@@ -150,8 +149,7 @@ describe('validate()', () => {
       </FieldFeedbacks>,
       {context: {form}}
     );
-    const input = new InputMock('unknown', '', {valid: false, valueMissing: true}, 'Suffering from being missing');
-    const fields = await form.validateFields(input);
+    const fields = await form.validateFields(input_unknown_valueMissing);
     expect(fields).toEqual([]);
 
     expect(form.fieldsStore.fields).toEqual([
@@ -244,8 +242,7 @@ describe('render()', () => {
       </FieldFeedbacks>,
       {context: {form}}
     );
-    const input = new InputMock('unknown', '', {valid: false, valueMissing: true}, 'Suffering from being missing');
-    const fields = await form.validateFields(input);
+    const fields = await form.validateFields(input_unknown_valueMissing);
     expect(fields).toEqual([]);
 
     expect(wrapper.html()).toEqual(

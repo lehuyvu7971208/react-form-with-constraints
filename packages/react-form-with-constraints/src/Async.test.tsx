@@ -6,7 +6,7 @@ import {
   FieldFeedback, FieldFeedbacksContext, ValidateFieldEvent, ResetEvent
 } from './index';
 import checkUsernameAvailability from './checkUsernameAvailability';
-import { InputMock, input_username_valid } from './InputMock';
+import { InputMock, input_unknown_valueMissing, input_username_valid } from './InputMock';
 import new_FormWithConstraints from './FormWithConstraintsEnzymeFix';
 import FieldFeedbacks from './FieldFeedbacksEnzymeFix';
 
@@ -56,12 +56,12 @@ test('componentWillMount() componentWillUnmount()', () => {
 
 describe('validate()', () => {
   test('known input name - emitValidateFieldEvent', async () => {
-    const async = shallow(
+    const wrapper = shallow(
       <Async promise={checkUsernameAvailability} />,
       {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
     ).instance() as Async<boolean>;
 
-    const emitValidateFieldEventSpy = jest.spyOn(async, 'emitValidateFieldEvent');
+    const emitValidateFieldEventSpy = jest.spyOn(wrapper, 'emitValidateFieldEvent');
 
     expect(emitValidateFieldEventSpy).toHaveBeenCalledTimes(0);
     const validations = await fieldFeedbacks_username.emitValidateFieldEvent(input_username_valid);
@@ -72,16 +72,15 @@ describe('validate()', () => {
   });
 
   test('unknown input name - emitValidateFieldEvent', async () => {
-    const async = shallow(
+    const wrapper = shallow(
       <Async promise={checkUsernameAvailability} />,
       {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
     ).instance() as Async<boolean>;
 
-    const emitValidateFieldEventSpy = jest.spyOn(async, 'emitValidateFieldEvent');
+    const emitValidateFieldEventSpy = jest.spyOn(wrapper, 'emitValidateFieldEvent');
 
     expect(emitValidateFieldEventSpy).toHaveBeenCalledTimes(0);
-    const input = new InputMock('unknown', '', {valid: false, valueMissing: true}, 'Suffering from being missing');
-    const validations = await form_username.validateFields(input);
+    const validations = await form_username.validateFields(input_unknown_valueMissing);
     expect(validations).toEqual([]);
     expect(emitValidateFieldEventSpy).toHaveBeenCalledTimes(0);
   });

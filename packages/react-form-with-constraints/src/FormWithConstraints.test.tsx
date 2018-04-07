@@ -1,6 +1,5 @@
 import React from 'react';
 import { mount as _mount, ReactWrapper } from 'enzyme';
-import { html_beautify } from 'js-beautify';
 
 import { FormWithConstraints, FormWithConstraintsProps, FieldFeedbacksProps, FieldFeedback, Async } from './index';
 import { SignUp } from './SignUp';
@@ -8,13 +7,7 @@ import new_FormWithConstraints from './FormWithConstraintsEnzymeFix';
 import FieldFeedbacks from './FieldFeedbacksEnzymeFix';
 import checkUsernameAvailability from './checkUsernameAvailability';
 import sleep from './sleep';
-
-function beautify(html: string, indentation: string) {
-  return html_beautify(html, {
-    indent_size: 2,
-    unformatted: [] // FIXME See Add function default_options() to beautifier.js https://github.com/beautify-web/js-beautify/issues/1364
-  }).replace(/^/gm, indentation); // See Add a char to the start of each line in JavaScript using regular expression https://stackoverflow.com/q/11939575
-}
+import beautifyHtml from './beautifyHtml';
 
 function mount(node: React.ReactElement<FormWithConstraintsProps>) {
   return _mount<FormWithConstraintsProps, {}>(node);
@@ -73,7 +66,7 @@ describe('FormWithBeforeAsync', () => {
 
     await form.formWithConstraints!.validateFields(form.input!);
 
-    expect(beautify(wrapper.html(), '      ')).toEqual(`\
+    expect(beautifyHtml(wrapper.html(), '      ')).toEqual(`\
       <form>
         <input name="input">
         <div data-feedbacks="0">
@@ -91,7 +84,7 @@ describe('FormWithBeforeAsync', () => {
 
     await form.formWithConstraints!.validateFields(form.input!);
 
-    expect(beautify(wrapper.html(), '      ')).toEqual(`\
+    expect(beautifyHtml(wrapper.html(), '      ')).toEqual(`\
       <form>
         <input name="input">
         <div data-feedbacks="0">
@@ -109,7 +102,7 @@ describe('FormWithBeforeAsync', () => {
 
     await form.formWithConstraints!.validateFields(form.input!);
 
-    expect(beautify(wrapper.html(), '      ')).toEqual(`\
+    expect(beautifyHtml(wrapper.html(), '      ')).toEqual(`\
       <form>
         <input name="input">
         <div data-feedbacks="0">
@@ -128,7 +121,7 @@ describe('FormWithBeforeAsync', () => {
 
     await form.formWithConstraints!.validateFields(form.input!);
 
-    expect(beautify(wrapper.html(), '      ')).toEqual(`\
+    expect(beautifyHtml(wrapper.html(), '      ')).toEqual(`\
       <form>
         <input name="input">
         <div data-feedbacks="0">
@@ -148,7 +141,7 @@ describe('FormWithBeforeAsync', () => {
 
     await form.formWithConstraints!.validateFields(form.input!);
 
-    expect(beautify(wrapper.html(), '      ')).toEqual(`\
+    expect(beautifyHtml(wrapper.html(), '      ')).toEqual(`\
       <form>
         <input name="input">
         <div data-feedbacks="0">
@@ -195,7 +188,7 @@ describe('FormWithAfterAsync', () => {
 
     await form.formWithConstraints!.validateFields(form.input!);
 
-    expect(beautify(wrapper.html(), '      ')).toEqual(`\
+    expect(beautifyHtml(wrapper.html(), '      ')).toEqual(`\
       <form>
         <input name="input">
         <div data-feedbacks="0">
@@ -213,7 +206,7 @@ describe('FormWithAfterAsync', () => {
 
     await form.formWithConstraints!.validateFields(form.input!);
 
-    expect(beautify(wrapper.html(), '      ')).toEqual(`\
+    expect(beautifyHtml(wrapper.html(), '      ')).toEqual(`\
       <form>
         <input name="input">
         <div data-feedbacks="0">
@@ -231,7 +224,7 @@ describe('FormWithAfterAsync', () => {
 
     await form.formWithConstraints!.validateFields(form.input!);
 
-    expect(beautify(wrapper.html(), '      ')).toEqual(`\
+    expect(beautifyHtml(wrapper.html(), '      ')).toEqual(`\
       <form>
         <input name="input">
         <div data-feedbacks="0">
@@ -251,7 +244,7 @@ describe('FormWithAfterAsync', () => {
 
     await form.formWithConstraints!.validateFields(form.input!);
 
-    expect(beautify(wrapper.html(), '      ')).toEqual(`\
+    expect(beautifyHtml(wrapper.html(), '      ')).toEqual(`\
       <form>
         <input name="input">
         <div data-feedbacks="0">
@@ -272,7 +265,7 @@ describe('FormWithAfterAsync', () => {
 
     await form.formWithConstraints!.validateFields(form.input!);
 
-    expect(beautify(wrapper.html(), '      ')).toEqual(`\
+    expect(beautifyHtml(wrapper.html(), '      ')).toEqual(`\
       <form>
         <input name="input">
         <div data-feedbacks="0">
@@ -333,7 +326,7 @@ describe('FormWithNestedFieldFeedbacks2', () => {
 
     await form.formWithConstraints!.validateFields(form.input!);
 
-    expect(beautify(wrapper.html(), '      ')).toEqual(`\
+    expect(beautifyHtml(wrapper.html(), '      ')).toEqual(`\
       <form>
         <input name="input">
         <div data-feedbacks="0">
@@ -356,7 +349,7 @@ describe('FormWithNestedFieldFeedbacks2', () => {
 
     await form.formWithConstraints!.validateFields(form.input!);
 
-    expect(beautify(wrapper.html(), '      ')).toEqual(`\
+    expect(beautifyHtml(wrapper.html(), '      ')).toEqual(`\
       <form>
         <input name="input">
         <div data-feedbacks="0">
@@ -379,7 +372,7 @@ describe('FormWithNestedFieldFeedbacks2', () => {
 
     await form.formWithConstraints!.validateFields(form.input!);
 
-    expect(beautify(wrapper.html(), '      ')).toEqual(`\
+    expect(beautifyHtml(wrapper.html(), '      ')).toEqual(`\
       <form>
         <input name="input">
         <div data-feedbacks="0">
@@ -404,7 +397,7 @@ describe('FormWithNestedFieldFeedbacks2', () => {
 
     await form.formWithConstraints!.validateFields(form.input!);
 
-    expect(beautify(wrapper.html(), '      ')).toEqual(`\
+    expect(beautifyHtml(wrapper.html(), '      ')).toEqual(`\
       <form>
         <input name="input">
         <div data-feedbacks="0">
@@ -431,7 +424,7 @@ describe('FormWithNestedFieldFeedbacks2', () => {
 
     await form.formWithConstraints!.validateFields(form.input!);
 
-    expect(beautify(wrapper.html(), '      ')).toEqual(`\
+    expect(beautifyHtml(wrapper.html(), '      ')).toEqual(`\
       <form>
         <input name="input">
         <div data-feedbacks="0">
@@ -512,7 +505,7 @@ describe('FormWithNestedFieldFeedbacks', () => {
 
     await form.formWithConstraints!.validateFields(form.input!);
 
-    expect(beautify(wrapper.html(), '      ')).toEqual(`\
+    expect(beautifyHtml(wrapper.html(), '      ')).toEqual(`\
       <form>
         <input name="input">
         <div data-feedbacks="0">
@@ -541,7 +534,7 @@ describe('FormWithNestedFieldFeedbacks', () => {
 
     await form.formWithConstraints!.validateFields(form.input!);
 
-    expect(beautify(wrapper.html(), '      ')).toEqual(`\
+    expect(beautifyHtml(wrapper.html(), '      ')).toEqual(`\
       <form>
         <input name="input">
         <div data-feedbacks="0">
@@ -570,7 +563,7 @@ describe('FormWithNestedFieldFeedbacks', () => {
 
     await form.formWithConstraints!.validateFields(form.input!);
 
-    expect(beautify(wrapper.html(), '      ')).toEqual(`\
+    expect(beautifyHtml(wrapper.html(), '      ')).toEqual(`\
       <form>
         <input name="input">
         <div data-feedbacks="0">
@@ -602,7 +595,7 @@ describe('FormWithNestedFieldFeedbacks', () => {
 
     await form.formWithConstraints!.validateFields(form.input!);
 
-    expect(beautify(wrapper.html(), '      ')).toEqual(`\
+    expect(beautifyHtml(wrapper.html(), '      ')).toEqual(`\
       <form>
         <input name="input">
         <div data-feedbacks="0">
@@ -636,7 +629,7 @@ describe('FormWithNestedFieldFeedbacks', () => {
 
     await form.formWithConstraints!.validateFields(form.input!);
 
-    expect(beautify(wrapper.html(), '      ')).toEqual(`\
+    expect(beautifyHtml(wrapper.html(), '      ')).toEqual(`\
       <form>
         <input name="input">
         <div data-feedbacks="0">
@@ -715,7 +708,7 @@ describe('validate', () => {
         [signUp.passwordConfirm]
       ]);
 
-      expect(beautify(wrapper.html(), '        ')).toEqual(`\
+      expect(beautifyHtml(wrapper.html(), '        ')).toEqual(`\
         <form>
           <input name="username">
           <div data-feedbacks="0">
@@ -978,7 +971,7 @@ describe('validate', () => {
         [signUp.passwordConfirm]
       ]);
 
-      expect(beautify(wrapper.html(), '        ')).toEqual(`\
+      expect(beautifyHtml(wrapper.html(), '        ')).toEqual(`\
         <form>
           <input name="username">
           <div data-feedbacks="0">
@@ -1081,9 +1074,9 @@ describe('validate', () => {
 
     // See async/await toThrow is not working https://github.com/facebook/jest/issues/1700
 
-    expect(form.validateFields('username')).resolves.toEqual([{name: 'username', validations: []}]);
-    expect(form.validateFields()).rejects.toEqual(new Error(`Multiple elements matching '[name="password"]' inside the form`));
-    expect(form.validateFields('password')).rejects.toEqual(new Error(`Multiple elements matching '[name="password"]' inside the form`));
+    await expect(form.validateFields('username')).resolves.toEqual([{name: 'username', validations: []}]);
+    await expect(form.validateFields()).rejects.toEqual(new Error(`Multiple elements matching '[name="password"]' inside the form`));
+    await expect(form.validateFields('password')).rejects.toEqual(new Error(`Multiple elements matching '[name="password"]' inside the form`));
 
     wrapper.unmount();
   });
@@ -1096,8 +1089,22 @@ describe('validate', () => {
     );
     const form = wrapper.instance() as FormWithConstraints;
 
-    expect(form.validateFields()).resolves.toEqual([]); // Ignore input without FieldFeedbacks
-    expect(form.validateFields('foobar')).rejects.toEqual(new Error(`Could not find field '[name="foobar"]' inside the form`));
+    await expect(form.validateFields()).resolves.toEqual([]); // Ignore input without FieldFeedbacks
+    await expect(form.validateFields('unknown')).rejects.toEqual(new Error(`Could not find field '[name="unknown"]' inside the form`));
+
+    wrapper.unmount();
+  });
+
+  test('normalizeInputs - child with props undefined', async () => {
+    const wrapper = mount(
+      <FormWithConstraints>
+        ChildWithPropsUndefined
+      </FormWithConstraints>
+    );
+    const form = wrapper.instance() as FormWithConstraints;
+
+    await expect(form.validateFields()).resolves.toEqual([]);
+    await expect(form.validateFields('unknown')).rejects.toEqual(new Error(`Could not find field '[name="unknown"]' inside the form`));
 
     wrapper.unmount();
   });
@@ -1136,7 +1143,7 @@ test('reset()', async () => {
 
   await signUp.form!.validateFields(signUp.username!, signUp.password!, signUp.passwordConfirm!);
 
-  expect(beautify(wrapper.html(), '    ')).toEqual(`\
+  expect(beautifyHtml(wrapper.html(), '    ')).toEqual(`\
     <form>
       <input name="username">
       <div data-feedbacks="0">
@@ -1158,7 +1165,7 @@ test('reset()', async () => {
 
   await signUp.form!.reset();
 
-  expect(beautify(wrapper.html(), '    ')).toEqual(`\
+  expect(beautifyHtml(wrapper.html(), '    ')).toEqual(`\
     <form>
       <input name="username">
       <div data-feedbacks="0"></div>
@@ -1175,7 +1182,7 @@ test('reset()', async () => {
 
   await signUp.form!.validateFields(signUp.username!, signUp.password!, signUp.passwordConfirm!);
 
-  expect(beautify(wrapper.html(), '    ')).toEqual(`\
+  expect(beautifyHtml(wrapper.html(), '    ')).toEqual(`\
     <form>
       <input name="username">
       <div data-feedbacks="0">
