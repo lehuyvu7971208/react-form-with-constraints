@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 import {
   FormWithConstraints as _FormWithConstraints, FormWithConstraintsProps, FormWithConstraintsChildContext,
-  Field
+  FieldFeedbacks, Async, FieldFeedback, Field
 } from 'react-form-with-constraints';
 
 export interface FormControlInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -117,3 +117,5 @@ export class FormWithConstraintsTooltip extends _FormWithConstraints {
     }
   };
 }
+
+export { FieldFeedbacks, Async, FieldFeedback };

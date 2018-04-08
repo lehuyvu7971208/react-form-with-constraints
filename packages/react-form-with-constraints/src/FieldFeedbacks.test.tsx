@@ -2,7 +2,7 @@ import React from 'react';
 import { mount as _mount, shallow as _shallow } from 'enzyme';
 
 import { FormWithConstraintsChildContext, FieldFeedback, FieldFeedbacksProps, ValidateFieldEvent } from './index';
-import { InputMock, input_username_valueMissing, input_unknown_valueMissing, input_username_valid } from './InputMock';
+import { input_username_valueMissing, input_unknown_valueMissing, input_username_valid } from './InputMock';
 import new_FormWithConstraints from './FormWithConstraintsEnzymeFix';
 import FieldFeedbacks from './FieldFeedbacksEnzymeFix';
 
@@ -13,13 +13,40 @@ function mount(node: React.ReactElement<FieldFeedbacksProps>, options: {context:
   return _mount<FieldFeedbacksProps>(node, options);
 }
 
-test('constructor()', () => {
-  const wrapper = shallow(
-    <FieldFeedbacks for="username" />,
-    {context: {form: new_FormWithConstraints({})}}
-  );
-  const fieldFeedbacks = wrapper.instance() as FieldFeedbacks;
-  expect(fieldFeedbacks.key).toEqual('0');
+describe('constructor()', () => {
+  test('no error', () => {
+    const wrapper = shallow(
+      <FieldFeedbacks for="username" />,
+      {context: {form: new_FormWithConstraints({})}}
+    );
+    const fieldFeedbacks = wrapper.instance() as FieldFeedbacks;
+    expect(fieldFeedbacks.key).toEqual('0');
+  });
+
+  test("FieldFeedbacks cannot have a parent and a 'for' prop", () => {
+    // Works but pollutes the console with:
+    // console.error ../../node_modules/jsdom/lib/jsdom/virtual-console.js:29
+    // Error: Uncaught [Error: FieldFeedbacks cannot have a parent and a 'for' prop]
+    /*
+    expect(() =>
+      mount(
+        <FieldFeedbacks for="username">
+          <FieldFeedbacks for="username" />
+        </FieldFeedbacks>,
+        {context: {form: new_FormWithConstraints({})}}
+      )
+    ).toThrow("FieldFeedbacks cannot have a parent and a 'for' prop");
+    */
+  });
+
+  test("FieldFeedbacks cannot be without parent and without 'for' prop", () => {
+    expect(() =>
+      shallow(
+        <FieldFeedbacks />,
+        {context: {form: new_FormWithConstraints({})}}
+      )
+    ).toThrow("FieldFeedbacks cannot be without parent and without 'for' prop");
+  });
 });
 
 test('computeFieldFeedbackKey()', () => {

@@ -3,10 +3,10 @@ import { shallow as _shallow, mount as _mount } from 'enzyme';
 
 import {
   FormWithConstraints, FieldFeedbacksProps, Async, AsyncProps, AsyncContext, Status,
-  FieldFeedback, FieldFeedbacksContext, ValidateFieldEvent, ResetEvent
+  FieldFeedback, FieldFeedbacksContext, ValidateFieldEvent
 } from './index';
 import checkUsernameAvailability from './checkUsernameAvailability';
-import { InputMock, input_unknown_valueMissing, input_username_valid, input_username_error_valid } from './InputMock';
+import { input_unknown_valueMissing, input_username_valid, input_username_error_valid } from './InputMock';
 import new_FormWithConstraints from './FormWithConstraintsEnzymeFix';
 import FieldFeedbacks from './FieldFeedbacksEnzymeFix';
 

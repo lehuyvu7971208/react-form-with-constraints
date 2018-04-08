@@ -22,6 +22,7 @@ export class SignUp extends React.Component<SignUpProps> {
           <FieldFeedback when={value => value.length < 3}>Should be at least 3 characters long</FieldFeedback>
           <Async
             promise={checkUsernameAvailability}
+            pending="..."
             then={availability => availability.available ?
               <FieldFeedback info>Username '{availability.value}' available</FieldFeedback> :
               <FieldFeedback>Username '{availability.value}' already taken, choose another</FieldFeedback>

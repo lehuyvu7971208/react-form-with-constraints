@@ -1,11 +1,10 @@
 import React from 'react';
-import { mount as _mount, ReactWrapper } from 'enzyme';
+import { mount as _mount } from 'enzyme';
 
 import { FormWithConstraints, FormWithConstraintsProps, FieldFeedbacksProps, FieldFeedback, Async } from './index';
 import { SignUp } from './SignUp';
 import new_FormWithConstraints from './FormWithConstraintsEnzymeFix';
 import FieldFeedbacks from './FieldFeedbacksEnzymeFix';
-import checkUsernameAvailability from './checkUsernameAvailability';
 import sleep from './sleep';
 import beautifyHtml from './beautifyHtml';
 
@@ -1058,53 +1057,198 @@ describe('validate', () => {
     wrapper.unmount();
   });
 
-  test('normalizeInputs - multiple elements matching', async () => {
-    const wrapper = mount(
-      <FormWithConstraints>
-        <input name="username" />
-        <FieldFeedbacks for="username" />
+  describe('normalizeInputs', () => {
+    test('Multiple elements matching', async () => {
+      const wrapper = mount(
+        <FormWithConstraints>
+          <input name="username" />
+          <FieldFeedbacks for="username" />
 
-        <input type="password" name="password" />
-        <input type="password" name="password" />
-        <input type="password" name="password" />
-        <FieldFeedbacks for="password" />
-      </FormWithConstraints>
+          <input type="password" name="password" />
+          <input type="password" name="password" />
+          <input type="password" name="password" />
+          <FieldFeedbacks for="password" />
+        </FormWithConstraints>
+      );
+      const form = wrapper.instance() as FormWithConstraints;
+
+      // See async/await toThrow is not working https://github.com/facebook/jest/issues/1700
+
+      await expect(form.validateFields('username')).resolves.toEqual([{name: 'username', validations: []}]);
+      await expect(form.validateFields()).rejects.toEqual(new Error(`Multiple elements matching '[name="password"]' inside the form`));
+      await expect(form.validateFields('password')).rejects.toEqual(new Error(`Multiple elements matching '[name="password"]' inside the form`));
+
+      wrapper.unmount();
+    });
+
+    test('Could not find field', async () => {
+      const wrapper = mount(
+        <FormWithConstraints>
+          <input name="username" />
+        </FormWithConstraints>
+      );
+      const form = wrapper.instance() as FormWithConstraints;
+
+      await expect(form.validateFields()).resolves.toEqual([]); // Ignore input without FieldFeedbacks
+      await expect(form.validateFields('unknown')).rejects.toEqual(new Error(`Could not find field '[name="unknown"]' inside the form`));
+
+      wrapper.unmount();
+    });
+
+    test('Could not find field - child with props undefined', async () => {
+      const wrapper = mount(
+        <FormWithConstraints>
+          ChildWithPropsUndefined
+        </FormWithConstraints>
+      );
+      const form = wrapper.instance() as FormWithConstraints;
+
+      await expect(form.validateFields()).resolves.toEqual([]);
+      await expect(form.validateFields('unknown')).rejects.toEqual(new Error(`Could not find field '[name="unknown"]' inside the form`));
+
+      wrapper.unmount();
+    });
+  });
+});
+
+describe('Async', () => {
+  test('then', async () => {
+    const wrapper = mount(<SignUp />);
+    const signUp = wrapper.instance() as SignUp;
+    const emitValidateFieldEventSpy = jest.spyOn(signUp.form!, 'emitValidateFieldEvent');
+
+    signUp.username!.value = 'jimmy';
+    signUp.password!.value = '12345';
+    signUp.passwordConfirm!.value = '12345';
+
+    const fields = await signUp.form!.validateFields();
+    expect(fields).toEqual([
+      {
+        name: 'username',
+        validations: [
+          {key: '0.0', type: 'error', show: false},
+          {key: '0.1', type: 'error', show: false},
+          {key: '0.3', type: 'info', show: true},
+          {key: '0.2', type: 'whenValid', show: undefined}
+        ]
+      },
+      {
+        name: 'password',
+        validations: [
+          {key: '1.0', type: 'error', show: false},
+          {key: '1.1', type: 'error', show: false},
+          {key: '1.2', type: 'warning', show: false},
+          {key: '1.3', type: 'warning', show: true},
+          {key: '1.4', type: 'warning', show: true},
+          {key: '1.5', type: 'warning', show: true},
+          {key: '1.6', type: 'whenValid', show: undefined}
+        ]
+      },
+      {
+        name: 'passwordConfirm',
+        validations: [
+          {key: '2.0', type: 'error', show: false},
+          {key: '2.1', type: 'whenValid', show: undefined}
+        ]
+      }
+    ]);
+    expect(emitValidateFieldEventSpy).toHaveBeenCalledTimes(3);
+    expect(emitValidateFieldEventSpy.mock.calls).toEqual([
+      [signUp.username],
+      [signUp.password],
+      [signUp.passwordConfirm]
+    ]);
+
+    expect(beautifyHtml(wrapper.html(), '      ')).toEqual(`\
+      <form>
+        <input name="username">
+        <div data-feedbacks="0">
+          <div data-feedback="0.3" class="info">Username 'jimmy' available</div>
+          <div data-feedback="0.2" class="valid">Looks good!</div>
+        </div>
+        <input type="password" name="password">
+        <div data-feedbacks="1">
+          <div data-feedback="1.3" class="warning">Should contain small letters</div>
+          <div data-feedback="1.4" class="warning">Should contain capital letters</div>
+          <div data-feedback="1.5" class="warning">Should contain special characters</div>
+          <div data-feedback="1.6" class="valid">Looks good!</div>
+        </div>
+        <input type="password" name="passwordConfirm">
+        <div data-feedbacks="2">
+          <div data-feedback="2.1" class="valid">Looks good!</div>
+        </div>
+      </form>`
     );
-    const form = wrapper.instance() as FormWithConstraints;
-
-    // See async/await toThrow is not working https://github.com/facebook/jest/issues/1700
-
-    await expect(form.validateFields('username')).resolves.toEqual([{name: 'username', validations: []}]);
-    await expect(form.validateFields()).rejects.toEqual(new Error(`Multiple elements matching '[name="password"]' inside the form`));
-    await expect(form.validateFields('password')).rejects.toEqual(new Error(`Multiple elements matching '[name="password"]' inside the form`));
 
     wrapper.unmount();
   });
 
-  test('normalizeInputs - could not find field', async () => {
-    const wrapper = mount(
-      <FormWithConstraints>
-        <input name="username" />
-      </FormWithConstraints>
+  test('catch', async () => {
+    const wrapper = mount(<SignUp />);
+    const signUp = wrapper.instance() as SignUp;
+    const emitValidateFieldEventSpy = jest.spyOn(signUp.form!, 'emitValidateFieldEvent');
+
+    signUp.username!.value = 'error';
+    signUp.password!.value = '123456';
+    signUp.passwordConfirm!.value = '12345';
+
+    const fields = await signUp.form!.validateFields();
+    expect(fields).toEqual([
+      {
+        name: 'username',
+        validations: [
+          {key: '0.0', type: 'error', show: false},
+          {key: '0.1', type: 'error', show: false},
+          {key: '0.3', type: 'error', show: true},
+          {key: '0.2', type: 'whenValid', show: undefined}
+        ]
+      },
+      {
+        name: 'password',
+        validations: [
+          {key: '1.0', type: 'error', show: false},
+          {key: '1.1', type: 'error', show: false},
+          {key: '1.2', type: 'warning', show: false},
+          {key: '1.3', type: 'warning', show: true},
+          {key: '1.4', type: 'warning', show: true},
+          {key: '1.5', type: 'warning', show: true},
+          {key: '1.6', type: 'whenValid', show: undefined}
+        ]
+      },
+      {
+        name: 'passwordConfirm',
+        validations: [
+          {key: '2.0', type: 'error', show: true},
+          {key: '2.1', type: 'whenValid', show: undefined}
+        ]
+      }
+    ]);
+    expect(emitValidateFieldEventSpy).toHaveBeenCalledTimes(3);
+    expect(emitValidateFieldEventSpy.mock.calls).toEqual([
+      [signUp.username],
+      [signUp.password],
+      [signUp.passwordConfirm]
+    ]);
+
+    expect(beautifyHtml(wrapper.html(), '      ')).toEqual(`\
+      <form>
+        <input name="username">
+        <div data-feedbacks="0">
+          <div data-feedback="0.3" class="error">Something wrong with username 'error'</div>
+        </div>
+        <input type="password" name="password">
+        <div data-feedbacks="1">
+          <div data-feedback="1.3" class="warning">Should contain small letters</div>
+          <div data-feedback="1.4" class="warning">Should contain capital letters</div>
+          <div data-feedback="1.5" class="warning">Should contain special characters</div>
+          <div data-feedback="1.6" class="valid">Looks good!</div>
+        </div>
+        <input type="password" name="passwordConfirm">
+        <div data-feedbacks="2">
+          <div data-feedback="2.0" class="error">Not the same password</div>
+        </div>
+      </form>`
     );
-    const form = wrapper.instance() as FormWithConstraints;
-
-    await expect(form.validateFields()).resolves.toEqual([]); // Ignore input without FieldFeedbacks
-    await expect(form.validateFields('unknown')).rejects.toEqual(new Error(`Could not find field '[name="unknown"]' inside the form`));
-
-    wrapper.unmount();
-  });
-
-  test('normalizeInputs - child with props undefined', async () => {
-    const wrapper = mount(
-      <FormWithConstraints>
-        ChildWithPropsUndefined
-      </FormWithConstraints>
-    );
-    const form = wrapper.instance() as FormWithConstraints;
-
-    await expect(form.validateFields()).resolves.toEqual([]);
-    await expect(form.validateFields('unknown')).rejects.toEqual(new Error(`Could not find field '[name="unknown"]' inside the form`));
 
     wrapper.unmount();
   });
@@ -1141,7 +1285,7 @@ test('reset()', async () => {
   signUp.password!.value = '123456';
   signUp.passwordConfirm!.value = '12345';
 
-  await signUp.form!.validateFields(signUp.username!, signUp.password!, signUp.passwordConfirm!);
+  await signUp.form!.validateFields();
 
   expect(beautifyHtml(wrapper.html(), '    ')).toEqual(`\
     <form>
@@ -1180,7 +1324,7 @@ test('reset()', async () => {
   signUp.password!.value = '12345';
   signUp.passwordConfirm!.value = '12345';
 
-  await signUp.form!.validateFields(signUp.username!, signUp.password!, signUp.passwordConfirm!);
+  await signUp.form!.validateFields();
 
   expect(beautifyHtml(wrapper.html(), '    ')).toEqual(`\
     <form>

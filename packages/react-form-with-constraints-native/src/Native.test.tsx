@@ -1,16 +1,14 @@
 import React from 'react';
 import { shallow } from 'enzyme';
-import { StyleSheet, /*TextInput,*/ View } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { TextInput } from './react-native-TextInput-fix'; // Specific to TypeScript
 import renderer from 'react-test-renderer';
 
-import { FieldFeedbacksProps, Field } from 'react-form-with-constraints';
-
-import beautifyHtml from '../../react-form-with-constraints/src/beautifyHtml';
-import { InputMock, input_username_valueMissing, input_username_valid } from '../../react-form-with-constraints/src/InputMock';
-import { FormWithConstraints, FieldFeedbacks, FieldFeedback } from './index';
+import { FormWithConstraints, FieldFeedbacks, FieldFeedback, FieldFeedbackWhenValid } from './index';
 import new_FormWithConstraints from './FormWithConstraintsEnzymeFix';
 import { SignUp } from './SignUp';
+import beautifyHtml from '../../react-form-with-constraints/src/beautifyHtml';
+import { input_username_valueMissing, input_username_valid } from '../../react-form-with-constraints/src/InputMock';
 
 // Taken and adapted from FormWithConstraints.test.tsx
 describe('FormWithConstraints', () => {
@@ -373,53 +371,157 @@ describe('FormWithConstraints', () => {
       wrapper.unmount();
     });
 
-    test('normalizeInputs - multiple elements matching', async () => {
-      const wrapper = renderer.create(
-        <FormWithConstraints>
-          <TextInput name="username" />
-          <FieldFeedbacks for="username" />
+    describe('normalizeInputs', () => {
+      test('Multiple elements matching', async () => {
+        const wrapper = renderer.create(
+          <FormWithConstraints>
+            <TextInput name="username" />
+            <FieldFeedbacks for="username" />
 
-          <TextInput secureTextEntry name="password" />
-          <TextInput secureTextEntry name="password" />
-          <TextInput secureTextEntry name="password" />
-          <FieldFeedbacks for="password" />
-        </FormWithConstraints>
-      );
-      const form = wrapper.getInstance() as any as FormWithConstraints;
+            <TextInput secureTextEntry name="password" />
+            <TextInput secureTextEntry name="password" />
+            <TextInput secureTextEntry name="password" />
+            <FieldFeedbacks for="password" />
+          </FormWithConstraints>
+        );
+        const form = wrapper.getInstance() as any as FormWithConstraints;
 
-      // See async/await toThrow is not working https://github.com/facebook/jest/issues/1700
+        // See async/await toThrow is not working https://github.com/facebook/jest/issues/1700
 
-      await expect(form.validateFields('username')).resolves.toEqual([{name: 'username', validations: []}]);
-      await expect(form.validateFields()).rejects.toEqual(new Error(`Multiple elements matching '[name="password"]' inside the form`));
-      await expect(form.validateFields('password')).rejects.toEqual(new Error(`Multiple elements matching '[name="password"]' inside the form`));
+        await expect(form.validateFields('username')).resolves.toEqual([{name: 'username', validations: []}]);
+        await expect(form.validateFields()).rejects.toEqual(new Error(`Multiple elements matching '[name="password"]' inside the form`));
+        await expect(form.validateFields('password')).rejects.toEqual(new Error(`Multiple elements matching '[name="password"]' inside the form`));
+
+        wrapper.unmount();
+      });
+
+      test('Could not find field', async () => {
+        const wrapper = renderer.create(
+          <FormWithConstraints>
+            <TextInput name="username" />
+          </FormWithConstraints>
+        );
+        const form = wrapper.getInstance() as any as FormWithConstraints;
+
+        await expect(form.validateFields()).resolves.toEqual([]); // Ignore input without FieldFeedbacks
+        await expect(form.validateFields('unknown')).rejects.toEqual(new Error(`Could not find field '[name="unknown"]' inside the form`));
+
+        wrapper.unmount();
+      });
+
+      test('Could not find field - child with props undefined', async () => {
+        const wrapper = renderer.create(
+          <FormWithConstraints>
+            ChildWithPropsUndefined
+          </FormWithConstraints>
+        );
+        const form = wrapper.getInstance() as any as FormWithConstraints;
+
+        await expect(form.validateFields()).resolves.toEqual([]);
+        await expect(form.validateFields('unknown')).rejects.toEqual(new Error(`Could not find field '[name="unknown"]' inside the form`));
+
+        wrapper.unmount();
+      });
+    });
+  });
+
+  describe('Async', () => {
+    test('then', async () => {
+      const wrapper = renderer.create(<SignUp />);
+      const signUp = wrapper.getInstance() as any as SignUp;
+      const emitValidateFieldEventSpy = jest.spyOn(signUp.form!, 'emitValidateFieldEvent');
+
+      signUp.setState({username: 'jimmy'});
+      signUp.setState({password: '12345'});
+      signUp.setState({passwordConfirm: '12345'});
+
+      const fields = await signUp.form!.validateFields();
+      expect(fields).toEqual([
+        {
+          name: 'username',
+          validations: [
+            {key: '0.0', type: 'error', show: false},
+            {key: '0.1', type: 'error', show: false},
+            {key: '0.3', type: 'info', show: true},
+            {key: '0.2', type: 'whenValid', show: undefined}
+          ]
+        },
+        {
+          name: 'password',
+          validations: [
+            {key: '1.0', type: 'error', show: false},
+            {key: '1.1', type: 'error', show: false},
+            {key: '1.2', type: 'warning', show: false},
+            {key: '1.3', type: 'warning', show: true},
+            {key: '1.4', type: 'warning', show: true},
+            {key: '1.5', type: 'warning', show: true},
+            {key: '1.6', type: 'whenValid', show: undefined}
+          ]
+        },
+        {
+          name: 'passwordConfirm',
+          validations: [
+            {key: '2.0', type: 'error', show: false},
+            {key: '2.1', type: 'whenValid', show: undefined}
+          ]
+        }
+      ]);
+      expect(emitValidateFieldEventSpy).toHaveBeenCalledTimes(3);
+      expect(emitValidateFieldEventSpy.mock.calls).toEqual([
+        [{name: 'username', type: undefined, value: 'jimmy', validity: undefined, validationMessage: undefined}],
+        [{name: 'password', type: undefined, value: '12345', validity: undefined, validationMessage: undefined}],
+        [{name: 'passwordConfirm', type: undefined, value: '12345', validity: undefined, validationMessage: undefined}]
+      ]);
 
       wrapper.unmount();
     });
 
-    test('normalizeInputs - could not find field', async () => {
-      const wrapper = renderer.create(
-        <FormWithConstraints>
-          <TextInput name="username" />
-        </FormWithConstraints>
-      );
-      const form = wrapper.getInstance() as any as FormWithConstraints;
+    test('catch', async () => {
+      const wrapper = renderer.create(<SignUp />);
+      const signUp = wrapper.getInstance() as any as SignUp;
+      const emitValidateFieldEventSpy = jest.spyOn(signUp.form!, 'emitValidateFieldEvent');
 
-      await expect(form.validateFields()).resolves.toEqual([]); // Ignore input without FieldFeedbacks
-      await expect(form.validateFields('unknown')).rejects.toEqual(new Error(`Could not find field '[name="unknown"]' inside the form`));
+      signUp.setState({username: 'error'});
+      signUp.setState({password: '123456'});
+      signUp.setState({passwordConfirm: '12345'});
 
-      wrapper.unmount();
-    });
-
-    test('normalizeInputs - child with props undefined', async () => {
-      const wrapper = renderer.create(
-        <FormWithConstraints>
-          ChildWithPropsUndefined
-        </FormWithConstraints>
-      );
-      const form = wrapper.getInstance() as any as FormWithConstraints;
-
-      await expect(form.validateFields()).resolves.toEqual([]);
-      await expect(form.validateFields('unknown')).rejects.toEqual(new Error(`Could not find field '[name="unknown"]' inside the form`));
+      const fields = await signUp.form!.validateFields();
+      expect(fields).toEqual([
+        {
+          name: 'username',
+          validations: [
+            {key: '0.0', type: 'error', show: false},
+            {key: '0.1', type: 'error', show: false},
+            {key: '0.3', type: 'error', show: true},
+            {key: '0.2', type: 'whenValid', show: undefined}
+          ]
+        },
+        {
+          name: 'password',
+          validations: [
+            {key: '1.0', type: 'error', show: false},
+            {key: '1.1', type: 'error', show: false},
+            {key: '1.2', type: 'warning', show: false},
+            {key: '1.3', type: 'warning', show: true},
+            {key: '1.4', type: 'warning', show: true},
+            {key: '1.5', type: 'warning', show: true},
+            {key: '1.6', type: 'whenValid', show: undefined}
+          ]
+        },
+        {
+          name: 'passwordConfirm',
+          validations: [
+            {key: '2.0', type: 'error', show: true},
+            {key: '2.1', type: 'whenValid', show: undefined}
+          ]
+        }
+      ]);
+      expect(emitValidateFieldEventSpy).toHaveBeenCalledTimes(3);
+      expect(emitValidateFieldEventSpy.mock.calls).toEqual([
+        [{name: 'username', type: undefined, value: 'error', validity: undefined, validationMessage: undefined}],
+        [{name: 'password', type: undefined, value: '123456', validity: undefined, validationMessage: undefined}],
+        [{name: 'passwordConfirm', type: undefined, value: '12345', validity: undefined, validationMessage: undefined}]
+      ]);
 
       wrapper.unmount();
     });
@@ -475,7 +577,7 @@ describe('FieldFeedback', () => {
       ]);
       wrapper.update();
       expect(beautifyHtml(wrapper.debug(), '        ')).toEqual(`\
-        <Text style={[undefined]} accessible={true} allowFontScaling={true} ellipsizeMode=\"tail\">
+        <Text style={[undefined]} accessible={true} allowFontScaling={true} ellipsizeMode="tail">
           Cannot be empty
         </Text>`
       );
@@ -489,7 +591,7 @@ describe('FieldFeedback', () => {
 
     test('no error', async () => {
       const wrapper = shallow(
-        <FieldFeedback when={value => value.length === 0} error>Cannot be empty</FieldFeedback>,
+        <FieldFeedback when={value => value.length === 0}>Cannot be empty</FieldFeedback>,
         {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
       );
       const validations = await fieldFeedbacks_username.emitValidateFieldEvent(input_username_valid);
@@ -499,9 +601,6 @@ describe('FieldFeedback', () => {
       ]);
       wrapper.update();
       expect(wrapper.debug()).toEqual('');
-    });
-
-    test('with children', async () => {
     });
 
     test('without children', async () => {
@@ -533,18 +632,19 @@ describe('FieldFeedback', () => {
       ]);
       wrapper.update();
       expect(beautifyHtml(wrapper.debug(), '        ')).toEqual(`\
-        <Text style={{...}} accessible={true} allowFontScaling={true} ellipsizeMode=\"tail\">
+        <Text style={{...}} accessible={true} allowFontScaling={true} ellipsizeMode="tail">
           Cannot be empty
         </Text>`
       );
       expect(wrapper.props().style).toEqual({color: 'yellow'});
     });
 
-    test('with style', async () => {
+    test('with global style', async () => {
       const feedbacksStyles = StyleSheet.create({
         error: {color: 'red'},
         warning: {color: 'orange'},
-        info: {color: 'blue'}
+        info: {color: 'blue'},
+        valid: {color: 'green'}
       });
 
       const form = new_FormWithConstraints({style: feedbacksStyles});
@@ -562,7 +662,7 @@ describe('FieldFeedback', () => {
       ]);
       wrapper.update();
       expect(beautifyHtml(wrapper.debug(), '        ')).toEqual(`\
-        <Text style={{...}} accessible={true} allowFontScaling={true} ellipsizeMode=\"tail\">
+        <Text style={{...}} accessible={true} allowFontScaling={true} ellipsizeMode="tail">
           Cannot be empty
         </Text>`
       );
@@ -570,19 +670,90 @@ describe('FieldFeedback', () => {
     });
 
     test('when="valid"', async () => {
-      const wrapper = shallow(
-        <FieldFeedback when="valid">Looks good!</FieldFeedback>,
-        {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
-      );
-
-      const noReturn = await form_username.emitFieldDidValidateEvent(new Field(fieldFeedbacks_username.fieldName));
-      expect(noReturn).toEqual([]); // FIXME [undefined]
-      wrapper.update();
-      expect(beautifyHtml(wrapper.debug(), '        ')).toEqual(`\
-        <FieldFeedbackWhenValid data-feedback="0.0">
-          Looks good!
-        </FieldFeedbackWhenValid>`
-      );
+      // Cannot be implemented properly
     });
+  });
+});
+
+describe('FieldFeedbackWhenValid', () => {
+  let form_username: FormWithConstraints;
+  let fieldFeedbacks_username: FieldFeedbacks;
+
+  beforeEach(() => {
+    form_username = new_FormWithConstraints({});
+
+    fieldFeedbacks_username = new FieldFeedbacks({for: 'username', stop: 'no'}, {form: form_username as any});
+    //fieldFeedbacks_username.componentWillMount(); // Needed because of fieldsStore.addField() inside componentWillMount()
+  });
+
+  test('render()', () => {
+    let wrapper = shallow(
+      <FieldFeedbackWhenValid>Looks good!</FieldFeedbackWhenValid>,
+      {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
+    );
+
+    expect(wrapper.html()).toEqual(null);
+
+    wrapper.setState({fieldIsValid: undefined});
+    expect(wrapper.html()).toEqual(null);
+
+    wrapper.setState({fieldIsValid: true});
+    expect(beautifyHtml(wrapper.debug(), '      ')).toEqual(`\
+      <Text style={[undefined]} accessible={true} allowFontScaling={true} ellipsizeMode="tail">
+        Looks good!
+      </Text>`
+    );
+
+    wrapper.setState({fieldIsValid: false});
+    expect(wrapper.html()).toEqual(null);
+
+    // With className
+    wrapper = shallow(
+      <FieldFeedbackWhenValid className="hello">Looks good!</FieldFeedbackWhenValid>,
+      {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
+    );
+    wrapper.setState({fieldIsValid: true});
+    expect(beautifyHtml(wrapper.debug(), '      ')).toEqual(`\
+      <Text style={[undefined]} className="hello" accessible={true} allowFontScaling={true} ellipsizeMode="tail">
+        Looks good!
+      </Text>`
+    );
+
+    // With div props
+    wrapper = shallow(
+      <FieldFeedbackWhenValid style={{color: 'green'}}>Looks good!</FieldFeedbackWhenValid>,
+      {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
+    );
+    wrapper.setState({fieldIsValid: true});
+    expect(beautifyHtml(wrapper.debug(), '      ')).toEqual(`\
+      <Text style={{...}} accessible={true} allowFontScaling={true} ellipsizeMode="tail">
+        Looks good!
+      </Text>`
+    );
+  });
+
+  test('render() with global style', () => {
+    const feedbacksStyles = StyleSheet.create({
+      error: {color: 'red'},
+      warning: {color: 'orange'},
+      info: {color: 'blue'},
+      valid: {color: 'green'}
+    });
+
+    const form = new_FormWithConstraints({style: feedbacksStyles});
+    const fieldFeedbacks = new FieldFeedbacks({for: 'username', stop: 'no'}, {form: form as any});
+
+    const wrapper = shallow(
+      <FieldFeedbackWhenValid>Looks good!</FieldFeedbackWhenValid>,
+      {context: {form, fieldFeedbacks}}
+    );
+
+    wrapper.setState({fieldIsValid: true});
+    expect(beautifyHtml(wrapper.debug(), '      ')).toEqual(`\
+      <Text style={{...}} accessible={true} allowFontScaling={true} ellipsizeMode="tail">
+        Looks good!
+      </Text>`
+    );
+    expect(wrapper.props().style).toEqual({color: 'green'});
   });
 });

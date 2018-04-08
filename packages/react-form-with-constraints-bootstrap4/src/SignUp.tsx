@@ -1,41 +1,22 @@
 import React from 'react';
-import { TextInput } from './react-native-TextInput-fix'; // Specific to TypeScript
 
-import { FormWithConstraints, Async, FieldFeedback } from './index';
+import { FormWithConstraints, FieldFeedback, Async, FormControlInput } from './index';
 import checkUsernameAvailability from '../../react-form-with-constraints/src/checkUsernameAvailability';
-import FieldFeedbacks from './FieldFeedbacksEnzymeFix';
+import FieldFeedbacks from '../../react-form-with-constraints/src/FieldFeedbacksEnzymeFix';
 
 export interface SignUpProps {
 }
 
-export interface SignUpState {
-  username: string;
-  password: string;
-  passwordConfirm: string;
-}
-
-export class SignUp extends React.Component<SignUpProps, SignUpState> {
+export class SignUp extends React.Component<SignUpProps> {
   form: FormWithConstraints | null | undefined;
-  username: TextInput | null | undefined;
-  password: TextInput | null | undefined;
-  passwordConfirm: TextInput | null | undefined;
-
-  constructor(props: SignUpProps) {
-    super(props);
-
-    this.state = {
-      username: '',
-      password: '',
-      passwordConfirm: ''
-    };
-  }
+  username: HTMLInputElement | null | undefined;
+  password: HTMLInputElement | null | undefined;
+  passwordConfirm: HTMLInputElement | null | undefined;
 
   render() {
-    const { username, password, passwordConfirm } = this.state;
-
     return (
       <FormWithConstraints ref={formWithConstraints => this.form = formWithConstraints}>
-        <TextInput name="username" ref={_username => this.username = _username as any} value={username} />
+        <FormControlInput name="username" innerRef={username => this.username = username} />
         <FieldFeedbacks for="username">
           <FieldFeedback when={value => value.length === 0}>Cannot be empty</FieldFeedback>
           <FieldFeedback when={value => value.length < 3}>Should be at least 3 characters long</FieldFeedback>
@@ -51,7 +32,7 @@ export class SignUp extends React.Component<SignUpProps, SignUpState> {
           <FieldFeedback when="valid">Looks good!</FieldFeedback>
         </FieldFeedbacks>
 
-        <TextInput secureTextEntry name="password" ref={_password => this.password = _password as any} value={password} />
+        <FormControlInput type="password" name="password" innerRef={password => this.password = password} />
         <FieldFeedbacks for="password">
           <FieldFeedback when={value => value.length === 0}>Cannot be empty</FieldFeedback>
           <FieldFeedback when={value => value.length < 5}>Should be at least 5 characters long</FieldFeedback>
@@ -62,9 +43,9 @@ export class SignUp extends React.Component<SignUpProps, SignUpState> {
           <FieldFeedback when="valid">Looks good!</FieldFeedback>
         </FieldFeedbacks>
 
-        <TextInput secureTextEntry name="passwordConfirm" ref={_passwordConfirm => this.passwordConfirm = _passwordConfirm as any} value={passwordConfirm} />
+        <FormControlInput type="password" name="passwordConfirm" innerRef={passwordConfirm => this.passwordConfirm = passwordConfirm} />
         <FieldFeedbacks for="passwordConfirm">
-          <FieldFeedback when={value => value !== password}>Not the same password</FieldFeedback>
+          <FieldFeedback when={value => value !== this.password!.value}>Not the same password</FieldFeedback>
           <FieldFeedback when="valid">Looks good!</FieldFeedback>
         </FieldFeedbacks>
       </FormWithConstraints>

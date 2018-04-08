@@ -157,7 +157,7 @@ export class FieldFeedback extends _FieldFeedback {
 }
 
 
-class FieldFeedbackWhenValid extends _FieldFeedbackWhenValid {
+export class FieldFeedbackWhenValid extends _FieldFeedbackWhenValid {
   render() {
     const { fieldIsValid } = this.state;
     const { form } = this.context;

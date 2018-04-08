@@ -1,7 +1,7 @@
 import React from 'react';
 import { shallow as _shallow, mount as _mount } from 'enzyme';
 
-import { FormWithConstraints, Field, FieldFeedback, FieldFeedbackContext, FieldFeedbackProps, ValidateFieldEvent, ResetEvent } from './index';
+import { FormWithConstraints, Field, FieldFeedback, FieldFeedbackContext, FieldFeedbackProps, ValidateFieldEvent } from './index';
 import { InputMock, input_username_valueMissing, input_username_valid } from './InputMock';
 import new_FormWithConstraints from './FormWithConstraintsEnzymeFix';
 import FieldFeedbacks from './FieldFeedbacksEnzymeFix';
@@ -9,7 +9,6 @@ import FieldFeedbacks from './FieldFeedbacksEnzymeFix';
 function shallow(node: React.ReactElement<FieldFeedbackProps>, options: {context: FieldFeedbackContext}) {
   return _shallow<FieldFeedbackProps>(node, options);
 }
-
 function mount(node: React.ReactElement<FieldFeedbackProps>, options: {context: FieldFeedbackContext}) {
   return _mount<FieldFeedbackProps>(node, options);
 }
@@ -89,7 +88,7 @@ describe('validate()', () => {
   describe('when prop', () => {
     describe('string', () => {
       test('unknown', async () => {
-        const wrapper = shallow(
+        shallow(
           <FieldFeedback when={'unknown' as any} />,
           {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
         );
@@ -259,8 +258,7 @@ describe('validate()', () => {
           <FieldFeedback when={value => value.length === 0} />,
           {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
         );
-        const input = new InputMock('username', 'length > 0', {}, '');
-        const validations = await fieldFeedbacks_username.emitValidateFieldEvent(input);
+        const validations = await fieldFeedbacks_username.emitValidateFieldEvent(input_username_valid);
 
         expect(validations).toEqual([
           {key: '0.0', type: 'error', show: false}
@@ -272,8 +270,7 @@ describe('validate()', () => {
           <FieldFeedback when={value => value.length === 0} />,
           {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
         );
-        const input = new InputMock('username', '', {}, '');
-        const validations = await fieldFeedbacks_username.emitValidateFieldEvent(input);
+        const validations = await fieldFeedbacks_username.emitValidateFieldEvent(input_username_valueMissing);
 
         expect(validations).toEqual([
           {key: '0.0', type: 'error', show: true}
@@ -286,8 +283,7 @@ describe('validate()', () => {
         <FieldFeedback when={2 as any} />,
         {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
       );
-      const input = new InputMock('username', '', {}, '');
-      await expect(fieldFeedbacks_username.emitValidateFieldEvent(input)).rejects.toEqual(new TypeError("Invalid FieldFeedback 'when' type: number"));
+      await expect(fieldFeedbacks_username.emitValidateFieldEvent(input_username_valid)).rejects.toEqual(new TypeError("Invalid FieldFeedback 'when' type: number"));
     });
   });
 
@@ -345,7 +341,7 @@ describe('validate()', () => {
 describe('render()', () => {
   test('error', async () => {
     const wrapper = mount(
-      <FieldFeedback when="*" error />,
+      <FieldFeedback when={value => value.length === 0} error>Cannot be empty</FieldFeedback>,
       {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
     );
     const validations = await fieldFeedbacks_username.emitValidateFieldEvent(input_username_valueMissing);
@@ -353,12 +349,12 @@ describe('render()', () => {
     expect(validations).toEqual([
       {key: '0.0', type: 'error', show: true}
     ]);
-    expect(wrapper.html()).toEqual('<div data-feedback="0.0" class="error">Suffering from being missing</div>');
+    expect(wrapper.html()).toEqual('<div data-feedback="0.0" class="error">Cannot be empty</div>');
   });
 
   test('warning', async () => {
     const wrapper = mount(
-      <FieldFeedback when="*" warning />,
+      <FieldFeedback when={value => value.length === 0} warning>Cannot be empty</FieldFeedback>,
       {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
     );
     const validations = await fieldFeedbacks_username.emitValidateFieldEvent(input_username_valueMissing);
@@ -366,12 +362,12 @@ describe('render()', () => {
     expect(validations).toEqual([
       {key: '0.0', type: 'warning', show: true}
     ]);
-    expect(wrapper.html()).toEqual('<div data-feedback="0.0" class="warning">Suffering from being missing</div>');
+    expect(wrapper.html()).toEqual('<div data-feedback="0.0" class="warning">Cannot be empty</div>');
   });
 
   test('info', async () => {
     const wrapper = mount(
-      <FieldFeedback when="*" info />,
+      <FieldFeedback when={value => value.length === 0} info>Cannot be empty</FieldFeedback>,
       {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
     );
     const validations = await fieldFeedbacks_username.emitValidateFieldEvent(input_username_valueMissing);
@@ -379,12 +375,12 @@ describe('render()', () => {
     expect(validations).toEqual([
       {key: '0.0', type: 'info', show: true}
     ]);
-    expect(wrapper.html()).toEqual('<div data-feedback="0.0" class="info">Suffering from being missing</div>');
+    expect(wrapper.html()).toEqual('<div data-feedback="0.0" class="info">Cannot be empty</div>');
   });
 
   test('no error', async () => {
     const wrapper = mount(
-      <FieldFeedback when="*" />,
+      <FieldFeedback when={value => value.length === 0}>Cannot be empty</FieldFeedback>,
       {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
     );
     const validations = await fieldFeedbacks_username.emitValidateFieldEvent(input_username_valid);
@@ -395,9 +391,9 @@ describe('render()', () => {
     expect(wrapper.html()).toEqual(null);
   });
 
-  test('with children', async () => {
+  test('without children', async () => {
     const wrapper = mount(
-      <FieldFeedback when="*">message</FieldFeedback>,
+      <FieldFeedback when={value => value.length === 0} />,
       {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
     );
     const validations = await fieldFeedbacks_username.emitValidateFieldEvent(input_username_valueMissing);
@@ -405,12 +401,12 @@ describe('render()', () => {
     expect(validations).toEqual([
       {key: '0.0', type: 'error', show: true}
     ]);
-    expect(wrapper.html()).toEqual('<div data-feedback="0.0" class="error">message</div>');
+    expect(wrapper.html()).toEqual('<div data-feedback="0.0" class="error">Suffering from being missing</div>');
   });
 
   test('with already existing class', async () => {
     const wrapper = mount(
-      <FieldFeedback when="*" className="alreadyExistingClassName" />,
+      <FieldFeedback when={value => value.length === 0} className="alreadyExistingClassName">Cannot be empty</FieldFeedback>,
       {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
     );
     const validations = await fieldFeedbacks_username.emitValidateFieldEvent(input_username_valueMissing);
@@ -418,12 +414,12 @@ describe('render()', () => {
     expect(validations).toEqual([
       {key: '0.0', type: 'error', show: true}
     ]);
-    expect(wrapper.html()).toEqual('<div data-feedback="0.0" class="alreadyExistingClassName error">Suffering from being missing</div>');
+    expect(wrapper.html()).toEqual('<div data-feedback="0.0" class="alreadyExistingClassName error">Cannot be empty</div>');
   });
 
   test('with div props', async () => {
     const wrapper = mount(
-      <FieldFeedback when="*" style={{color: 'yellow'}} />,
+      <FieldFeedback when={value => value.length === 0} style={{color: 'yellow'}}>Cannot be empty</FieldFeedback>,
       {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
     );
     const validations = await fieldFeedbacks_username.emitValidateFieldEvent(input_username_valueMissing);
@@ -431,7 +427,8 @@ describe('render()', () => {
     expect(validations).toEqual([
       {key: '0.0', type: 'error', show: true}
     ]);
-    expect(wrapper.html()).toEqual('<div data-feedback="0.0" style="color: yellow;" class="error">Suffering from being missing</div>');
+    expect(wrapper.html()).toEqual('<div data-feedback="0.0" style="color: yellow;" class="error">Cannot be empty</div>');
+    expect(wrapper.props().style).toEqual({color: 'yellow'});
   });
 
   test('when="valid"', async () => {

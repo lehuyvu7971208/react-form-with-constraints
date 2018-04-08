@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 
 import { FormWithConstraintsChildContext } from './FormWithConstraints';
 import { withValidateFieldEventEmitter } from './withValidateFieldEventEmitter';
-import { withResetEventEmitter } from './withResetEventEmitter';
 // @ts-ignore
 // TS6133: 'EventEmitter' is declared but its value is never read.
 // FIXME See https://github.com/Microsoft/TypeScript/issues/9944#issuecomment-309903027
@@ -72,9 +71,9 @@ export class FieldFeedbacks extends
 
     if (fieldFeedbacksParent) {
       this.fieldName = fieldFeedbacksParent.fieldName;
-      if (props.for !== undefined) throw new TypeError("FieldFeedbacks cannot have a parent and a 'for' prop");
+      if (props.for !== undefined) throw new Error("FieldFeedbacks cannot have a parent and a 'for' prop");
     } else {
-      if (props.for === undefined) throw new TypeError("FieldFeedbacks cannot be without parent and without 'for' prop");
+      if (props.for === undefined) throw new Error("FieldFeedbacks cannot be without parent and without 'for' prop");
       else this.fieldName = props.for;
     }
 

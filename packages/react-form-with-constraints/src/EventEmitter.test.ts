@@ -1,5 +1,3 @@
-import { AssertionError } from 'assert';
-
 import { EventEmitter } from './index';
 import clearArray from './clearArray';
 

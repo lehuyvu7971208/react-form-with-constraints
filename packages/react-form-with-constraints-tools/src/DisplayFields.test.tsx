@@ -1,7 +1,7 @@
 import React from 'react';
 import { shallow as _shallow } from 'enzyme';
 
-import { FormWithConstraints, FormWithConstraintsChildContext, FieldEvent, Field, FieldFeedbackValidation, FieldFeedbackType } from 'react-form-with-constraints';
+import { FormWithConstraints, FormWithConstraintsChildContext, FieldEvent, FieldFeedbackValidation, FieldFeedbackType } from 'react-form-with-constraints';
 
 import { DisplayFields } from './index';
 import new_FormWithConstraints from './FormWithConstraintsEnzymeFix';
