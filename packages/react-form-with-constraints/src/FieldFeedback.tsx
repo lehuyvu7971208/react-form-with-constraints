@@ -118,10 +118,10 @@ export class FieldFeedback extends React.Component<FieldFeedbackProps, FieldFeed
 
     const validation = {...this.state.validation}; // Copy state so we don't modify it directly (use of setState() instead)
 
-    if (fieldFeedbacks.props.stop === 'first' && field.hasAnyFeedbacks(fieldFeedbacks.key, this.key) ||
-        fieldFeedbacks.props.stop === 'first-error' && field.hasErrors(fieldFeedbacks.key, this.key) ||
-        fieldFeedbacks.props.stop === 'first-warning' && field.hasWarnings(fieldFeedbacks.key, this.key) ||
-        fieldFeedbacks.props.stop === 'first-info' && field.hasInfos(fieldFeedbacks.key, this.key)) {
+    if (fieldFeedbacks.props.stop === 'first' && field.hasAnyFeedbacks(fieldFeedbacks.key) ||
+        fieldFeedbacks.props.stop === 'first-error' && field.hasErrors(fieldFeedbacks.key) ||
+        fieldFeedbacks.props.stop === 'first-warning' && field.hasWarnings(fieldFeedbacks.key) ||
+        fieldFeedbacks.props.stop === 'first-info' && field.hasInfos(fieldFeedbacks.key)) {
       // Do nothing
       validation.show = undefined; // undefined means the FieldFeedback was not checked
     }

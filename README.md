@@ -103,7 +103,7 @@ The API works the same way as [React Router v4](https://reacttraining.com/react-
 It is also inspired by [AngularJS ngMessages](https://docs.angularjs.org/api/ngMessages#usage).
 
 If you had to implement validation yourself, you would end up with [a global object that tracks errors for each field](examples/NoFramework/App.tsx).
-react-form-with-constraints [works similarly](packages/react-form-with-constraints/src/Fields.ts).
+react-form-with-constraints [works similarly](packages/react-form-with-constraints/src/FieldsStore.ts).
 It uses [React context](https://facebook.github.io/react/docs/context.html#parent-child-coupling) to share the [`FieldsStore`](packages/react-form-with-constraints/src/FieldsStore.ts) object across [`FieldFeedbacks`](packages/react-form-with-constraints/src/FieldFeedbacks.tsx) and [`FieldFeedback`](packages/react-form-with-constraints/src/FieldFeedback.tsx).
 
 ## API
@@ -142,7 +142,7 @@ class MyForm extends React.Component {
   async handleChange(e) {
     const target = e.currentTarget;
 
-    // Validates only the given field and returns the related FieldValidation structures
+    // Validates only the given field and returns Promise<Field[]>
     const fields = await this.form.validateFields(target);
 
     const fieldIsValid = fields.every(field => field.isValid());
@@ -156,7 +156,7 @@ class MyForm extends React.Component {
   async handleSubmit(e) {
     e.preventDefault();
 
-    // Validates the non-dirty fields and returns the related FieldValidation structures
+    // Validates the non-dirty fields and returns Promise<Field[]>
     const fields = await this.form.validateForm();
 
     // or simply this.form.isValid();
@@ -194,51 +194,53 @@ class MyForm extends React.Component {
 }
 ```
 
-- `FieldFeedbacks`
+- [`FieldFeedbacks`](packages/react-form-with-constraints/src/FieldFeedbacks.tsx)
   - `for: string` => reference to a `name` attribute (e.g `<input name="username">`), should be unique to the current form
-  - `stop?: 'first-error' | 'no'` => when to stop rendering `FieldFeedback`s, by default stops at the first error encountered (`FieldFeedback`s order matters)
+  - `stop?: 'first' | 'first-error' | 'first-warning' | 'first-info' | 'no'` =>
+    when to stop rendering `FieldFeedback`s, by default stops at the first error encountered (`FieldFeedback`s order matters)
 
-  Note: you can place `FieldFeedbacks` anywhere and have as many as you want for the same `field`
+  Note: you can place `FieldFeedbacks` anywhere, have as many as you want for the same `field` and nest them
 
-- `FieldFeedback`
+- [`FieldFeedback`](packages/react-form-with-constraints/src/FieldFeedback.tsx)
   - `when?:
     - `[`ValidityState`](https://developer.mozilla.org/en-US/docs/Web/API/ValidityState)` string` => HTML5 constraint violation name
     - `'*'` => matches any HTML5 constraint violation
     - `'valid'` => displays the feedback only if the field is valid
-    - `() => boolean` => custom constraint
+    - `(value: string) => boolean` => custom constraint
   - `error?: boolean` => treats the feedback as an error (default)
   - `warning?: boolean` => treats the feedback as a warning
   - `info?: boolean` => treats the feedback as an info
 
-- `Async<T>` => Async version of FieldFeedback, similar API as [react-promise](https://github.com/capaj/react-promise)
+- [`Async<T>`](packages/react-form-with-constraints/src/Async.tsx) => Async version of `FieldFeedback`, similar API as [react-promise](https://github.com/capaj/react-promise)
   - `promise: (value: string) => Promise<T>` => a promise you want to wait for
   - `pending?: React.ReactNode` => runs when promise is pending
   - `then?: (value: T) => React.ReactNode` => runs when promise is resolved
   - `catch?: (reason: any) => React.ReactNode` => runs when promise is rejected
 
-- `FormWithConstraints`
+- [`FormWithConstraints`](packages/react-form-with-constraints/src/FormWithConstraints.tsx)
 
-  - `validateFields(...inputsOrNames: Array<Input | string>): Promise<FieldValidation[]>` =>
+  - `validateFields(...inputsOrNames: Array<Input | string>): Promise<Field[]>` =>
     Should be called when a `field` changes, will re-render the proper `FieldFeedback`s (and update the internal `FieldsStore`).
     Without arguments, all fields (`$('[name]')`) are validated.
 
-  - `validateForm(): Promise<FieldValidation[]>` =>
+  - `validateForm(): Promise<Field[]>` =>
     Should be called before to submit the `form`. Validates only all non-dirty fields (won't re-validate fields that have been already validated with `validateFields()`),
     If you want to force re-validate all fields, use `validateFields()` without arguments.
 
   - `isValid(): boolean` => should be called after `validateForm()` or `validateFields()`, tells if the known fields are valid (thanks to internal `FieldsStore`)
 
-  - `reset(): void` => resets internal `FieldsStore` and re-render all `FieldFeedback`s
+  - `reset(): Promise` => resets internal `FieldsStore` and re-render all `FieldFeedback`s
 
-  - `FieldValidation` =>
+  - [`Field`](packages/react-form-with-constraints/src/Field.ts) =>
     ```TypeScript
     {
       name: string;
-      isValid: () => boolean;
       validations: {
         key: number;
+        type: 'error' | 'warning' | 'info' | 'whenValid';
         show: boolean | undefined;
-      }[]; // FieldFeedbackValidation[]
+      }[]; // FieldFeedbackValidation[],
+      isValid: () => boolean
     }
     ```
 

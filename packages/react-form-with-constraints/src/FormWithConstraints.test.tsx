@@ -1074,6 +1074,57 @@ describe('validate', () => {
 
       wrapper.unmount();
     });
+
+    test('change inputs quickly', async () => {
+      const wrapper = mount(<SignUp />);
+      const signUp = wrapper.instance() as SignUp;
+
+      signUp.username!.value = '';
+      signUp.password!.value = '';
+      signUp.passwordConfirm!.value = '';
+      signUp.form!.validateFields();
+
+      signUp.username!.value = 'john';
+      signUp.password!.value = '123456';
+      signUp.passwordConfirm!.value = '12345';
+      signUp.form!.validateFields();
+
+      signUp.username!.value = 'jimmy';
+      signUp.password!.value = '12345';
+      signUp.passwordConfirm!.value = '12345';
+      const fields = await signUp.form!.validateFields();
+
+      expect(fields).toEqual([
+        {
+          name: 'username',
+          validations: [
+            {key: '0.0', type: 'error', show: false},
+            {key: '0.1', type: 'error', show: false},
+            {key: '0.3', type: 'info', show: true},
+            {key: '0.2', type: 'whenValid', show: undefined}
+          ]
+        },
+        {
+          name: 'password',
+          validations: [
+            {key: '1.0', type: 'error', show: false},
+            {key: '1.1', type: 'error', show: false},
+            {key: '1.2', type: 'warning', show: false},
+            {key: '1.3', type: 'warning', show: true},
+            {key: '1.4', type: 'warning', show: true},
+            {key: '1.5', type: 'warning', show: true},
+            {key: '1.6', type: 'whenValid', show: undefined}
+          ]
+        },
+        {
+          name: 'passwordConfirm',
+          validations: [
+            {key: '2.0', type: 'error', show: false},
+            {key: '2.1', type: 'whenValid', show: undefined}
+          ]
+        }
+      ]);
+    });
   });
 
   test('validateForm()', async () => {

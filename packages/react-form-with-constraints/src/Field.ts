@@ -21,30 +21,29 @@ export default class Field {
     clearArray(this.validations);
   }
 
-  hasFeedbacksOfType(type: FieldFeedbackType, fieldFeedbacksKey?: string, excludeKey?: string) {
+  hasFeedbacksOfType(type: FieldFeedbackType, fieldFeedbacksKey?: string) {
     return this.validations.some(fieldFeedback =>
       (fieldFeedbacksKey === undefined || fieldFeedback.key.startsWith(`${fieldFeedbacksKey}.`)) &&
-      (excludeKey === undefined || fieldFeedback.key !== excludeKey) &&
       fieldFeedback.type === type && fieldFeedback.show === true
     );
   }
 
-  hasErrors(fieldFeedbacksKey?: string, excludeFieldFeedbackKey?: string) {
-    return this.hasFeedbacksOfType(FieldFeedbackType.Error, fieldFeedbacksKey, excludeFieldFeedbackKey);
+  hasErrors(fieldFeedbacksKey?: string) {
+    return this.hasFeedbacksOfType(FieldFeedbackType.Error, fieldFeedbacksKey);
   }
 
-  hasWarnings(fieldFeedbacksKey?: string, excludeFieldFeedbackKey?: string) {
-    return this.hasFeedbacksOfType(FieldFeedbackType.Warning, fieldFeedbacksKey, excludeFieldFeedbackKey);
+  hasWarnings(fieldFeedbacksKey?: string) {
+    return this.hasFeedbacksOfType(FieldFeedbackType.Warning, fieldFeedbacksKey);
   }
 
-  hasInfos(fieldFeedbacksKey?: string, excludeFieldFeedbackKey?: string) {
-    return this.hasFeedbacksOfType(FieldFeedbackType.Info, fieldFeedbacksKey, excludeFieldFeedbackKey);
+  hasInfos(fieldFeedbacksKey?: string) {
+    return this.hasFeedbacksOfType(FieldFeedbackType.Info, fieldFeedbacksKey);
   }
 
-  hasAnyFeedbacks(fieldFeedbacksKey?: string, excludeFieldFeedbackKey?: string) {
-    return this.hasErrors(fieldFeedbacksKey, excludeFieldFeedbackKey) ||
-           this.hasWarnings(fieldFeedbacksKey, excludeFieldFeedbackKey) ||
-           this.hasInfos(fieldFeedbacksKey, excludeFieldFeedbackKey);
+  hasAnyFeedbacks(fieldFeedbacksKey?: string) {
+    return this.hasErrors(fieldFeedbacksKey) ||
+           this.hasWarnings(fieldFeedbacksKey) ||
+           this.hasInfos(fieldFeedbacksKey);
   }
 
   isValid() {

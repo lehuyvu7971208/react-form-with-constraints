@@ -3,8 +3,7 @@ import { EventEmitter } from './EventEmitter';
 
 export enum FieldEvent {
   Added = 'FIELD_ADDED',
-  Removed = 'FIELD_REMOVED',
-  Updated = 'FIELD_UPDATED'
+  Removed = 'FIELD_REMOVED'
 }
 
 export class FieldsStore extends EventEmitter {

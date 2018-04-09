@@ -195,9 +195,6 @@ test('has*() + isValid()', () => {
   expect(field.hasAnyFeedbacks('1')).toEqual(true);
   expect(field.isValid()).toEqual(true);
 
-  expect(field.hasWarnings('1', '1.1')).toEqual(false);
-  expect(field.hasAnyFeedbacks('1', '1.1')).toEqual(false);
-
 
   const validation_numbers2: FieldFeedbackValidation = {
     key: validation_numbers.key,
