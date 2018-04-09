@@ -24,12 +24,6 @@ test('computeFieldFeedbacksKey()', () => {
   expect(form.computeFieldFeedbacksKey()).toEqual('2');
 });
 
-// FIXME Cannot update an input and expect the HTML returned by Enzyme to be updated
-// Tested with Enzyme 3.3.0 and enzyme-adapter-react-16 1.1.1 (2018-03-29)
-// This makes the tests verbose :/
-// See enzyme@3: wrapper is not updated even if there was a new render https://github.com/airbnb/enzyme/issues/1153
-// See Enzyme 3.2.0 Wrapper not updated after state change https://github.com/airbnb/enzyme/issues/1400
-
 interface FormProps {
   inputStop: FieldFeedbacksProps['stop'];
 }

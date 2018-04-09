@@ -19,44 +19,6 @@ import FieldFeedbackValidation from './FieldFeedbackValidation';
 import flattenDeep from './flattenDeep';
 import notUndefined from './notUndefined';
 
-// See Form data validation https://developer.mozilla.org/en-US/docs/Learn/HTML/Forms/Form_validation
-// See ReactJS Form Validation Approaches http://moduscreate.com/reactjs-form-validation-approaches/
-
-/*
-FormWithConstraints
-  - input
-  - FieldFeedbacks
-    - FieldFeedback
-    - FieldFeedback
-    - ...
-  - input
-  - FieldFeedbacks
-    - FieldFeedback
-    - FieldFeedback
-    - ...
-  - ...
-
-   FIXME
-FormWithConstraints contains the FieldsStore:
-{
-  username: {
-    validateEventEmitted: true
-  },
-  password: {
-    validateEventEmitted: true
-  }
-}
-FieldsStore is passed to FieldFeedbacks and FieldFeedback thanks to React context.
-
-Most of the intelligence is inside FieldFeedback validate() and render()
-
-When an input changes (validateFields()):
- => FormWithConstraints notifies all FieldFeedbacks
-  => FieldFeedbacks filters unrelated input changes and then notifies its FieldFeedback (validate())
-   => FieldFeedback updates the FieldsStore and emits FieldEvent.Updated (validate())
-    => All related FieldFeedback re-render
-*/
-
 export interface FormWithConstraintsChildContext {
   form: FormWithConstraints;
 }
