@@ -2,8 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, /*TextInput,*/ View, Button, ActivityIndicator } from 'react-native';
 import { TextInput } from 'react-form-with-constraints-native/lib/react-native-TextInput-fix'; // Specific to TypeScript
 
-import { Async } from 'react-form-with-constraints';
-import { FormWithConstraints, FieldFeedbacks, FieldFeedback } from 'react-form-with-constraints-native';
+import { FormWithConstraints, FieldFeedbacks, Async, FieldFeedback } from 'react-form-with-constraints-native';
 
 function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
