@@ -109,6 +109,8 @@ export class FormWithConstraints
       this.emitFieldWillValidateEvent(fieldName);
 
       const arrayOfArrays = await this.emitValidateFieldEvent(input);
+
+      // FIXME To remove
       // Internal check that everything is OK
       // Can be temporary out of sync if the user rapidly change the input, in this case:
       // emitFieldWillValidateEvent() returns the result of the first change while the store already contains the final validations

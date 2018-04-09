@@ -274,8 +274,8 @@ describe('FormWithAfterAsync', () => {
   });
 });
 
-describe('FormWithNestedFieldFeedbacks2', () => {
-  class FormWithNestedFieldFeedbacks2 extends React.Component<FormProps> {
+describe('FormWithMultipleNestedFieldFeedbacks - test FieldFeedbacks.validate() has*(fieldFeedbacksParent.key)', () => {
+  class FormWithMultipleNestedFieldFeedbacks extends React.Component<FormProps> {
     formWithConstraints: FormWithConstraints | null | undefined;
     input: HTMLInputElement | null | undefined;
 
@@ -285,27 +285,20 @@ describe('FormWithNestedFieldFeedbacks2', () => {
       return (
         <FormWithConstraints ref={formWithConstraints => this.formWithConstraints = formWithConstraints}>
           <input name="input" ref={input => this.input = input} />
+
           <FieldFeedbacks for="input" stop={inputStop}>
             <FieldFeedbacks stop="no">
-              <FieldFeedback when={() => true}>Error before Async1</FieldFeedback>
+              <FieldFeedback when={() => true}>Error 1</FieldFeedback>
+              <FieldFeedback when={() => true} warning>Warning 1</FieldFeedback>
+              <FieldFeedback when={() => true} info>Info 1</FieldFeedback>
             </FieldFeedbacks>
+          </FieldFeedbacks>
 
+          <FieldFeedbacks for="input" stop={inputStop}>
             <FieldFeedbacks stop="no">
-              <Async
-                promise={() => sleep(10)}
-                then={() => <FieldFeedback warning>Async1 warning</FieldFeedback>}
-              />
-            </FieldFeedbacks>
-
-            <FieldFeedbacks stop="no">
-              <FieldFeedback when={() => true} info>Info after Async1</FieldFeedback>
-            </FieldFeedbacks>
-
-            <FieldFeedbacks stop="no">
-              <Async
-                promise={() => sleep(10)}
-                then={() => <FieldFeedback warning>Async2 warning</FieldFeedback>}
-              />
+              <FieldFeedback when={() => true}>Error 2</FieldFeedback>
+              <FieldFeedback when={() => true} warning>Warning 2</FieldFeedback>
+              <FieldFeedback when={() => true} info>Info 2</FieldFeedback>
             </FieldFeedbacks>
           </FieldFeedbacks>
         </FormWithConstraints>
@@ -314,8 +307,8 @@ describe('FormWithNestedFieldFeedbacks2', () => {
   }
 
   test('stop="first"', async () => {
-    const wrapper = mount(<FormWithNestedFieldFeedbacks2 inputStop="first" />);
-    const form = wrapper.instance() as FormWithNestedFieldFeedbacks2;
+    const wrapper = mount(<FormWithMultipleNestedFieldFeedbacks inputStop="first" />);
+    const form = wrapper.instance() as FormWithMultipleNestedFieldFeedbacks;
 
     await form.formWithConstraints!.validateFields(form.input!);
 
@@ -324,11 +317,17 @@ describe('FormWithNestedFieldFeedbacks2', () => {
         <input name="input">
         <div data-feedbacks="0">
           <div data-feedbacks="0.0">
-            <div data-feedback="0.0.0" class="error">Error before Async1</div>
+            <div data-feedback="0.0.0" class="error">Error 1</div>
+            <div data-feedback="0.0.1" class="warning">Warning 1</div>
+            <div data-feedback="0.0.2" class="info">Info 1</div>
           </div>
-          <div data-feedbacks="0.1"></div>
-          <div data-feedbacks="0.2"></div>
-          <div data-feedbacks="0.3"></div>
+        </div>
+        <div data-feedbacks="1">
+          <div data-feedbacks="1.0">
+            <div data-feedback="1.0.0" class="error">Error 2</div>
+            <div data-feedback="1.0.1" class="warning">Warning 2</div>
+            <div data-feedback="1.0.2" class="info">Info 2</div>
+          </div>
         </div>
       </form>`
     );
@@ -337,8 +336,8 @@ describe('FormWithNestedFieldFeedbacks2', () => {
   });
 
   test('stop="first-error"', async () => {
-    const wrapper = mount(<FormWithNestedFieldFeedbacks2 inputStop="first-error" />);
-    const form = wrapper.instance() as FormWithNestedFieldFeedbacks2;
+    const wrapper = mount(<FormWithMultipleNestedFieldFeedbacks inputStop="first-error" />);
+    const form = wrapper.instance() as FormWithMultipleNestedFieldFeedbacks;
 
     await form.formWithConstraints!.validateFields(form.input!);
 
@@ -347,11 +346,17 @@ describe('FormWithNestedFieldFeedbacks2', () => {
         <input name="input">
         <div data-feedbacks="0">
           <div data-feedbacks="0.0">
-            <div data-feedback="0.0.0" class="error">Error before Async1</div>
+            <div data-feedback="0.0.0" class="error">Error 1</div>
+            <div data-feedback="0.0.1" class="warning">Warning 1</div>
+            <div data-feedback="0.0.2" class="info">Info 1</div>
           </div>
-          <div data-feedbacks="0.1"></div>
-          <div data-feedbacks="0.2"></div>
-          <div data-feedbacks="0.3"></div>
+        </div>
+        <div data-feedbacks="1">
+          <div data-feedbacks="1.0">
+            <div data-feedback="1.0.0" class="error">Error 2</div>
+            <div data-feedback="1.0.1" class="warning">Warning 2</div>
+            <div data-feedback="1.0.2" class="info">Info 2</div>
+          </div>
         </div>
       </form>`
     );
@@ -360,8 +365,8 @@ describe('FormWithNestedFieldFeedbacks2', () => {
   });
 
   test('stop="first-warning"', async () => {
-    const wrapper = mount(<FormWithNestedFieldFeedbacks2 inputStop="first-warning" />);
-    const form = wrapper.instance() as FormWithNestedFieldFeedbacks2;
+    const wrapper = mount(<FormWithMultipleNestedFieldFeedbacks inputStop="first-warning" />);
+    const form = wrapper.instance() as FormWithMultipleNestedFieldFeedbacks;
 
     await form.formWithConstraints!.validateFields(form.input!);
 
@@ -370,13 +375,17 @@ describe('FormWithNestedFieldFeedbacks2', () => {
         <input name="input">
         <div data-feedbacks="0">
           <div data-feedbacks="0.0">
-            <div data-feedback="0.0.0" class="error">Error before Async1</div>
+            <div data-feedback="0.0.0" class="error">Error 1</div>
+            <div data-feedback="0.0.1" class="warning">Warning 1</div>
+            <div data-feedback="0.0.2" class="info">Info 1</div>
           </div>
-          <div data-feedbacks="0.1">
-            <div data-feedback="0.1.0" class="warning">Async1 warning</div>
+        </div>
+        <div data-feedbacks="1">
+          <div data-feedbacks="1.0">
+            <div data-feedback="1.0.0" class="error">Error 2</div>
+            <div data-feedback="1.0.1" class="warning">Warning 2</div>
+            <div data-feedback="1.0.2" class="info">Info 2</div>
           </div>
-          <div data-feedbacks="0.2"></div>
-          <div data-feedbacks="0.3"></div>
         </div>
       </form>`
     );
@@ -385,8 +394,8 @@ describe('FormWithNestedFieldFeedbacks2', () => {
   });
 
   test('stop="first-info"', async () => {
-    const wrapper = mount(<FormWithNestedFieldFeedbacks2 inputStop="first-info" />);
-    const form = wrapper.instance() as FormWithNestedFieldFeedbacks2;
+    const wrapper = mount(<FormWithMultipleNestedFieldFeedbacks inputStop="first-info" />);
+    const form = wrapper.instance() as FormWithMultipleNestedFieldFeedbacks;
 
     await form.formWithConstraints!.validateFields(form.input!);
 
@@ -395,15 +404,17 @@ describe('FormWithNestedFieldFeedbacks2', () => {
         <input name="input">
         <div data-feedbacks="0">
           <div data-feedbacks="0.0">
-            <div data-feedback="0.0.0" class="error">Error before Async1</div>
+            <div data-feedback="0.0.0" class="error">Error 1</div>
+            <div data-feedback="0.0.1" class="warning">Warning 1</div>
+            <div data-feedback="0.0.2" class="info">Info 1</div>
           </div>
-          <div data-feedbacks="0.1">
-            <div data-feedback="0.1.0" class="warning">Async1 warning</div>
+        </div>
+        <div data-feedbacks="1">
+          <div data-feedbacks="1.0">
+            <div data-feedback="1.0.0" class="error">Error 2</div>
+            <div data-feedback="1.0.1" class="warning">Warning 2</div>
+            <div data-feedback="1.0.2" class="info">Info 2</div>
           </div>
-          <div data-feedbacks="0.2">
-            <div data-feedback="0.2.0" class="info">Info after Async1</div>
-          </div>
-          <div data-feedbacks="0.3"></div>
         </div>
       </form>`
     );
@@ -412,8 +423,8 @@ describe('FormWithNestedFieldFeedbacks2', () => {
   });
 
   test('stop="no"', async () => {
-    const wrapper = mount(<FormWithNestedFieldFeedbacks2 inputStop="no" />);
-    const form = wrapper.instance() as FormWithNestedFieldFeedbacks2;
+    const wrapper = mount(<FormWithMultipleNestedFieldFeedbacks inputStop="no" />);
+    const form = wrapper.instance() as FormWithMultipleNestedFieldFeedbacks;
 
     await form.formWithConstraints!.validateFields(form.input!);
 
@@ -422,16 +433,16 @@ describe('FormWithNestedFieldFeedbacks2', () => {
         <input name="input">
         <div data-feedbacks="0">
           <div data-feedbacks="0.0">
-            <div data-feedback="0.0.0" class="error">Error before Async1</div>
+            <div data-feedback="0.0.0" class="error">Error 1</div>
+            <div data-feedback="0.0.1" class="warning">Warning 1</div>
+            <div data-feedback="0.0.2" class="info">Info 1</div>
           </div>
-          <div data-feedbacks="0.1">
-            <div data-feedback="0.1.0" class="warning">Async1 warning</div>
-          </div>
-          <div data-feedbacks="0.2">
-            <div data-feedback="0.2.0" class="info">Info after Async1</div>
-          </div>
-          <div data-feedbacks="0.3">
-            <div data-feedback="0.3.0" class="warning">Async2 warning</div>
+        </div>
+        <div data-feedbacks="1">
+          <div data-feedbacks="1.0">
+            <div data-feedback="1.0.0" class="error">Error 2</div>
+            <div data-feedback="1.0.1" class="warning">Warning 2</div>
+            <div data-feedback="1.0.2" class="info">Info 2</div>
           </div>
         </div>
       </form>`
@@ -441,51 +452,28 @@ describe('FormWithNestedFieldFeedbacks2', () => {
   });
 });
 
-// FIXME simplify?
-describe('FormWithNestedFieldFeedbacks', () => {
-  interface FormWithNestedFieldFeedbacksProps {
-    fieldFeedbacksWithBeforeAsyncStop: FieldFeedbacksProps['stop'];
-    fieldFeedbacksWithAfterAsyncStop: FieldFeedbacksProps['stop'];
-  }
-
-  class FormWithNestedFieldFeedbacks extends React.Component<FormWithNestedFieldFeedbacksProps> {
+describe('FormWithMultipleNestedAsync - test Async.validate() has*(fieldFeedbacks.key)', () => {
+  class FormWithMultipleNestedAsync extends React.Component<FormProps> {
     formWithConstraints: FormWithConstraints | null | undefined;
     input: HTMLInputElement | null | undefined;
 
     render() {
-      const { fieldFeedbacksWithBeforeAsyncStop, fieldFeedbacksWithAfterAsyncStop } = this.props;
+      const { inputStop } = this.props;
 
       return (
         <FormWithConstraints ref={formWithConstraints => this.formWithConstraints = formWithConstraints}>
           <input name="input" ref={input => this.input = input} />
-          <FieldFeedbacks for="input" stop="no">
-            <FieldFeedback when={() => true}>Error before FieldFeedbacks</FieldFeedback>
-            <FieldFeedback when={() => true} warning>Warning before FieldFeedbacks</FieldFeedback>
-            <FieldFeedback when={() => true} info>Info before FieldFeedbacks</FieldFeedback>
 
-            <FieldFeedbacks stop={fieldFeedbacksWithBeforeAsyncStop}>
-              <FieldFeedback when={() => true}>Error before Async</FieldFeedback>
-              <FieldFeedback when={() => true} warning>Warning before Async</FieldFeedback>
-              <FieldFeedback when={() => true} info>Info before Async</FieldFeedback>
-              <Async
-                promise={() => sleep(10)}
-                then={() => <FieldFeedback>Async error</FieldFeedback>}
-              />
-            </FieldFeedbacks>
+          <FieldFeedbacks for="input" stop={inputStop}>
+            <Async promise={() => sleep(10)} then={() => <FieldFeedback>Async1 error</FieldFeedback>} />
+            <Async promise={() => sleep(10)} then={() => <FieldFeedback warning>Async1 warning</FieldFeedback>} />
+            <Async promise={() => sleep(10)} then={() => <FieldFeedback info>Async1 info</FieldFeedback>} />
+          </FieldFeedbacks>
 
-            <FieldFeedbacks stop={fieldFeedbacksWithAfterAsyncStop}>
-              <Async
-                promise={() => sleep(10)}
-                then={() => <FieldFeedback>Async error</FieldFeedback>}
-              />
-              <FieldFeedback when={() => true}>Error after Async</FieldFeedback>
-              <FieldFeedback when={() => true} warning>Warning after Async</FieldFeedback>
-              <FieldFeedback when={() => true} info>Info after Async</FieldFeedback>
-            </FieldFeedbacks>
-
-            <FieldFeedback when={() => true}>Error after FieldFeedbacks</FieldFeedback>
-            <FieldFeedback when={() => true} warning>Warning after FieldFeedbacks</FieldFeedback>
-            <FieldFeedback when={() => true} info>Info after FieldFeedbacks</FieldFeedback>
+          <FieldFeedbacks for="input" stop={inputStop}>
+            <Async promise={() => sleep(10)} then={() => <FieldFeedback>Async2 error</FieldFeedback>} />
+            <Async promise={() => sleep(10)} then={() => <FieldFeedback warning>Async2 warning</FieldFeedback>} />
+            <Async promise={() => sleep(10)} then={() => <FieldFeedback info>Async2 info</FieldFeedback>} />
           </FieldFeedbacks>
         </FormWithConstraints>
       );
@@ -493,8 +481,8 @@ describe('FormWithNestedFieldFeedbacks', () => {
   }
 
   test('stop="first"', async () => {
-    const wrapper = mount(<FormWithNestedFieldFeedbacks fieldFeedbacksWithBeforeAsyncStop="first" fieldFeedbacksWithAfterAsyncStop="first" />);
-    const form = wrapper.instance() as FormWithNestedFieldFeedbacks;
+    const wrapper = mount(<FormWithMultipleNestedAsync inputStop="first" />);
+    const form = wrapper.instance() as FormWithMultipleNestedAsync;
 
     await form.formWithConstraints!.validateFields(form.input!);
 
@@ -502,18 +490,10 @@ describe('FormWithNestedFieldFeedbacks', () => {
       <form>
         <input name="input">
         <div data-feedbacks="0">
-          <div data-feedback="0.0" class="error">Error before FieldFeedbacks</div>
-          <div data-feedback="0.1" class="warning">Warning before FieldFeedbacks</div>
-          <div data-feedback="0.2" class="info">Info before FieldFeedbacks</div>
-          <div data-feedbacks="0.3">
-            <div data-feedback="0.3.0" class="error">Error before Async</div>
-          </div>
-          <div data-feedbacks="0.4">
-            <div data-feedback="0.4.3" class="error">Async error</div>
-          </div>
-          <div data-feedback="0.5" class="error">Error after FieldFeedbacks</div>
-          <div data-feedback="0.6" class="warning">Warning after FieldFeedbacks</div>
-          <div data-feedback="0.7" class="info">Info after FieldFeedbacks</div>
+          <div data-feedback="0.0" class="error">Async1 error</div>
+        </div>
+        <div data-feedbacks="1">
+          <div data-feedback="1.0" class="error">Async2 error</div>
         </div>
       </form>`
     );
@@ -522,8 +502,8 @@ describe('FormWithNestedFieldFeedbacks', () => {
   });
 
   test('stop="first-error"', async () => {
-    const wrapper = mount(<FormWithNestedFieldFeedbacks fieldFeedbacksWithBeforeAsyncStop="first-error" fieldFeedbacksWithAfterAsyncStop="first-error" />);
-    const form = wrapper.instance() as FormWithNestedFieldFeedbacks;
+    const wrapper = mount(<FormWithMultipleNestedAsync inputStop="first-error" />);
+    const form = wrapper.instance() as FormWithMultipleNestedAsync;
 
     await form.formWithConstraints!.validateFields(form.input!);
 
@@ -531,18 +511,10 @@ describe('FormWithNestedFieldFeedbacks', () => {
       <form>
         <input name="input">
         <div data-feedbacks="0">
-          <div data-feedback="0.0" class="error">Error before FieldFeedbacks</div>
-          <div data-feedback="0.1" class="warning">Warning before FieldFeedbacks</div>
-          <div data-feedback="0.2" class="info">Info before FieldFeedbacks</div>
-          <div data-feedbacks="0.3">
-            <div data-feedback="0.3.0" class="error">Error before Async</div>
-          </div>
-          <div data-feedbacks="0.4">
-            <div data-feedback="0.4.3" class="error">Async error</div>
-          </div>
-          <div data-feedback="0.5" class="error">Error after FieldFeedbacks</div>
-          <div data-feedback="0.6" class="warning">Warning after FieldFeedbacks</div>
-          <div data-feedback="0.7" class="info">Info after FieldFeedbacks</div>
+          <div data-feedback="0.0" class="error">Async1 error</div>
+        </div>
+        <div data-feedbacks="1">
+          <div data-feedback="1.0" class="error">Async2 error</div>
         </div>
       </form>`
     );
@@ -551,8 +523,8 @@ describe('FormWithNestedFieldFeedbacks', () => {
   });
 
   test('stop="first-warning"', async () => {
-    const wrapper = mount(<FormWithNestedFieldFeedbacks fieldFeedbacksWithBeforeAsyncStop="first-warning" fieldFeedbacksWithAfterAsyncStop="first-warning" />);
-    const form = wrapper.instance() as FormWithNestedFieldFeedbacks;
+    const wrapper = mount(<FormWithMultipleNestedAsync inputStop="first-warning" />);
+    const form = wrapper.instance() as FormWithMultipleNestedAsync;
 
     await form.formWithConstraints!.validateFields(form.input!);
 
@@ -560,21 +532,12 @@ describe('FormWithNestedFieldFeedbacks', () => {
       <form>
         <input name="input">
         <div data-feedbacks="0">
-          <div data-feedback="0.0" class="error">Error before FieldFeedbacks</div>
-          <div data-feedback="0.1" class="warning">Warning before FieldFeedbacks</div>
-          <div data-feedback="0.2" class="info">Info before FieldFeedbacks</div>
-          <div data-feedbacks="0.3">
-            <div data-feedback="0.3.0" class="error">Error before Async</div>
-            <div data-feedback="0.3.1" class="warning">Warning before Async</div>
-          </div>
-          <div data-feedbacks="0.4">
-            <div data-feedback="0.4.3" class="error">Async error</div>
-            <div data-feedback="0.4.0" class="error">Error after Async</div>
-            <div data-feedback="0.4.1" class="warning">Warning after Async</div>
-          </div>
-          <div data-feedback="0.5" class="error">Error after FieldFeedbacks</div>
-          <div data-feedback="0.6" class="warning">Warning after FieldFeedbacks</div>
-          <div data-feedback="0.7" class="info">Info after FieldFeedbacks</div>
+          <div data-feedback="0.0" class="error">Async1 error</div>
+          <div data-feedback="0.1" class="warning">Async1 warning</div>
+        </div>
+        <div data-feedbacks="1">
+          <div data-feedback="1.0" class="error">Async2 error</div>
+          <div data-feedback="1.1" class="warning">Async2 warning</div>
         </div>
       </form>`
     );
@@ -583,8 +546,8 @@ describe('FormWithNestedFieldFeedbacks', () => {
   });
 
   test('stop="first-info"', async () => {
-    const wrapper = mount(<FormWithNestedFieldFeedbacks fieldFeedbacksWithBeforeAsyncStop="first-info" fieldFeedbacksWithAfterAsyncStop="first-info" />);
-    const form = wrapper.instance() as FormWithNestedFieldFeedbacks;
+    const wrapper = mount(<FormWithMultipleNestedAsync inputStop="first-info" />);
+    const form = wrapper.instance() as FormWithMultipleNestedAsync;
 
     await form.formWithConstraints!.validateFields(form.input!);
 
@@ -592,23 +555,14 @@ describe('FormWithNestedFieldFeedbacks', () => {
       <form>
         <input name="input">
         <div data-feedbacks="0">
-          <div data-feedback="0.0" class="error">Error before FieldFeedbacks</div>
-          <div data-feedback="0.1" class="warning">Warning before FieldFeedbacks</div>
-          <div data-feedback="0.2" class="info">Info before FieldFeedbacks</div>
-          <div data-feedbacks="0.3">
-            <div data-feedback="0.3.0" class="error">Error before Async</div>
-            <div data-feedback="0.3.1" class="warning">Warning before Async</div>
-            <div data-feedback="0.3.2" class="info">Info before Async</div>
-          </div>
-          <div data-feedbacks="0.4">
-            <div data-feedback="0.4.3" class="error">Async error</div>
-            <div data-feedback="0.4.0" class="error">Error after Async</div>
-            <div data-feedback="0.4.1" class="warning">Warning after Async</div>
-            <div data-feedback="0.4.2" class="info">Info after Async</div>
-          </div>
-          <div data-feedback="0.5" class="error">Error after FieldFeedbacks</div>
-          <div data-feedback="0.6" class="warning">Warning after FieldFeedbacks</div>
-          <div data-feedback="0.7" class="info">Info after FieldFeedbacks</div>
+          <div data-feedback="0.0" class="error">Async1 error</div>
+          <div data-feedback="0.1" class="warning">Async1 warning</div>
+          <div data-feedback="0.2" class="info">Async1 info</div>
+        </div>
+        <div data-feedbacks="1">
+          <div data-feedback="1.0" class="error">Async2 error</div>
+          <div data-feedback="1.1" class="warning">Async2 warning</div>
+          <div data-feedback="1.2" class="info">Async2 info</div>
         </div>
       </form>`
     );
@@ -617,8 +571,8 @@ describe('FormWithNestedFieldFeedbacks', () => {
   });
 
   test('stop="no"', async () => {
-    const wrapper = mount(<FormWithNestedFieldFeedbacks fieldFeedbacksWithBeforeAsyncStop="no" fieldFeedbacksWithAfterAsyncStop="no" />);
-    const form = wrapper.instance() as FormWithNestedFieldFeedbacks;
+    const wrapper = mount(<FormWithMultipleNestedAsync inputStop="no" />);
+    const form = wrapper.instance() as FormWithMultipleNestedAsync;
 
     await form.formWithConstraints!.validateFields(form.input!);
 
@@ -626,24 +580,158 @@ describe('FormWithNestedFieldFeedbacks', () => {
       <form>
         <input name="input">
         <div data-feedbacks="0">
-          <div data-feedback="0.0" class="error">Error before FieldFeedbacks</div>
-          <div data-feedback="0.1" class="warning">Warning before FieldFeedbacks</div>
-          <div data-feedback="0.2" class="info">Info before FieldFeedbacks</div>
-          <div data-feedbacks="0.3">
-            <div data-feedback="0.3.0" class="error">Error before Async</div>
-            <div data-feedback="0.3.1" class="warning">Warning before Async</div>
-            <div data-feedback="0.3.2" class="info">Info before Async</div>
-            <div data-feedback="0.3.3" class="error">Async error</div>
-          </div>
-          <div data-feedbacks="0.4">
-            <div data-feedback="0.4.3" class="error">Async error</div>
-            <div data-feedback="0.4.0" class="error">Error after Async</div>
-            <div data-feedback="0.4.1" class="warning">Warning after Async</div>
-            <div data-feedback="0.4.2" class="info">Info after Async</div>
-          </div>
-          <div data-feedback="0.5" class="error">Error after FieldFeedbacks</div>
-          <div data-feedback="0.6" class="warning">Warning after FieldFeedbacks</div>
-          <div data-feedback="0.7" class="info">Info after FieldFeedbacks</div>
+          <div data-feedback="0.0" class="error">Async1 error</div>
+          <div data-feedback="0.1" class="warning">Async1 warning</div>
+          <div data-feedback="0.2" class="info">Async1 info</div>
+        </div>
+        <div data-feedbacks="1">
+          <div data-feedback="1.0" class="error">Async2 error</div>
+          <div data-feedback="1.1" class="warning">Async2 warning</div>
+          <div data-feedback="1.2" class="info">Async2 info</div>
+        </div>
+      </form>`
+    );
+
+    wrapper.unmount();
+  });
+});
+
+describe('FormWithMultipleNestedFieldFeedback - test FieldFeedback.validate() has*(fieldFeedbacks.key)', () => {
+  class FormWithMultipleNestedFieldFeedback extends React.Component<FormProps> {
+    formWithConstraints: FormWithConstraints | null | undefined;
+    input: HTMLInputElement | null | undefined;
+
+    render() {
+      const { inputStop } = this.props;
+
+      return (
+        <FormWithConstraints ref={formWithConstraints => this.formWithConstraints = formWithConstraints}>
+          <input name="input" ref={input => this.input = input} />
+
+          <FieldFeedbacks for="input" stop={inputStop}>
+            <FieldFeedback when={() => true}>Error 1</FieldFeedback>
+            <FieldFeedback when={() => true} warning>Warning 1</FieldFeedback>
+            <FieldFeedback when={() => true} info>Info 1</FieldFeedback>
+          </FieldFeedbacks>
+
+          <FieldFeedbacks for="input" stop={inputStop}>
+            <FieldFeedback when={() => true}>Error 2</FieldFeedback>
+            <FieldFeedback when={() => true} warning>Warning 2</FieldFeedback>
+            <FieldFeedback when={() => true} info>Info 2</FieldFeedback>
+          </FieldFeedbacks>
+        </FormWithConstraints>
+      );
+    }
+  }
+
+  test('stop="first"', async () => {
+    const wrapper = mount(<FormWithMultipleNestedFieldFeedback inputStop="first" />);
+    const form = wrapper.instance() as FormWithMultipleNestedFieldFeedback;
+
+    await form.formWithConstraints!.validateFields(form.input!);
+
+    expect(beautifyHtml(wrapper.html(), '      ')).toEqual(`\
+      <form>
+        <input name="input">
+        <div data-feedbacks="0">
+          <div data-feedback="0.0" class="error">Error 1</div>
+        </div>
+        <div data-feedbacks="1">
+          <div data-feedback="1.0" class="error">Error 2</div>
+        </div>
+      </form>`
+    );
+
+    wrapper.unmount();
+  });
+
+  test('stop="first-error"', async () => {
+    const wrapper = mount(<FormWithMultipleNestedFieldFeedback inputStop="first-error" />);
+    const form = wrapper.instance() as FormWithMultipleNestedFieldFeedback;
+
+    await form.formWithConstraints!.validateFields(form.input!);
+
+    expect(beautifyHtml(wrapper.html(), '      ')).toEqual(`\
+      <form>
+        <input name="input">
+        <div data-feedbacks="0">
+          <div data-feedback="0.0" class="error">Error 1</div>
+        </div>
+        <div data-feedbacks="1">
+          <div data-feedback="1.0" class="error">Error 2</div>
+        </div>
+      </form>`
+    );
+
+    wrapper.unmount();
+  });
+
+  test('stop="first-warning"', async () => {
+    const wrapper = mount(<FormWithMultipleNestedFieldFeedback inputStop="first-warning" />);
+    const form = wrapper.instance() as FormWithMultipleNestedFieldFeedback;
+
+    await form.formWithConstraints!.validateFields(form.input!);
+
+    expect(beautifyHtml(wrapper.html(), '      ')).toEqual(`\
+      <form>
+        <input name="input">
+        <div data-feedbacks="0">
+          <div data-feedback="0.0" class="error">Error 1</div>
+          <div data-feedback="0.1" class="warning">Warning 1</div>
+        </div>
+        <div data-feedbacks="1">
+          <div data-feedback="1.0" class="error">Error 2</div>
+          <div data-feedback="1.1" class="warning">Warning 2</div>
+        </div>
+      </form>`
+    );
+
+    wrapper.unmount();
+  });
+
+  test('stop="first-info"', async () => {
+    const wrapper = mount(<FormWithMultipleNestedFieldFeedback inputStop="first-info" />);
+    const form = wrapper.instance() as FormWithMultipleNestedFieldFeedback;
+
+    await form.formWithConstraints!.validateFields(form.input!);
+
+    expect(beautifyHtml(wrapper.html(), '      ')).toEqual(`\
+      <form>
+        <input name="input">
+        <div data-feedbacks="0">
+          <div data-feedback="0.0" class="error">Error 1</div>
+          <div data-feedback="0.1" class="warning">Warning 1</div>
+          <div data-feedback="0.2" class="info">Info 1</div>
+        </div>
+        <div data-feedbacks="1">
+          <div data-feedback="1.0" class="error">Error 2</div>
+          <div data-feedback="1.1" class="warning">Warning 2</div>
+          <div data-feedback="1.2" class="info">Info 2</div>
+        </div>
+      </form>`
+    );
+
+    wrapper.unmount();
+  });
+
+  test('stop="no"', async () => {
+    const wrapper = mount(<FormWithMultipleNestedFieldFeedback inputStop="no" />);
+    const form = wrapper.instance() as FormWithMultipleNestedFieldFeedback;
+
+    await form.formWithConstraints!.validateFields(form.input!);
+
+    expect(beautifyHtml(wrapper.html(), '      ')).toEqual(`\
+      <form>
+        <input name="input">
+        <div data-feedbacks="0">
+          <div data-feedback="0.0" class="error">Error 1</div>
+          <div data-feedback="0.1" class="warning">Warning 1</div>
+          <div data-feedback="0.2" class="info">Info 1</div>
+        </div>
+        <div data-feedbacks="1">
+          <div data-feedback="1.0" class="error">Error 2</div>
+          <div data-feedback="1.1" class="warning">Warning 2</div>
+          <div data-feedback="1.2" class="info">Info 2</div>
         </div>
       </form>`
     );

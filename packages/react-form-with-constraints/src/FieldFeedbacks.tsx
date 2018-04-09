@@ -112,9 +112,9 @@ export class FieldFeedbacks extends
 
     let validations;
 
-    const field = form.fieldsStore.getField(this.fieldName)!;
-
     if (input.name === this.fieldName) { // Ignore the event if it's not for us
+      const field = form.fieldsStore.getField(this.fieldName)!;
+
       if (fieldFeedbacksParent !== undefined && (
           fieldFeedbacksParent.props.stop === 'first' && field.hasAnyFeedbacks(fieldFeedbacksParent.key) ||
           fieldFeedbacksParent.props.stop === 'first-error' && field.hasErrors(fieldFeedbacksParent.key) ||
@@ -131,11 +131,8 @@ export class FieldFeedbacks extends
   }
 
   async _validate(input: Input) {
-    let validations;
-
     const arrayOfArrays = await this.emitValidateFieldEvent(input);
-    validations = flattenDeep<FieldFeedbackValidation | undefined>(arrayOfArrays);
-
+    const validations = flattenDeep<FieldFeedbackValidation | undefined>(arrayOfArrays);
     return validations;
   }
 
