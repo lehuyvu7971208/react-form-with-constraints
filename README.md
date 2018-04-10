@@ -202,7 +202,7 @@ class MyForm extends React.Component {
   Note: you can place `FieldFeedbacks` anywhere, have as many as you want for the same `field` and nest them
 
 - [`FieldFeedback`](packages/react-form-with-constraints/src/FieldFeedback.tsx)
-  - `when?:
+  - `when?`:
     - `[`ValidityState`](https://developer.mozilla.org/en-US/docs/Web/API/ValidityState)` string` => HTML5 constraint violation name
     - `'*'` => matches any HTML5 constraint violation
     - `'valid'` => displays the feedback only if the field is valid
