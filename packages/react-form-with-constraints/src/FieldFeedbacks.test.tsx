@@ -113,8 +113,9 @@ describe('validate()', () => {
         <FieldFeedback when="*" />
       </FieldFeedbacks>,
       {context: {form}}
-    ).instance() as FieldFeedbacks;
-    const emitValidateFieldEventSpy = jest.spyOn(wrapper, 'emitValidateFieldEvent');
+    );
+    const fieldFeedbacks = wrapper.instance() as FieldFeedbacks;
+    const emitValidateFieldEventSpy = jest.spyOn(fieldFeedbacks, 'emitValidateFieldEvent');
 
     expect(emitValidateFieldEventSpy).toHaveBeenCalledTimes(0);
     const fields = await form.validateFields(input_username_valid);
@@ -155,8 +156,9 @@ describe('validate()', () => {
         <FieldFeedback when="*" />
       </FieldFeedbacks>,
       {context: {form}}
-    ).instance() as FieldFeedbacks;
-    const emitValidateFieldEventSpy = jest.spyOn(wrapper, 'emitValidateFieldEvent');
+    );
+    const fieldFeedbacks = wrapper.instance() as FieldFeedbacks;
+    const emitValidateFieldEventSpy = jest.spyOn(fieldFeedbacks, 'emitValidateFieldEvent');
 
     expect(emitValidateFieldEventSpy).toHaveBeenCalledTimes(0);
     const fields = await form.validateFields(input_unknown_valueMissing);
@@ -182,21 +184,6 @@ describe('validate()', () => {
     expect(form.fieldsStore.fields).toEqual([
       {name: 'username', validations: []}
     ]);
-  });
-
-  // FIXME What is this?
-  test('remove', async () => {
-    const form = new_FormWithConstraints({});
-    shallow(
-      <FieldFeedbacks for="username" />,
-      {context: {form}}
-    );
-    const fields = await form.validateFields(input_username_valid);
-    expect(fields).toEqual([
-      {name: 'username', validations: []}
-    ]);
-
-    expect(form.fieldsStore.fields).toEqual(fields);
   });
 });
 

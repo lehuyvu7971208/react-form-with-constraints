@@ -23,8 +23,9 @@ let fieldFeedbacks_username: FieldFeedbacks;
 
 beforeEach(() => {
   form_username = new_FormWithConstraints({});
-  form_username.fieldsStore.addField('username');
+
   fieldFeedbacks_username = new FieldFeedbacks({for: 'username', stop: 'no'}, {form: form_username});
+  fieldFeedbacks_username.componentWillMount(); // Needed because of fieldsStore.addField() inside componentWillMount()
 });
 
 test('constructor()', () => {
@@ -59,14 +60,17 @@ describe('validate()', () => {
     const wrapper = shallow(
       <Async promise={checkUsernameAvailability} />,
       {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
-    ).instance() as Async<boolean>;
+    );
+    const async = wrapper.instance() as Async<boolean>;
 
-    const emitValidateFieldEventSpy = jest.spyOn(wrapper, 'emitValidateFieldEvent');
+    const emitValidateFieldEventSpy = jest.spyOn(async, 'emitValidateFieldEvent');
 
     expect(emitValidateFieldEventSpy).toHaveBeenCalledTimes(0);
-    const validations = await fieldFeedbacks_username.emitValidateFieldEvent(input_username_valid);
+    const fields = await form_username.validateFields(input_username_valid);
 
-    expect(validations).toEqual([[]]); // FIXME
+    expect(fields).toEqual([
+      {name: 'username', validations: []}
+    ]);
     expect(emitValidateFieldEventSpy).toHaveBeenCalledTimes(1);
     expect(emitValidateFieldEventSpy).toHaveBeenLastCalledWith(input_username_valid);
   });
@@ -75,19 +79,21 @@ describe('validate()', () => {
     const wrapper = shallow(
       <Async promise={checkUsernameAvailability} />,
       {context: {form: form_username, fieldFeedbacks: fieldFeedbacks_username}}
-    ).instance() as Async<boolean>;
+    );
+    const async = wrapper.instance() as Async<boolean>;
 
-    const emitValidateFieldEventSpy = jest.spyOn(wrapper, 'emitValidateFieldEvent');
+    const emitValidateFieldEventSpy = jest.spyOn(async, 'emitValidateFieldEvent');
 
     expect(emitValidateFieldEventSpy).toHaveBeenCalledTimes(0);
-    const validations = await form_username.validateFields(input_unknown_valueMissing);
-    expect(validations).toEqual([]);
+    const fields = await form_username.validateFields(input_unknown_valueMissing);
+    expect(fields).toEqual([]);
     expect(emitValidateFieldEventSpy).toHaveBeenCalledTimes(0);
   });
 });
 
 describe('render()', () => {
   test('then()', async () => {
+    const form = new_FormWithConstraints({});
     const wrapper = mount(
       <FieldFeedbacks for="username">
         <Async
@@ -100,42 +106,43 @@ describe('render()', () => {
           catch={e => <FieldFeedback>{e.message}</FieldFeedback>}
         />
       </FieldFeedbacks>,
-      {context: {form: form_username}}
+      {context: {form}}
     );
-    expect(wrapper.html()).toEqual('<div data-feedbacks="1"></div>');
+    expect(wrapper.html()).toEqual('<div data-feedbacks="0"></div>');
 
     const input = {...input_username_valid};
-    let fieldFeedbackValidationsPromise = form_username.validateFields(input);
-    expect(wrapper.html()).toEqual('<div data-feedbacks="1">Pending...</div>');
+    let fieldsPromise = form.validateFields(input);
+    expect(wrapper.html()).toEqual('<div data-feedbacks="0">Pending...</div>');
 
-    let fields = await fieldFeedbackValidationsPromise;
+    let fields = await fieldsPromise;
     expect(fields).toEqual([
       {
         name: 'username',
         validations: [
-          {key: '1.0', type: 'info', show: true}
+          {key: '0.0', type: 'info', show: true}
         ]
       }
     ]);
-    expect(wrapper.html()).toEqual(`<div data-feedbacks="1"><div data-feedback="1.0" class="info">Username 'jimmy' available</div></div>`);
+    expect(wrapper.html()).toEqual(`<div data-feedbacks="0"><div data-feedback="0.0" class="info">Username 'jimmy' available</div></div>`);
 
     input.value = 'john';
-    fieldFeedbackValidationsPromise = form_username.validateFields(input);
-    expect(wrapper.html()).toEqual('<div data-feedbacks="1">Pending...</div>');
+    fieldsPromise = form.validateFields(input);
+    expect(wrapper.html()).toEqual('<div data-feedbacks="0">Pending...</div>');
 
-    fields = await fieldFeedbackValidationsPromise;
+    fields = await fieldsPromise;
     expect(fields).toEqual([
       {
         name: 'username',
         validations: [
-          {key: '1.1', type: 'error', show: true}
+          {key: '0.1', type: 'error', show: true}
         ]
       }
     ]);
-    expect(wrapper.html()).toEqual(`<div data-feedbacks="1"><div data-feedback="1.1" class="error">Username 'john' already taken, choose another</div></div>`);
+    expect(wrapper.html()).toEqual(`<div data-feedbacks="0"><div data-feedback="0.1" class="error">Username 'john' already taken, choose another</div></div>`);
   });
 
   test('catch()', async () => {
+    const form = new_FormWithConstraints({});
     const wrapper = mount(
       <FieldFeedbacks for="username">
         <Async
@@ -148,26 +155,27 @@ describe('render()', () => {
           catch={e => <FieldFeedback>{e.message}</FieldFeedback>}
         />
       </FieldFeedbacks>,
-      {context: {form: form_username}}
+      {context: {form}}
     );
-    expect(wrapper.html()).toEqual('<div data-feedbacks="1"></div>');
+    expect(wrapper.html()).toEqual('<div data-feedbacks="0"></div>');
 
-    const fieldFeedbackValidationsPromise = form_username.validateFields(input_username_error_valid);
-    expect(wrapper.html()).toEqual('<div data-feedbacks="1">Pending...</div>');
+    const fieldsPromise = form.validateFields(input_username_error_valid);
+    expect(wrapper.html()).toEqual('<div data-feedbacks="0">Pending...</div>');
 
-    const fieldFeedbackValidations = await fieldFeedbackValidationsPromise;
-    expect(fieldFeedbackValidations).toEqual([
+    const fields = await fieldsPromise;
+    expect(fields).toEqual([
       {
         name: 'username',
         validations: [
-          {key: '1.0', type: 'error', show: true}
+          {key: '0.0', type: 'error', show: true}
         ]
       }
     ]);
-    expect(wrapper.html()).toEqual(`<div data-feedbacks="1"><div data-feedback="1.0" class="error">Something wrong with username 'error'</div></div>`);
+    expect(wrapper.html()).toEqual(`<div data-feedbacks="0"><div data-feedback="0.0" class="error">Something wrong with username 'error'</div></div>`);
   });
 
   test('no catch()', async () => {
+    const form = new_FormWithConstraints({});
     const wrapper = mount(
       <FieldFeedbacks for="username">
         <Async
@@ -179,17 +187,17 @@ describe('render()', () => {
           }
         />
       </FieldFeedbacks>,
-      {context: {form: form_username}}
+      {context: {form}}
     );
-    expect(wrapper.html()).toEqual('<div data-feedbacks="1"></div>');
+    expect(wrapper.html()).toEqual('<div data-feedbacks="0"></div>');
 
-    const fieldFeedbackValidationsPromise = form_username.validateFields(input_username_error_valid);
-    expect(wrapper.html()).toEqual('<div data-feedbacks="1">Pending...</div>');
+    const fieldsPromise = form.validateFields(input_username_error_valid);
+    expect(wrapper.html()).toEqual('<div data-feedbacks="0">Pending...</div>');
 
-    const fieldFeedbackValidations = await fieldFeedbackValidationsPromise;
-    expect(fieldFeedbackValidations).toEqual([
+    const fields = await fieldsPromise;
+    expect(fields).toEqual([
       {name: 'username', validations: []}
     ]);
-    expect(wrapper.html()).toEqual('<div data-feedbacks="1"></div>');
+    expect(wrapper.html()).toEqual('<div data-feedbacks="0"></div>');
   });
 });
